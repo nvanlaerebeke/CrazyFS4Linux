@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CrazyFS": {
+      "commandName": "Project",
+      "commandLineArgs": "-p \"D:\\CrazyFS\" -m \"E:\""
+    }
+  }
+}

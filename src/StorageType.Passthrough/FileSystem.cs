@@ -1,5 +1,5 @@
 ﻿using Fsp;
-using Fsp.Interop;
+using StorageBackend;
 using System;
 using System.IO;
 
@@ -27,13 +27,10 @@ namespace StorageType.Passthrough {
             return FileSystemStatus.STATUS_SUCCESS;
         }
 
-        internal static VolumeInfo GetVolumeInfo(string pPath) {
+        internal static int GetVolumeInfo(string pPath, out IVolumeInfo pVolumeInfo) {
             try {
-                DriveInfo Info = new DriveInfo(pPath);
-                return new VolumeInfo() {
-                    TotalSize = (ulong)Info.TotalSize,
-                    FreeSize = (ulong)Info.TotalFreeSpace
-                };
+                pVolumeInfo = new StorageBackend.VolumeInfo(new DriveInfo(pPath));
+                return FileSystemStatus.STATUS_SUCCESS;
             } catch (ArgumentException) {
                 /*
                  * DriveInfo only supports drives and does not support UNC paths.

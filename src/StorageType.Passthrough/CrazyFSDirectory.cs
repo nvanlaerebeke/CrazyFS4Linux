@@ -44,7 +44,7 @@ namespace StorageType.Passthrough {
             return objFileDesc;
         }
 
-        internal static bool ReadDirectory(object pFileNode, FileDesc pFileDesc, string pPattern, string pMarker, ref object pContext, out string pFileName, out Fsp.Interop.FileInfo pFileInfo) {
+        internal static bool ReadDirectory(object pFileNode, FileDesc pFileDesc, string pPattern, string pMarker, ref object pContext, out string pFileName, out ICrazyFSFileInfo pFileInfo) {
             if (null == pFileDesc.FileSystemInfos) {
                 if (null != pPattern) {
                     pPattern = pPattern.Replace('<', '*').Replace('>', '?').Replace('"', '.');
@@ -79,7 +79,7 @@ namespace StorageType.Passthrough {
             if (pFileDesc.FileSystemInfos.Length > Index) {
                 pContext = Index + 1;
                 pFileName = (string)pFileDesc.FileSystemInfos[Index].Key;
-                FileDesc.GetFileInfoFromFileSystemInfo((FileSystemInfo)pFileDesc.FileSystemInfos[Index].Value, out pFileInfo);
+                FileDesc.GetCrazyFSFileInfoFromFileSystemInfo((FileSystemInfo)pFileDesc.FileSystemInfos[Index].Value, out pFileInfo);
                 return true;
             } else {
                 pFileName = default;

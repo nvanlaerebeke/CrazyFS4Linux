@@ -5,7 +5,7 @@ using System.Security.AccessControl;
 namespace StorageType.Passthrough {
     internal static class CrazyFSPath {
 
-        internal static int Create(string pPath, string pFileName, uint pCreateOptions, uint pGrantedAccess, uint pFileAttributes, byte[] pSecurityDescriptor, out object pFileNode, out object pFileDesc0, out Fsp.Interop.FileInfo pFileInfo, out string pNormalizedName) {
+        internal static int Create(string pPath, string pFileName, uint pCreateOptions, uint pGrantedAccess, uint pFileAttributes, byte[] pSecurityDescriptor, out object pFileNode, out object pFileDesc0, out ICrazyFSFileInfo pFileInfo, out string pNormalizedName) {
             pFileName = PathNormalizer.ConcatPath(pPath, pFileName);
             FileDesc objFileDesc;
             if (0 == (pCreateOptions & FileSystemStatus.FILE_DIRECTORY_FILE)) {
@@ -16,7 +16,7 @@ namespace StorageType.Passthrough {
             pFileNode = default;
             pFileDesc0 = objFileDesc;
             pNormalizedName = default;
-            return objFileDesc.GetFileInfo(out pFileInfo);
+            return objFileDesc.GetCrazyFSFileInfo(out pFileInfo);
         }
 
         internal static string Normalize(string pPath) {
@@ -24,19 +24,19 @@ namespace StorageType.Passthrough {
             return (pPath.EndsWith("\\")) ? pPath.Substring(0, pPath.Length - 1) : pPath;
         }
 
-        internal static int Open(string pPath, string pFileName, uint pGrantedAccess, out object pFileNode, out FileDesc pFileDesc, out Fsp.Interop.FileInfo pFileInfo, out string pNormalizedName) {
+        internal static int Open(string pPath, string pFileName, uint pGrantedAccess, out object pFileNode, out FileDesc pFileDesc, out ICrazyFSFileInfo pFileInfo, out string pNormalizedName) {
             pFileName = PathNormalizer.ConcatPath(pPath, pFileName);
             var objFileDesc = (!Directory.Exists(pFileName)) ? CrazyFSFile.Open(pFileName, pGrantedAccess) : CrazyFSDirectory.Open(pFileName);
             pFileNode = default;
             pFileDesc = objFileDesc;
             pNormalizedName = default;
-            return objFileDesc.GetFileInfo(out pFileInfo);
+            return objFileDesc.GetCrazyFSFileInfo(out pFileInfo);
         }
 
         internal static void Cleanup(FileDesc pFileDesc, uint pFlags, uint pCleanupDelete) {
             if (0 != (pFlags & pCleanupDelete)) {
                 pFileDesc.SetDisposition(true);
-                if (null != pFileDesc.Stream) {
+                if (pFileDesc.Stream != null) {
                     pFileDesc.Stream.Dispose();
                 }
             }
@@ -58,19 +58,19 @@ namespace StorageType.Passthrough {
             return FileSystemStatus.STATUS_SUCCESS;
         }
 
-        internal static int Flush(object pFileNode, FileDesc pFileDesc, out Fsp.Interop.FileInfo pFileInfo) {
+        internal static int Flush(object pFileNode, FileDesc pFileDesc, out ICrazyFSFileInfo pFileInfo) {
             if (null == pFileDesc) {
                 /* we do not flush the whole volume, so just return SUCCESS */
-                pFileInfo = default(Fsp.Interop.FileInfo);
+                pFileInfo = default;
                 return FileSystemStatus.STATUS_SUCCESS;
             }
             pFileDesc.Stream.Flush(true);
-            return pFileDesc.GetFileInfo(out pFileInfo);
+            return pFileDesc.GetCrazyFSFileInfo(out pFileInfo);
         }
 
-        internal static int SetBasicInfo(FileDesc pFileDesc, uint pFileAttributes, ulong pCreationTime, ulong pLastAccessTime, ulong pLastWriteTime, ulong pChangeTime, out Fsp.Interop.FileInfo pFileInfo) {
+        internal static int SetBasicInfo(FileDesc pFileDesc, uint pFileAttributes, ulong pCreationTime, ulong pLastAccessTime, ulong pLastWriteTime, ulong pChangeTime, out ICrazyFSFileInfo pFileInfo) {
             pFileDesc.SetBasicInfo(pFileAttributes, pCreationTime, pLastAccessTime, pLastWriteTime);
-            return pFileDesc.GetFileInfo(out pFileInfo);
+            return pFileDesc.GetCrazyFSFileInfo(out pFileInfo);
         }
 
         internal static int Rename(string pOldPath, string pNewPath) {

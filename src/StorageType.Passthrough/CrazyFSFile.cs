@@ -22,14 +22,16 @@ namespace StorageType.Passthrough {
             return FileSystemStatus.STATUS_SUCCESS;
         }
 
+        /// <summary>
+        /// ToDo: SetSecurity was removed for .net standard support
+        /// </summary>
         internal static FileDesc Create(string pFileName, uint pGrantedAccess, uint pFileAttributes, byte[] pSecurityDescriptor) {
             FileDesc objFileDesc = null;
             try {
-                //SetSecurity(pFileName, (FileSystemRights)pGrantedAccess | FileSystemRights.WriteAttributes, pSecurityDescriptor);
                 objFileDesc = new FileDesc(
                     new FileStream(pFileName, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.Read | FileShare.Write | FileShare.Delete, 4096, FileOptions.SequentialScan)
                 );
-                objFileDesc.SetSecurity((FileSystemRights)pGrantedAccess | FileSystemRights.WriteAttributes, pSecurityDescriptor);
+                //objFileDesc.SetSecurity((FileSystemRights)pGrantedAccess | FileSystemRights.WriteAttributes, pSecurityDescriptor);
                 objFileDesc.SetFileAttributes(pFileAttributes | (uint)FileAttributes.Archive);
                 return objFileDesc;
             } catch {
@@ -71,15 +73,15 @@ namespace StorageType.Passthrough {
             return FileSystemStatus.STATUS_SUCCESS;
         }
 
-        internal static int GetFileInfo(FileDesc pFileDesc, out Fsp.Interop.FileInfo pFileInfo) {
-            return pFileDesc.GetFileInfo(out pFileInfo);
+        internal static int GetFileInfo(FileDesc pFileDesc, out ICrazyFSFileInfo pFileInfo) {
+            return pFileDesc.GetCrazyFSFileInfo(out pFileInfo);
         }
 
-        internal static int Write(object pFileNode, FileDesc pFileDesc, IntPtr pBuffer, ulong pOffset, uint pLength, bool pWriteToEndOfFile, bool pConstrainedIo, out uint pBytesTransferred, out Fsp.Interop.FileInfo pFileInfo) {
+        internal static int Write(object pFileNode, FileDesc pFileDesc, IntPtr pBuffer, ulong pOffset, uint pLength, bool pWriteToEndOfFile, bool pConstrainedIo, out uint pBytesTransferred, out ICrazyFSFileInfo pFileInfo) {
             if (pConstrainedIo) {
                 if (pOffset >= (ulong)pFileDesc.Stream.Length) {
-                    pBytesTransferred = default(uint);
-                    pFileInfo = default(Fsp.Interop.FileInfo);
+                    pBytesTransferred = default;
+                    pFileInfo = default;
                     return FileSystemStatus.STATUS_SUCCESS;
                 }
                 if (pOffset + pLength > (ulong)pFileDesc.Stream.Length) {
@@ -93,10 +95,10 @@ namespace StorageType.Passthrough {
             }
             pFileDesc.Stream.Write(Bytes, 0, Bytes.Length);
             pBytesTransferred = (uint)Bytes.Length;
-            return pFileDesc.GetFileInfo(out pFileInfo);
+            return pFileDesc.GetCrazyFSFileInfo(out pFileInfo);
         }
 
-        internal static int SetFileSize(object pFileNode, FileDesc pFileDesc, ulong pNewSize, bool pSetAllocationSize, out Fsp.Interop.FileInfo pFileInfo) {
+        internal static int SetFileSize(object pFileNode, FileDesc pFileDesc, ulong pNewSize, bool pSetAllocationSize, out ICrazyFSFileInfo pFileInfo) {
             if (!pSetAllocationSize || (ulong)pFileDesc.Stream.Length > pNewSize) {
                 /*
                  * "FileInfo.FileSize > NewSize" explanation:
@@ -105,10 +107,10 @@ namespace StorageType.Passthrough {
                  */
                 pFileDesc.Stream.SetLength((long)pNewSize);
             }
-            return pFileDesc.GetFileInfo(out pFileInfo);
+            return pFileDesc.GetCrazyFSFileInfo(out pFileInfo);
         }
 
-        internal static int OverWrite(FileDesc pFileDesc, uint pFileAttributes, bool pReplaceFileAttributes, out Fsp.Interop.FileInfo pFileInfo) {
+        internal static int OverWrite(FileDesc pFileDesc, uint pFileAttributes, bool pReplaceFileAttributes, out ICrazyFSFileInfo pFileInfo) {
             FileDesc objFileDesc = pFileDesc;
             if (pReplaceFileAttributes) {
                 objFileDesc.SetFileAttributes(pFileAttributes | (uint)FileAttributes.Archive);
@@ -116,7 +118,7 @@ namespace StorageType.Passthrough {
                 objFileDesc.SetFileAttributes(objFileDesc.GetFileAttributes() | pFileAttributes | (uint)System.IO.FileAttributes.Archive);
             }
             objFileDesc.Stream.SetLength(0);
-            return objFileDesc.GetFileInfo(out pFileInfo);
+            return objFileDesc.GetCrazyFSFileInfo(out pFileInfo);
         }
 
         internal static int CanDelete(FileDesc pFileDesc) {

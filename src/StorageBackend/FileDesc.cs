@@ -3,7 +3,6 @@ using System.Collections;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
-using System.Security.Principal;
 using FileInfo = Fsp.Interop.FileInfo;
 
 namespace StorageBackend {
@@ -61,45 +60,6 @@ namespace StorageBackend {
                 pFileInfo = new CrazyFSFileInfo(DirInfo);
             }
             return FileSystemStatus.STATUS_SUCCESS;
-        }
-
-        public void SetSecurity(FileSystemRights pFileSystemRights, byte[] pSecurityDescriptor) {
-            if (Stream != null) {
-                FileSecurity Security = null;
-                if (pSecurityDescriptor != null) {
-                    Security = new FileSecurity();
-                    Security.SetSecurityDescriptorBinaryForm(pSecurityDescriptor);
-                } else {
-                    Security = Stream.GetAccessControl();
-                }
-
-                Security.AddAccessRule(
-                    new FileSystemAccessRule(
-                        new SecurityIdentifier(WellKnownSidType.AuthenticatedUserSid, null),
-                        pFileSystemRights,
-                        AccessControlType.Allow
-                    )
-                );
-                Stream.SetAccessControl(Security);
-            }
-            if (DirInfo != null) {
-                DirectorySecurity Security = null;
-                if (pSecurityDescriptor != null) {
-                    Security = new DirectorySecurity();
-                    Security.SetSecurityDescriptorBinaryForm(pSecurityDescriptor);
-                } else {
-                    Security = DirInfo.GetAccessControl();
-                }
-
-                Security.AddAccessRule(
-                    new FileSystemAccessRule(
-                        new SecurityIdentifier(WellKnownSidType.AuthenticatedUserSid, null),
-                        pFileSystemRights,
-                        AccessControlType.Allow
-                    )
-                );
-                DirInfo.SetAccessControl(Security);
-            }
         }
 
         public void SetBasicInfo(

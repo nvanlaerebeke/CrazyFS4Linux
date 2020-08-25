@@ -3,13 +3,21 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30320.27
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StorageBackend", "StorageBackend\StorageBackend.csproj", "{3556A6AC-0E56-4898-9AC8-C195A6E50D6D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StorageBackend", "StorageBackend\StorageBackend.csproj", "{3556A6AC-0E56-4898-9AC8-C195A6E50D6D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StorageType.Passthrough", "StorageType.Passthrough\StorageType.Passthrough.csproj", "{B7D235F2-99FB-488A-B39F-B5D29FF8BB64}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StorageType.Passthrough", "StorageType.Passthrough\StorageType.Passthrough.csproj", "{B7D235F2-99FB-488A-B39F-B5D29FF8BB64}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StorageBackend.Win", "StorageBackend.Win\StorageBackend.Win.csproj", "{19762B72-7FBD-4756-8228-B02FA87312C6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrazyFS", "CrazyFS\CrazyFS.csproj", "{E48E1AD0-A3FA-4287-AA0D-8E1F699F3225}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CrazyFS", "CrazyFS\CrazyFS.csproj", "{E48E1AD0-A3FA-4287-AA0D-8E1F699F3225}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrazyFS.Tests", "CrazyFS.Tests\CrazyFS.Tests.csproj", "{7CAFB315-1DBD-47E4-A681-B2663F0E3938}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StorageBackend.Tests", "StorageBackend.Tests\StorageBackend.Tests.csproj", "{AD68DB1F-3310-4DD4-A1AE-EAC5475ED555}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StorageBackend.Win.Tests", "StorageBackend.Win.Tests\StorageBackend.Win.Tests.csproj", "{9BF3B2C6-2BF2-4A8E-904A-16D96A64DDE5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StorageType.Passthrough.Tests", "StorageType.Passthrough.Tests\StorageType.Passthrough.Tests.csproj", "{B0146404-5502-4497-83E7-86369DAB69E3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +41,22 @@ Global
 		{E48E1AD0-A3FA-4287-AA0D-8E1F699F3225}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E48E1AD0-A3FA-4287-AA0D-8E1F699F3225}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E48E1AD0-A3FA-4287-AA0D-8E1F699F3225}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7CAFB315-1DBD-47E4-A681-B2663F0E3938}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7CAFB315-1DBD-47E4-A681-B2663F0E3938}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7CAFB315-1DBD-47E4-A681-B2663F0E3938}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7CAFB315-1DBD-47E4-A681-B2663F0E3938}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD68DB1F-3310-4DD4-A1AE-EAC5475ED555}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD68DB1F-3310-4DD4-A1AE-EAC5475ED555}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD68DB1F-3310-4DD4-A1AE-EAC5475ED555}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD68DB1F-3310-4DD4-A1AE-EAC5475ED555}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9BF3B2C6-2BF2-4A8E-904A-16D96A64DDE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BF3B2C6-2BF2-4A8E-904A-16D96A64DDE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BF3B2C6-2BF2-4A8E-904A-16D96A64DDE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BF3B2C6-2BF2-4A8E-904A-16D96A64DDE5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0146404-5502-4497-83E7-86369DAB69E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0146404-5502-4497-83E7-86369DAB69E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0146404-5502-4497-83E7-86369DAB69E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0146404-5502-4497-83E7-86369DAB69E3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

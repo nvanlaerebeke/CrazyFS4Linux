@@ -1,36 +1,29 @@
 ﻿using CrazyFS.CommandLine;
 using Fsp;
 using StorageBackend;
-using StorageBackend.Win;
-using StorageType.Passthrough;
 using System;
 
 namespace CrazyFS {
     internal class CrazyFSService : Service {
-        private FileSystemHost _Host;
+        private readonly Options Options;
+        private readonly IFileSystem FileSystem;
 
-        public CrazyFSService() : base("CrazyFS") {
+        public CrazyFSService(IFileSystem pFileSystem, Options pOptions) : base("CrazyFS") {
+            FileSystem = pFileSystem;
+            Options = pOptions;
         }
 
         protected override void OnStart(string[] Args) {
             try {
-                var o = new Input().Get(Args);
-                _Host = VolumeManager.Mount(
-                    new StorageBackendFactory().CreateWindowsStorageBackend(new PassthroughStorage(o.SourcePath)),
-                    o.MountPoint,
-                    null,
-                    true,
-                    o.DebugFlags
-                );
-                _ = FileSystemHost.SetDebugLogFile(o.LogFile);
+                FileSystem.Mount(Options.MountPoint, null, true, Options.DebugFlags, Options.LogFile);
             } catch (Exception ex) {
                 Log(EVENTLOG_ERROR_TYPE, string.Format("{0}", ex.Message));
                 throw;
             }
         }
+
         protected override void OnStop() {
-            _Host.Unmount();
-            _Host = null;
+            FileSystem.UnMount();
         }
     }
 }

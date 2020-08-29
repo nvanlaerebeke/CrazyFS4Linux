@@ -1,15 +1,10 @@
 ﻿using System;
 
 namespace StorageBackend {
-    public class NTException : Exception {
+    public class Win32Exception : Exception {
         private readonly int Code;
 
-        public NTException() : base() { }
-        public NTException(int pCode) : base() => Code = pCode;
-
-        public NTException(int pCode, string message) : base(message) => Code = pCode;
-
-        public NTException(int pCode, string message, Exception innerException) : base(message, innerException) => Code = pCode;
+        public Win32Exception(int pCode) : base() => Code = pCode;
 
         public int GetCode() => Code;
     }

@@ -6,8 +6,8 @@ namespace StorageBackend {
         public CrazyFSFileInfo(FileInfo pFileInfo) {
             FileAttributes = (uint)pFileInfo.Attributes;
             ReparseTag = 0;
-            FileSize = pFileInfo is FileInfo ? (ulong)pFileInfo.Length : 0;
-            AllocationSize = (ulong)(pFileInfo.Length + 4096 - 1) / 4096 * 4096;
+            FileSize = IsFile(pFileInfo) ? (ulong)pFileInfo.Length : 0;
+            AllocationSize = IsFile(pFileInfo) ? (ulong)(pFileInfo.Length + 4096 - 1) / 4096 * 4096 : 0;
             CreationTime = (ulong)pFileInfo.CreationTimeUtc.ToFileTimeUtc();
             LastAccessTime = (ulong)pFileInfo.LastAccessTimeUtc.ToFileTimeUtc();
             LastWriteTime = (ulong)pFileInfo.LastWriteTimeUtc.ToFileTimeUtc();
@@ -24,7 +24,7 @@ namespace StorageBackend {
                 FileSize = 0;
                 AllocationSize = 0;
             } else {
-                FileSize = (ulong)((System.IO.FileInfo)pFileSystemInfo).Length;
+                FileSize = (ulong)((FileInfo)pFileSystemInfo).Length;
                 AllocationSize = (FileSize + 4096 - 1) / 4096 * 4096;
             }
             ReparseTag = 0;
@@ -36,6 +36,10 @@ namespace StorageBackend {
             LastAccessTime = (ulong)pFileSystemInfo.LastAccessTimeUtc.ToFileTimeUtc();
             LastWriteTime = (ulong)pFileSystemInfo.LastWriteTimeUtc.ToFileTimeUtc();
             ChangeTime = (ulong)pFileSystemInfo.LastAccessTime.ToFileTimeUtc();
+        }
+
+        private bool IsFile(FileInfo pFileInfo) {
+            return ((pFileInfo.Attributes & System.IO.FileAttributes.Directory) != System.IO.FileAttributes.Directory);
         }
 
         public uint FileAttributes { get; private set; }

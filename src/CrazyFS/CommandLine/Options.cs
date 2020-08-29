@@ -1,7 +1,7 @@
 ﻿namespace CrazyFS.CommandLine {
-    public class Options : StorageBackend.Options {
-        public bool ShowHelp;
+    internal class Options {
         public uint DebugFlags;
+        public string SourcePath;
         public string LogFile;
         public string MountPoint;
         public string UNCPrefix;

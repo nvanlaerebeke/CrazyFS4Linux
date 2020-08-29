@@ -2,7 +2,7 @@
 using System.Security.AccessControl;
 
 namespace StorageBackend {
-    public interface IStorageBackend {
+    public interface IStorageType {
         int Init(IFileSystemHost pHost);
         int GetVolumeInfo(out IVolumeInfo pVolumeInfo);
         int GetSecurityByName(string pFileName, out uint pFileAttributes /* or ReparsePointIndex */, ref byte[] pSecurityDescriptor);

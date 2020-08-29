@@ -3,7 +3,7 @@ using System;
 using System.Security.AccessControl;
 
 namespace StorageType.Passthrough {
-    public class PassthroughStorage : IStorageBackend {
+    public class PassthroughStorage : IStorageType {
         private readonly string SourcePath;
         public PassthroughStorage(string pSourcePath) {
             SourcePath = pSourcePath;

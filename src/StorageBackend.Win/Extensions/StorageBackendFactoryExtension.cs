@@ -1,13 +1,12 @@
-﻿using Fsp;
-using StorageBackend.Win;
+﻿using StorageBackend.Win;
 
 namespace StorageBackend {
     public static class StorageBackendFactoryExtension {
-        public static FileSystemBase CreateWindowsStorageBackend(
+        public static IFileSystem CreateWindowsStorageBackend(
             this StorageBackendFactory pFactory,
-            IStorageBackend pStorageBackend
+            IStorageType pStorageBackend
         ) {
-            return new Storage(pStorageBackend);
+            return new WindowsBackend(pStorageBackend);
         }
     }
 }

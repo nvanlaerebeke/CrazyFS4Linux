@@ -4,10 +4,11 @@ using FileInfo = Fsp.Interop.FileInfo;
 using VolumeInfo = Fsp.Interop.VolumeInfo;
 
 namespace StorageBackend.Win {
-    public class Storage : FileSystemBase {
-        private readonly IStorageBackend Backend;
+    public class WindowsBackend : FileSystemBase, IFileSystem {
+        private readonly IStorageType Backend;
+        private FileSystemHost Host = null;
 
-        public Storage(IStorageBackend pBackend) {
+        public WindowsBackend(IStorageType pBackend) {
             Backend = pBackend;
         }
 
@@ -216,5 +217,13 @@ namespace StorageBackend.Win {
                 throw WindowsExceptionGenerator.GetIOException(ex);
             }
         }
+
+        public void Mount(string pMountPoint, byte[] pSecurityDescriptor, bool pSynchronized, uint pDebugLog, string pLogFile) {
+            Host = new VolumeManager().Mount(this, pMountPoint, pSecurityDescriptor, pSynchronized, pDebugLog, pLogFile);
+        }
+        public void UnMount() {
+            Host.Unmount();
+        }
     }
+
 }

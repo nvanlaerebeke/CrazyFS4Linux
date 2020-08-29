@@ -1,14 +1,16 @@
 ﻿using Fsp;
 
 namespace StorageBackend.Win {
-    public static class VolumeManager {
-        public static FileSystemHost Mount(FileSystemBase pFileSystem, string pMountPoint, byte[] pSecurityDescriptor, bool pSynchonized, uint pDebugLog) {
+    public class VolumeManager {
+        public FileSystemHost Mount(FileSystemBase pFileSystem, string pMountPoint, byte[] pSecurityDescriptor, bool pSynchonized, uint pDebugLog, string pLogFile) {
             var Host = new FileSystemHost(pFileSystem);
             _ = Host.Mount(pMountPoint, pSecurityDescriptor, pSynchonized, pDebugLog);
+            //ToDo: move as a constructor param of Storage
+            _ = FileSystemHost.SetDebugLogFile(pLogFile);
             return Host;
         }
 
-        public static void UMount(FileSystemHost pHost) {
+        public void UMount(FileSystemHost pHost) {
             pHost.Unmount();
         }
     }

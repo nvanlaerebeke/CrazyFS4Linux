@@ -3,7 +3,7 @@
 namespace CrazyFS {
     internal static class Program {
         private static void Main(string[] args) {
-            Environment.ExitCode = new CrazyFSService().Run();
+            Environment.ExitCode = new CrazyFSStart().Start(args);
         }
     }
 }

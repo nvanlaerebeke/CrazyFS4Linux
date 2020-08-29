@@ -3,19 +3,19 @@ using StorageBackend;
 using System;
 
 namespace CrazyFS.CommandLine {
-    public class Input {
+    internal class Input {
         public Options Get(string[] Args) {
             var o = new Options();
             try {
                 int I;
-                for (I = 1; Args.Length > I; I++) {
-                    string Arg = Args[I];
-                    if ('-' != Arg[0])
-                        break;
+                for (I = 0; Args.Length > I; I++) {
+                    var Arg = Args[I];
+                    if ('-' != Arg[0]) {
+                        continue;
+                    }
                     switch (Arg[1]) {
                         case '?':
-                            o.ShowHelp = true;
-                            break;
+                            throw new UsageException();
                         case 'd':
                             argtol(Args, ref I, ref o.DebugFlags);
                             break;
@@ -51,7 +51,6 @@ namespace CrazyFS.CommandLine {
                 Service.Log(Service.EVENTLOG_ERROR_TYPE, string.Format("{0}", ex.Message));
                 throw;
             }
-
             return o;
         }
 
@@ -77,7 +76,6 @@ namespace CrazyFS.CommandLine {
                 "usage: {1} OPTIONS\n" +
                 "\n" +
                 "options:\n" +
-                "    -d DebugFlags       [-1: enable all debug logs]\n" +
                 "    -D DebugLogFile     [file path; use - for stderr]\n" +
                 "    -u \\Server\\Share    [UNC prefix (single backslash)]\n" +
                 "    -p Directory        [directory to expose as pass through file system]\n" +

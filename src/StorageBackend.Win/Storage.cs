@@ -6,11 +6,9 @@ using VolumeInfo = Fsp.Interop.VolumeInfo;
 namespace StorageBackend.Win {
     public class Storage : FileSystemBase {
         private readonly IStorageBackend Backend;
-        private readonly string _Path;
 
         public Storage(IStorageBackend pBackend) {
             Backend = pBackend;
-            _Path = Backend.GetOptions().SourcePath;
         }
 
         public override int ExceptionHandler(Exception ex) {
@@ -21,88 +19,202 @@ namespace StorageBackend.Win {
             return FileSystemStatus.STATUS_UNEXPECTED_IO_ERROR;
         }
         public override int Init(object Host0) {
-            return Backend.Init((FileSystemHost)Host0, _Path);
+            try {
+                return Backend.Init(new CrazyFSFileSystemHost((FileSystemHost)Host0));
+            } catch (Win32Exception ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            } catch (NTException ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            }
         }
         public override int GetVolumeInfo(out Fsp.Interop.VolumeInfo pVolumeInfo) {
-            var r = Backend.GetVolumeInfo(_Path, out var VolumeInfo);
-            VolumeInfo.GetStruct(out pVolumeInfo);
-            return r;
+            try {
+                var r = Backend.GetVolumeInfo(out var VolumeInfo);
+                VolumeInfo.GetStruct(out pVolumeInfo);
+                return r;
+            } catch (Win32Exception ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            } catch (NTException ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            }
         }
         public override int GetSecurityByName(string FileName, out uint FileAttributes /* or ReparsePointIndex */, ref byte[] SecurityDescriptor) {
-            return Backend.GetSecurityByName(_Path, FileName, out FileAttributes, ref SecurityDescriptor);
+            try {
+                return Backend.GetSecurityByName(FileName, out FileAttributes, ref SecurityDescriptor);
+            } catch (Win32Exception ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            } catch (NTException ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            }
         }
         public override int Create(string FileName, uint CreateOptions, uint GrantedAccess, uint FileAttributes, byte[] SecurityDescriptor, ulong AllocationSize, out object FileNode, out object FileDesc0, out FileInfo pFileInfo, out string NormalizedName) {
-            var r = Backend.Create(_Path, FileName, CreateOptions, GrantedAccess, FileAttributes, SecurityDescriptor, out FileNode, out FileDesc0, out var FileInfo, out NormalizedName);
-            FileInfo.GetStruct(out pFileInfo);
-            return r;
+            try {
+                var r = Backend.Create(FileName, CreateOptions, GrantedAccess, FileAttributes, SecurityDescriptor, out FileNode, out FileDesc0, out var FileInfo, out NormalizedName);
+                FileInfo.GetStruct(out pFileInfo);
+                return r;
+            } catch (Win32Exception ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            } catch (NTException ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            }
         }
         public override int Open(string FileName, uint CreateOptions, uint GrantedAccess, out object FileNode, out object FileDesc0, out FileInfo FileInfo, out string NormalizedName) {
-            var r = Backend.Open(_Path, FileName, GrantedAccess, out FileNode, out var objFileDesc, out var objFileInfo, out NormalizedName);
-            objFileInfo.GetStruct(out FileInfo);
-            FileDesc0 = objFileDesc;
-            return r;
+            try {
+                var r = Backend.Open(FileName, GrantedAccess, out FileNode, out var objFileDesc, out var objFileInfo, out NormalizedName);
+                objFileInfo.GetStruct(out FileInfo);
+                FileDesc0 = objFileDesc;
+                return r;
+            } catch (Win32Exception ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            } catch (NTException ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            }
         }
         public override int Overwrite(object FileNode, object FileDesc0, uint FileAttributes, bool ReplaceFileAttributes, ulong AllocationSize, out FileInfo pFileInfo) {
-            var r = Backend.OverWrite((FileDesc)FileDesc0, FileAttributes, ReplaceFileAttributes, out var FileInfo);
-            FileInfo.GetStruct(out pFileInfo);
-            return r;
+            try {
+                var r = Backend.OverWrite((IFileDescriptor)FileDesc0, FileAttributes, ReplaceFileAttributes, out var FileInfo);
+                FileInfo.GetStruct(out pFileInfo);
+                return r;
+            } catch (Win32Exception ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            } catch (NTException ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            }
         }
         public override void Cleanup(object FileNode, object FileDesc0, string FileName, uint Flags) {
-            Backend.Cleanup((FileDesc)FileDesc0, FileName, Flags, CleanupDelete);
+            try {
+                Backend.Cleanup((IFileDescriptor)FileDesc0, FileName, Flags, CleanupDelete);
+            } catch (Win32Exception ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            } catch (NTException ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            }
         }
         public override void Close(object FileNode, object FileDesc0) {
-            Backend.Close((FileDesc)FileDesc0);
+            try {
+                Backend.Close((IFileDescriptor)FileDesc0);
+            } catch (Win32Exception ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            } catch (NTException ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            }
         }
         public override int Read(object FileNode, object FileDesc0, IntPtr Buffer, ulong Offset, uint Length, out uint PBytesTransferred) {
-            return Backend.Read((FileDesc)FileDesc0, Buffer, Offset, Length, out PBytesTransferred);
+            try {
+                return Backend.Read((IFileDescriptor)FileDesc0, Buffer, Offset, Length, out PBytesTransferred);
+            } catch (Win32Exception ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            } catch (NTException ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            }
         }
         public override int Write(object FileNode, object FileDesc0, IntPtr Buffer, ulong Offset, uint Length, bool WriteToEndOfFile, bool ConstrainedIo, out uint PBytesTransferred, out FileInfo pFileInfo) {
-            var r = Backend.Write(FileNode, (FileDesc)FileDesc0, Buffer, Offset, Length, WriteToEndOfFile, ConstrainedIo, out PBytesTransferred, out var FileInfo);
-            FileInfo.GetStruct(out pFileInfo);
-            return r;
+            try {
+                var r = Backend.Write(FileNode, (IFileDescriptor)FileDesc0, Buffer, Offset, Length, WriteToEndOfFile, ConstrainedIo, out PBytesTransferred, out var FileInfo);
+                FileInfo.GetStruct(out pFileInfo);
+                return r;
+            } catch (Win32Exception ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            } catch (NTException ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            }
         }
         public override int Flush(object FileNode, object FileDesc0, out FileInfo pFileInfo) {
-            var r = Backend.Flush(FileNode, (FileDesc)FileDesc0, out var FileInfo);
-            FileInfo.GetStruct(out pFileInfo);
-            return r;
+            try {
+                var r = Backend.Flush((IFileDescriptor)FileDesc0, out var FileInfo);
+                FileInfo.GetStruct(out pFileInfo);
+                return r;
+            } catch (Win32Exception ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            } catch (NTException ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            }
         }
         public override int GetFileInfo(object FileNode, object FileDesc0, out FileInfo pFileInfo) {
-            var r = Backend.GetFileInfo((FileDesc)FileDesc0, out var FileInfo);
-            FileInfo.GetStruct(out pFileInfo);
-            return r;
+            try {
+                var r = Backend.GetFileInfo((IFileDescriptor)FileDesc0, out var FileInfo);
+                FileInfo.GetStruct(out pFileInfo);
+                return r;
+            } catch (Win32Exception ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            } catch (NTException ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            }
         }
         public override int SetBasicInfo(object FileNode, object FileDesc0, uint FileAttributes, ulong CreationTime, ulong LastAccessTime, ulong LastWriteTime, ulong ChangeTime, out FileInfo pFileInfo) {
-            var r = Backend.SetBasicInfo((FileDesc)FileDesc0, FileAttributes, CreationTime, LastAccessTime, LastWriteTime, ChangeTime, out var FileInfo);
-            FileInfo.GetStruct(out pFileInfo);
-            return r;
+            try {
+                var r = Backend.SetBasicInfo((IFileDescriptor)FileDesc0, FileAttributes, CreationTime, LastAccessTime, LastWriteTime, ChangeTime, out var FileInfo);
+                FileInfo.GetStruct(out pFileInfo);
+                return r;
+            } catch (Win32Exception ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            } catch (NTException ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            }
         }
         public override int SetFileSize(object FileNode, object FileDesc0, ulong NewSize, bool SetAllocationSize, out FileInfo pFileInfo) {
-            var r = Backend.SetFileSize(FileNode, (FileDesc)FileDesc0, NewSize, SetAllocationSize, out var FileInfo);
-            FileInfo.GetStruct(out pFileInfo);
-            return r;
+            try {
+                var r = Backend.SetFileSize(FileNode, (IFileDescriptor)FileDesc0, NewSize, SetAllocationSize, out var FileInfo);
+                FileInfo.GetStruct(out pFileInfo);
+                return r;
+            } catch (Win32Exception ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            } catch (NTException ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            }
         }
         public override int CanDelete(object FileNode, object FileDesc0, string FileName) {
-            return Backend.CanDelete((FileDesc)FileDesc0);
+            try {
+                return Backend.CanDelete((IFileDescriptor)FileDesc0);
+            } catch (Win32Exception ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            } catch (NTException ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            }
         }
 
         public override int Rename(object FileNode, object FileDesc0, string FileName, string NewFileName, bool ReplaceIfExists) {
-            return Backend.Rename(PathNormalizer.ConcatPath(_Path, FileName), PathNormalizer.ConcatPath(_Path, NewFileName), ReplaceIfExists);
+            try {
+                return Backend.Rename(FileName, NewFileName, ReplaceIfExists);
+            } catch (Win32Exception ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            } catch (NTException ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            }
         }
 
         public override int GetSecurity(object FileNode, object FileDesc0, ref byte[] SecurityDescriptor) {
-            return Backend.GetSecurity((FileDesc)FileDesc0, ref SecurityDescriptor);
+            try {
+                return Backend.GetSecurity((IFileDescriptor)FileDesc0, ref SecurityDescriptor);
+            } catch (Win32Exception ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            } catch (NTException ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            }
         }
         public override int SetSecurity(object FileNode, object FileDesc0, System.Security.AccessControl.AccessControlSections Sections, byte[] SecurityDescriptor) {
-            return Backend.SetSecurity((FileDesc)FileDesc0, Sections, SecurityDescriptor);
+            try {
+                return Backend.SetSecurity((IFileDescriptor)FileDesc0, Sections, SecurityDescriptor);
+            } catch (Win32Exception ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            } catch (NTException ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            }
         }
         public override bool ReadDirectoryEntry(object FileNode, object FileDesc0, string Pattern, string Marker, ref object Context, out string FileName, out FileInfo pFileInfo) {
-            var r = Backend.ReadDirectory(FileNode, (FileDesc)FileDesc0, Pattern, Marker, ref Context, out FileName, out var FileInfo);
-            if (FileInfo != null) {
-                FileInfo.GetStruct(out pFileInfo);
-            } else {
-                pFileInfo = default;
+            try {
+                var r = Backend.ReadDirectory(FileNode, (IFileDescriptor)FileDesc0, Pattern, Marker, ref Context, out FileName, out var FileInfo);
+                if (FileInfo != null) {
+                    FileInfo.GetStruct(out pFileInfo);
+                } else {
+                    pFileInfo = default;
+                }
+                return r;
+            } catch (Win32Exception ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            } catch (NTException ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
             }
-            return r;
         }
     }
 }

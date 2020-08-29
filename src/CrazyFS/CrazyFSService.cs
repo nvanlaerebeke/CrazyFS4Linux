@@ -16,12 +16,13 @@ namespace CrazyFS {
             try {
                 var o = new Input().Get(Args);
                 _Host = VolumeManager.Mount(
-                    new StorageBackendFactory().CreateWindowsStorageBackend<PassthroughStorage>(o),
+                    new StorageBackendFactory().CreateWindowsStorageBackend(new PassthroughStorage(o.SourcePath)),
                     o.MountPoint,
                     null,
                     true,
                     o.DebugFlags
                 );
+                _ = FileSystemHost.SetDebugLogFile(o.LogFile);
             } catch (Exception ex) {
                 Log(EVENTLOG_ERROR_TYPE, string.Format("{0}", ex.Message));
                 throw;

@@ -1,5 +1,4 @@
-﻿using Fsp;
-using StorageBackend;
+﻿using StorageBackend;
 using System;
 using System.IO;
 
@@ -10,7 +9,7 @@ namespace StorageType.Passthrough {
         public FileSystem(ushort pDefaultAllocationSize) {
             AllocationSize = pDefaultAllocationSize;
         }
-        public static int Init(FileSystemHost pHost, string pPath) {
+        public static int Init(IFileSystemHost pHost, string pPath) {
             pHost.SectorSize = 4096;
             pHost.SectorsPerAllocationUnit = 1;
             pHost.MaxComponentLength = 255;

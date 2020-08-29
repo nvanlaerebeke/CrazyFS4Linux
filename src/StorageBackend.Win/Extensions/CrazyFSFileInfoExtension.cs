@@ -7,6 +7,11 @@ namespace StorageBackend {
             out FileInfo FileInfo
         ) {
             FileInfo = new FileInfo();
+
+            if (pFileInfo == null) {
+                return;
+            }
+
             FileInfo.AllocationSize = pFileInfo.AllocationSize;
             FileInfo.ChangeTime = pFileInfo.ChangeTime;
             FileInfo.CreationTime = pFileInfo.CreationTime;

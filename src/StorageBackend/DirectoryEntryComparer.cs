@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 
-namespace StorageType.Passthrough {
+namespace StorageBackend {
     internal class DirectoryEntryComparer : IComparer {
         public int Compare(object x, object y) {
             return string.Compare(

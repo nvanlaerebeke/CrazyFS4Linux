@@ -1,8 +1,8 @@
 ﻿namespace StorageBackend {
     public interface IFileSystemHost {
-        uint SectorSize { get; set; }
-        uint SectorsPerAllocationUnit { get; set; }
-        uint MaxComponentLength { get; set; }
+        ushort SectorSize { get; set; }
+        ushort SectorsPerAllocationUnit { get; set; }
+        ushort MaxComponentLength { get; set; }
         uint FileInfoTimeout { get; set; }
         bool CaseSensitiveSearch { get; set; }
         bool CasePreservedNames { get; set; }
@@ -13,8 +13,7 @@
         bool PassQueryDirectoryPattern { get; set; }
         bool PersistentAcls { get; set; }
         bool UnicodeOnDisk { get; set; }
-
-        void Mount();
+        int Mount(string MountPoint, byte[] SecurityDescriptor = null, bool Synchronized = false, uint DebugLog = 0);
         void UMount();
     }
 }

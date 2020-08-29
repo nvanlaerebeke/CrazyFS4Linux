@@ -62,66 +62,45 @@ namespace StorageType.Passthrough {
             return objFileDesc;
         }
 
-        internal static int Read(FileDesc pFileDesc, IntPtr pBuffer, ulong pOffset, uint pLength, out uint pBytesTransferred) {
-            if (pOffset >= (ulong)pFileDesc.Stream.Length) {
-                ExceptionGenerator.ThrowIoExceptionWithNtStatus(FileSystemStatus.STATUS_END_OF_FILE);
+        internal static int Read(IFileDescriptor pFileDesc, IntPtr pBuffer, ulong pOffset, uint pLength, out uint pBytesTransferred) {
+            var s = pFileDesc.GetStream();
+            if (pOffset >= (ulong)s.Length) {
+                throw new NTException(FileSystemStatus.STATUS_END_OF_FILE);
             }
             byte[] Bytes = new byte[pLength];
-            pFileDesc.Stream.Seek((long)pOffset, SeekOrigin.Begin);
-            pBytesTransferred = (uint)pFileDesc.Stream.Read(Bytes, 0, Bytes.Length);
+            _ = s.Seek((long)pOffset, SeekOrigin.Begin);
+            pBytesTransferred = (uint)s.Read(Bytes, 0, Bytes.Length);
             Marshal.Copy(Bytes, 0, pBuffer, Bytes.Length);
+            return FileSystemStatus.STATUS_SUCCESS;
+            /*FileDesc FileDesc = (FileDesc)pFileDesc;
+            if (pOffset >= (UInt64)FileDesc.Stream.Length) {
+                ThrowIoExceptionWithNtStatus(FileSystemStatus.STATUS_END_OF_FILE);
+            }
+            Byte[] Bytes = new byte[pLength];
+            FileDesc.Stream.Seek((Int64)pOffset, SeekOrigin.Begin);
+            pBytesTransferred = (UInt32)FileDesc.Stream.Read(Bytes, 0, Bytes.Length);
+            Marshal.Copy(Bytes, 0, pBuffer, Bytes.Length);
+            return FileSystemStatus.STATUS_SUCCESS;*/
+        }
+
+        internal static int GetFileInfo(IFileDescriptor pFileDesc, out ICrazyFSFileInfo pFileInfo) {
+            _ = pFileDesc.GetCrazyFSFileInfo(out pFileInfo);
             return FileSystemStatus.STATUS_SUCCESS;
         }
 
-        internal static int GetFileInfo(FileDesc pFileDesc, out ICrazyFSFileInfo pFileInfo) {
-            return pFileDesc.GetCrazyFSFileInfo(out pFileInfo);
+        internal static int Write(object pFileNode, IFileDescriptor pFileDesc, IntPtr pBuffer, ulong pOffset, uint pLength, bool pWriteToEndOfFile, bool pConstrainedIo, out uint pBytesTransferred, out ICrazyFSFileInfo pFileInfo) {
+            return pFileDesc.Write(pFileNode, pBuffer, pOffset, pLength, pWriteToEndOfFile, pConstrainedIo, out pBytesTransferred, out pFileInfo);
         }
 
-        internal static int Write(object pFileNode, FileDesc pFileDesc, IntPtr pBuffer, ulong pOffset, uint pLength, bool pWriteToEndOfFile, bool pConstrainedIo, out uint pBytesTransferred, out ICrazyFSFileInfo pFileInfo) {
-            if (pConstrainedIo) {
-                if (pOffset >= (ulong)pFileDesc.Stream.Length) {
-                    pBytesTransferred = default;
-                    pFileInfo = default;
-                    return FileSystemStatus.STATUS_SUCCESS;
-                }
-                if (pOffset + pLength > (ulong)pFileDesc.Stream.Length) {
-                    pLength = (uint)((ulong)pFileDesc.Stream.Length - pOffset);
-                }
-            }
-            byte[] Bytes = new byte[pLength];
-            Marshal.Copy(pBuffer, Bytes, 0, Bytes.Length);
-            if (!pWriteToEndOfFile) {
-                pFileDesc.Stream.Seek((long)pOffset, SeekOrigin.Begin);
-            }
-            pFileDesc.Stream.Write(Bytes, 0, Bytes.Length);
-            pBytesTransferred = (uint)Bytes.Length;
-            return pFileDesc.GetCrazyFSFileInfo(out pFileInfo);
+        internal static int SetFileSize(object pFileNode, IFileDescriptor pFileDesc, ulong pNewSize, bool pSetAllocationSize, out ICrazyFSFileInfo pFileInfo) {
+            return pFileDesc.SetFileSize(pNewSize, pSetAllocationSize, out pFileInfo);
         }
 
-        internal static int SetFileSize(object pFileNode, FileDesc pFileDesc, ulong pNewSize, bool pSetAllocationSize, out ICrazyFSFileInfo pFileInfo) {
-            if (!pSetAllocationSize || (ulong)pFileDesc.Stream.Length > pNewSize) {
-                /*
-                 * "FileInfo.FileSize > NewSize" explanation:
-                 * Ptfs does not support allocation size. However if the new AllocationSize
-                 * is less than the current FileSize we must truncate the file.
-                 */
-                pFileDesc.Stream.SetLength((long)pNewSize);
-            }
-            return pFileDesc.GetCrazyFSFileInfo(out pFileInfo);
+        internal static int OverWrite(IFileDescriptor pFileDesc, uint pFileAttributes, bool pReplaceFileAttributes, out ICrazyFSFileInfo pFileInfo) {
+            return pFileDesc.OverWrite(pFileAttributes, pReplaceFileAttributes, out pFileInfo);
         }
 
-        internal static int OverWrite(FileDesc pFileDesc, uint pFileAttributes, bool pReplaceFileAttributes, out ICrazyFSFileInfo pFileInfo) {
-            FileDesc objFileDesc = pFileDesc;
-            if (pReplaceFileAttributes) {
-                objFileDesc.SetFileAttributes(pFileAttributes | (uint)FileAttributes.Archive);
-            } else if (0 != pFileAttributes) {
-                objFileDesc.SetFileAttributes(objFileDesc.GetFileAttributes() | pFileAttributes | (uint)System.IO.FileAttributes.Archive);
-            }
-            objFileDesc.Stream.SetLength(0);
-            return objFileDesc.GetCrazyFSFileInfo(out pFileInfo);
-        }
-
-        internal static int CanDelete(FileDesc pFileDesc) {
+        internal static int CanDelete(IFileDescriptor pFileDesc) {
             pFileDesc.SetDisposition(false);
             return FileSystemStatus.STATUS_SUCCESS;
         }

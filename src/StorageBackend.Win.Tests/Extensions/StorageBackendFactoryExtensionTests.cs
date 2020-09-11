@@ -1,5 +1,4 @@
-﻿using Moq;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using StorageBackend.Win.Tests.TestObject;
 
 namespace StorageBackend.Win.Tests.Extensions {
@@ -9,8 +8,6 @@ namespace StorageBackend.Win.Tests.Extensions {
 
         [Test]
         public void TestCreateWindowsStorageBackend() {
-            //Arrange
-            var b = new Mock<IStorageType>();
             //Act
             var fs = new StorageBackendFactory().CreateWindowsStorageBackend<TestStorageType>("Source");
 

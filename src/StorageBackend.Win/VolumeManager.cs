@@ -3,11 +3,11 @@
 namespace StorageBackend.Win {
 
     internal class VolumeManager {
-        private readonly FileSystemHost Host;
+        private readonly IFileSystemHost Host;
 
-        public VolumeManager(FileSystemBase pFileSystem) {
-            Host = new FileSystemHost(pFileSystem);
-        }
+        public VolumeManager(IFileSystemHost pHost) => Host = pHost;
+
+        public VolumeManager(FileSystemBase pFileSystem) => Host = new FileSystemHostWrapper(new FileSystemHost(pFileSystem));
 
         public void Mount(string pMountPoint, byte[] pSecurityDescriptor, bool pSynchonized, uint pDebugLog, string pLogFile) {
             _ = Host.Mount(pMountPoint, pSecurityDescriptor, pSynchonized, pDebugLog);
@@ -31,7 +31,6 @@ namespace StorageBackend.Win {
                 Host.PassQueryDirectoryPattern = true;
                 Host.FlushAndPurgeOnCleanup = true;
                 Host.VolumeCreationTime = (ulong)pCreationTimeUtc;
-                //Host.VolumeCreationTime = (ulong)File.GetCreationTimeUtc(pPath).ToFileTimeUtc();
                 Host.VolumeSerialNumber = 0;
                 return FileSystemStatus.STATUS_SUCCESS;
             } catch (Win32Exception ex) {

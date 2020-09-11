@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace StorageBackend.Tests.FileSystem {
-    class FileSystemTests {
+namespace StorageType.Passthrough.Tests {
+    class PassthroughStorageTests {
     }
 }

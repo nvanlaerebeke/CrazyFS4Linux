@@ -11,13 +11,18 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StorageBackend.Win", "Stora
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CrazyFS", "CrazyFS\CrazyFS.csproj", "{E48E1AD0-A3FA-4287-AA0D-8E1F699F3225}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrazyFS.Tests", "CrazyFS.Tests\CrazyFS.Tests.csproj", "{7CAFB315-1DBD-47E4-A681-B2663F0E3938}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CrazyFS.Tests", "CrazyFS.Tests\CrazyFS.Tests.csproj", "{7CAFB315-1DBD-47E4-A681-B2663F0E3938}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StorageBackend.Tests", "StorageBackend.Tests\StorageBackend.Tests.csproj", "{AD68DB1F-3310-4DD4-A1AE-EAC5475ED555}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StorageBackend.Tests", "StorageBackend.Tests\StorageBackend.Tests.csproj", "{AD68DB1F-3310-4DD4-A1AE-EAC5475ED555}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StorageBackend.Win.Tests", "StorageBackend.Win.Tests\StorageBackend.Win.Tests.csproj", "{9BF3B2C6-2BF2-4A8E-904A-16D96A64DDE5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StorageBackend.Win.Tests", "StorageBackend.Win.Tests\StorageBackend.Win.Tests.csproj", "{9BF3B2C6-2BF2-4A8E-904A-16D96A64DDE5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StorageType.Passthrough.Tests", "StorageType.Passthrough.Tests\StorageType.Passthrough.Tests.csproj", "{B0146404-5502-4497-83E7-86369DAB69E3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StorageType.Passthrough.Tests", "StorageType.Passthrough.Tests\StorageType.Passthrough.Tests.csproj", "{B0146404-5502-4497-83E7-86369DAB69E3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{16BE8DF6-75A4-4E27-948B-FB27DD55E377}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

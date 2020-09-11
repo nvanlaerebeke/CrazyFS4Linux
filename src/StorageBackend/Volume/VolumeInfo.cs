@@ -1,13 +1,15 @@
-﻿using System.IO;
+﻿using System.IO.Abstractions;
 
-namespace StorageBackend {
+namespace StorageBackend.Volume {
+
     public class VolumeInfo : IVolumeInfo {
-        public VolumeInfo(DriveInfo driveInfo) {
+
+        public VolumeInfo(IDriveInfo driveInfo) {
             TotalSize = (ulong)driveInfo.TotalSize;
             FreeSize = (ulong)driveInfo.AvailableFreeSpace;
         }
 
-        public ulong TotalSize { get; private set; }
-        public ulong FreeSize { get; private set; }
+        public ulong TotalSize { get; }
+        public ulong FreeSize { get; }
     }
 }

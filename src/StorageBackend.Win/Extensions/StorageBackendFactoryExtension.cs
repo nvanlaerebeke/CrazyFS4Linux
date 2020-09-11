@@ -1,12 +1,14 @@
 ﻿using StorageBackend.Win;
 
 namespace StorageBackend {
+
     public static class StorageBackendFactoryExtension {
-        public static IFileSystem CreateWindowsStorageBackend(
+
+        public static IFileSystem CreateWindowsStorageBackend<T>(
             this StorageBackendFactory pFactory,
-            IStorageType pStorageBackend
-        ) {
-            return new WindowsBackend(pStorageBackend);
+            string pSource
+        ) where T : IStorageType, new() {
+            return new WindowsFileSystemBase<T>(pSource);
         }
     }
 }

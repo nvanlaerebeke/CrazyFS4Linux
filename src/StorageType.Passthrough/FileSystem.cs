@@ -1,14 +1,19 @@
 ﻿using StorageBackend;
+using StorageBackend.Volume;
 using System;
 using System.IO;
+using System.IO.Abstractions;
 
 namespace StorageType.Passthrough {
+
     internal class FileSystem {
         protected readonly ushort AllocationSize;
-        public FileSystem() : this(4096) { }
-        public FileSystem(ushort pDefaultAllocationSize) {
-            AllocationSize = pDefaultAllocationSize;
+
+        public FileSystem() : this(4096) {
         }
+
+        public FileSystem(ushort pDefaultAllocationSize) => AllocationSize = pDefaultAllocationSize;
+
         public static int Init(IFileSystemHost pHost, string pPath) {
             pHost.SectorSize = 4096;
             pHost.SectorsPerAllocationUnit = 1;
@@ -28,7 +33,7 @@ namespace StorageType.Passthrough {
 
         internal static int GetVolumeInfo(string pPath, out IVolumeInfo pVolumeInfo) {
             try {
-                pVolumeInfo = new StorageBackend.VolumeInfo(new DriveInfo(pPath));
+                pVolumeInfo = new VolumeInfo(new DriveInfoWrapper(new System.IO.Abstractions.FileSystem(), new DriveInfo(pPath)));
                 return FileSystemStatus.STATUS_SUCCESS;
             } catch (ArgumentException) {
                 /*

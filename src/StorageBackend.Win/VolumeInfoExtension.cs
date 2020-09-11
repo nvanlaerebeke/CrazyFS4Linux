@@ -1,5 +1,9 @@
-﻿namespace StorageBackend {
-    public static class VolumeInfoExtension {
+﻿using StorageBackend.Volume;
+
+namespace StorageBackend {
+
+    public static class IVolumeInfoExtension {
+
         public static void GetStruct(
             this IVolumeInfo pVolumeInfo,
             out Fsp.Interop.VolumeInfo VolumeInfo

@@ -1,17 +1,44 @@
 ﻿using Fsp;
 
 namespace StorageBackend.Win {
-    public class VolumeManager {
-        public FileSystemHost Mount(FileSystemBase pFileSystem, string pMountPoint, byte[] pSecurityDescriptor, bool pSynchonized, uint pDebugLog, string pLogFile) {
-            var Host = new FileSystemHost(pFileSystem);
+
+    internal class VolumeManager {
+        private readonly FileSystemHost Host;
+
+        public VolumeManager(FileSystemBase pFileSystem) {
+            Host = new FileSystemHost(pFileSystem);
+        }
+
+        public void Mount(string pMountPoint, byte[] pSecurityDescriptor, bool pSynchonized, uint pDebugLog, string pLogFile) {
             _ = Host.Mount(pMountPoint, pSecurityDescriptor, pSynchonized, pDebugLog);
             //ToDo: move as a constructor param of Storage
             _ = FileSystemHost.SetDebugLogFile(pLogFile);
-            return Host;
         }
 
-        public void UMount(FileSystemHost pHost) {
-            pHost.Unmount();
+        public void UnMount() => Host.Unmount();
+
+        public int Initialize(long pCreationTimeUtc) {
+            try {
+                Host.SectorSize = 4096;
+                Host.SectorsPerAllocationUnit = 1;
+                Host.MaxComponentLength = 255;
+                Host.FileInfoTimeout = 1000;
+                Host.CaseSensitiveSearch = false;
+                Host.CasePreservedNames = true;
+                Host.UnicodeOnDisk = true;
+                Host.PersistentAcls = true;
+                Host.PostCleanupWhenModifiedOnly = true;
+                Host.PassQueryDirectoryPattern = true;
+                Host.FlushAndPurgeOnCleanup = true;
+                Host.VolumeCreationTime = (ulong)pCreationTimeUtc;
+                //Host.VolumeCreationTime = (ulong)File.GetCreationTimeUtc(pPath).ToFileTimeUtc();
+                Host.VolumeSerialNumber = 0;
+                return FileSystemStatus.STATUS_SUCCESS;
+            } catch (Win32Exception ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            } catch (NTException ex) {
+                throw WindowsExceptionGenerator.GetIOException(ex);
+            }
         }
     }
 }

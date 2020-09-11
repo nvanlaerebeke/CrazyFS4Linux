@@ -17,7 +17,7 @@ namespace StorageBackend.Tests {
         [Test]
         public void TestConcatPath() {
             Assert.AreEqual(@"E:\My\Sub\Folder", PathNormalizer.ConcatPath(@"E:\My\", @"Sub\Folder\"));
-            Assert.AreEqual(@"\Sub\Folder", PathNormalizer.ConcatPath(@"E:\My\", @"\Sub\Folder\"));
+            Assert.AreEqual(@"E:\My\Sub\Folder", PathNormalizer.ConcatPath(@"E:\My\", @"\Sub\Folder\"));
         }
     }
 }

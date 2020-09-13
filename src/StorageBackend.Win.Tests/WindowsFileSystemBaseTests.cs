@@ -1,6 +1,7 @@
 ﻿using Moq;
 using NUnit.Framework;
 using StorageBackend.Win.Tests.TestObject;
+using StorageBackend.Win.Winfsp;
 using System;
 using System.Security.AccessControl;
 

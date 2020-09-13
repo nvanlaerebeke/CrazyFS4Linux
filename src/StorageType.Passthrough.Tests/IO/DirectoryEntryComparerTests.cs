@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace StorageType.Passthrough.Tests.IO {
 
-namespace StorageType.Passthrough.Tests.IO {
-    class DirectoryEntryComparerTests {
+    /// <summary>
+    /// ToDo: Write tests for directory comparer
+    /// </summary>
+    internal class DirectoryEntryComparerTests {
     }
 }

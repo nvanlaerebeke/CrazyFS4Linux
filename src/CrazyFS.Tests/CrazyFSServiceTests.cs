@@ -5,12 +5,14 @@ using StorageBackend;
 using System.Threading.Tasks;
 
 namespace CrazyFS.Tests {
+
     [TestFixture]
     internal class CrazyFSServiceTests {
+
         [Test]
-        public void testStartStop() {
+        public void TestStartStop() {
             //Arrange
-            var fs = new Mock<IFileSystem>();
+            var fs = new Mock<IVolumeActions>();
             var o = new Options() {
                 MountPoint = "E:",
                 DebugFlags = 666,

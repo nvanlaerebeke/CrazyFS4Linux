@@ -1,4 +1,4 @@
 ﻿using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("StorageBackend.Win.Winfsp.Tests")]
+[assembly: InternalsVisibleTo("StorageType.Passthrough.Tests")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]

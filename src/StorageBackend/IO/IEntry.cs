@@ -1,6 +1,8 @@
-﻿namespace StorageBackend.IO {
+﻿using System;
 
-    public interface IEntry {
+namespace StorageBackend.IO {
+
+    public interface IEntry : ICloneable {
         ulong AllocationSize { get; }
         ulong ChangeTime { get; }
         ulong CreationTime { get; }

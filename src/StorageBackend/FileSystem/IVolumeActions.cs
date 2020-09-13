@@ -1,5 +1,5 @@
 ﻿namespace StorageBackend {
-    public interface IFileSystem {
+    public interface IVolumeActions {
         void Mount(string pMountPoint, byte[] pSecurityDescriptor, bool pSynchronized, uint pDebugLog, string pLogFile);
         void UnMount();
     }

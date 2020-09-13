@@ -1,5 +1,6 @@
 ﻿using Moq;
 using NUnit.Framework;
+using StorageBackend.Win.Winfsp;
 
 namespace StorageBackend.Win.Tests {
 
@@ -12,7 +13,7 @@ namespace StorageBackend.Win.Tests {
             var h = new Mock<IFileSystemHost>();
 
             //Act
-            new VolumeManager(h.Object).Mount("MountPoint", new byte[] { 1, 2, 3 }, true, 0, "LogFile");
+            new VolumeManager(h.Object, "Source").Mount("MountPoint", new byte[] { 1, 2, 3 }, true, 0, "LogFile");
 
             //Assert
             h.Verify(x => x.Mount("MountPoint", new byte[] { 1, 2, 3 }, true, 0), Times.Once());
@@ -24,7 +25,7 @@ namespace StorageBackend.Win.Tests {
             var h = new Mock<IFileSystemHost>();
 
             //Act
-            new VolumeManager(h.Object).UnMount();
+            new VolumeManager(h.Object, "Source").UnMount();
 
             //Assert
             h.Verify(x => x.Unmount(), Times.Once());
@@ -49,7 +50,7 @@ namespace StorageBackend.Win.Tests {
             h.SetupSet(x => x.VolumeSerialNumber = It.IsAny<uint>()).Verifiable();
 
             //Act
-            var r = new VolumeManager(h.Object).Initialize(1);
+            var r = new VolumeManager(h.Object, "Source").Initialize(1);
 
             //Assert
             Assert.AreEqual(0, r);

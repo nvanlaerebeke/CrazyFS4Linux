@@ -1,5 +1,6 @@
 ﻿using Moq;
 using NUnit.Framework;
+using StorageBackend.Win.Winfsp;
 
 namespace StorageBackend.Win.Tests {
 

@@ -1,7 +1,7 @@
 ﻿using Fsp;
 using System.IO;
 
-namespace StorageBackend {
+namespace StorageBackend.Win.Winfsp {
 
     public static class WindowsExceptionGenerator {
 

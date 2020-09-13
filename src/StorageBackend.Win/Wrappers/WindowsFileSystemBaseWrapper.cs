@@ -3,7 +3,7 @@ using Fsp.Interop;
 using StorageBackend.IO;
 using System;
 
-namespace StorageBackend.Win {
+namespace StorageBackend.Win.Winfsp {
 
     internal class WindowsFileSystemBaseWrapper<T> : IWindowsFileSystemBaseWrapper where T : IStorageType, new() {
         private readonly IStorageType Storage;
@@ -31,9 +31,8 @@ namespace StorageBackend.Win {
 
         public int GetVolumeInfo(out VolumeInfo pVolumeInfo) {
             try {
-                var r = Storage.GetVolumeInfo(out var VolumeInfo);
-                VolumeInfo.GetStruct(out pVolumeInfo);
-                return r;
+                VolumeManager.GetVolumeInfo().GetStruct(out pVolumeInfo);
+                return FileSystemStatus.STATUS_SUCCESS;
             } catch (Win32Exception ex) {
                 throw WindowsExceptionGenerator.GetIOException(ex);
             } catch (NTException ex) {

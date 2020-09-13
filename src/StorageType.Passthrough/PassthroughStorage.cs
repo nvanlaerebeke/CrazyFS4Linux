@@ -1,27 +1,41 @@
 ﻿using StorageBackend;
 using StorageBackend.IO;
-using StorageBackend.Volume;
 using StorageType.Passthrough.IO;
 using System;
 using System.IO;
+using System.IO.Abstractions;
 using System.Security.AccessControl;
 
 namespace StorageType.Passthrough {
 
     public class PassthroughStorage : IStorageType {
         private string SourcePath;
+        private DirectoryActions DirectoryActions;
+        private FileActions FileActions;
+        private readonly IFileSystem FileSystem;
 
-        public void Setup(string pSourcePath) => SourcePath = pSourcePath;
+        public PassthroughStorage() : this(new FileSystem()) {
+        }
+
+        public PassthroughStorage(IFileSystem pFileSystem) {
+            FileSystem = pFileSystem;
+        }
+
+        public void Setup(string pSourcePath) {
+            DirectoryActions = new DirectoryActions();
+            FileActions = new FileActions();
+            SourcePath = pSourcePath;
+        }
 
         public string GetPath() => SourcePath;
 
-        public void Cleanup(IFSEntryPointer pFileDesc, string pFileName, uint pFlags, uint pCleanupDelete) => (pFileDesc as PassthroughFile)?.Cleanup(pFlags, pCleanupDelete);
+        public void Cleanup(IFSEntryPointer pFileDesc, string pFileName, uint pFlags, uint pCleanupDelete) {
+            if ((pFlags & pCleanupDelete) != 0) {
+                (pFileDesc as PassthroughFile)?.Close();
+            }
+        }
 
         public void Close(IFSEntryPointer pFileDesc) => (pFileDesc as PassthroughFile)?.Close();
-
-        public int GetVolumeInfo(out IVolumeInfo pVolumeInfo) => FileSystem.GetVolumeInfo(SourcePath, out pVolumeInfo);
-
-        public int Init(IFileSystemHost pHost) => FileSystem.Init(pHost, SourcePath);
 
         public int SetSecurity(IFSEntryPointer pFileDesc, AccessControlSections pSections, byte[] pSecurityDescriptor) {
             if (pFileDesc is PassthroughFileSystemBase pointer) {
@@ -31,15 +45,15 @@ namespace StorageType.Passthrough {
         }
 
         public int CanDelete(IFSEntryPointer pFileDesc) {
-            (pFileDesc as PassthroughFile)?.SetDisposition(false);
-            return FileSystemStatus.STATUS_SUCCESS;
+            (pFileDesc as PassthroughFile).CanDelete(out var Status);
+            return Status;
         }
 
         public int Create(string pFileName, uint pCreateOptions, uint pGrantedAccess, uint pFileAttributes, byte[] pSecurityDescriptor, out object pFileNode, out IFSEntryPointer pFileDesc, out IEntry pEntry, out string pNormalizedName) {
             if ((pCreateOptions & FileSystemStatus.FILE_DIRECTORY_FILE) == 0) {
-                pFileDesc = PassthroughFile.Create(pFileName, pGrantedAccess, pFileAttributes, pSecurityDescriptor, out pEntry);
+                pFileDesc = FileActions.Create(pFileName, pGrantedAccess, pFileAttributes, pSecurityDescriptor, out pEntry);
             } else {
-                pFileDesc = PassthroughDirectory.Create(pFileName, pFileAttributes, pSecurityDescriptor, out pEntry);
+                pFileDesc = DirectoryActions.Create(pFileName, pFileAttributes, pSecurityDescriptor, out pEntry);
             }
             pFileNode = default;
             pNormalizedName = default;
@@ -72,8 +86,15 @@ namespace StorageType.Passthrough {
         }
 
         public int GetSecurityByName(string pFileName, out uint pFileAttributes, ref byte[] pSecurityDescriptor) {
-            if (PassthroughFile.Exists(pFileName)) {
-                return PassthroughFile.GetSecurityByName(PathNormalizer.ConcatPath(SourcePath, pFileName), out pFileAttributes, ref pSecurityDescriptor);
+            if (FileActions.Exists(pFileName)) {
+                new PassthroughFile(
+                    FileSystem.FileInfo.FromFileName(PathNormalizer.ConcatPath(SourcePath, pFileName))
+                )
+                .GetSecurityByName(
+                    out pFileAttributes,
+                    ref pSecurityDescriptor
+                );
+                return FileSystemStatus.STATUS_SUCCESS;
             }
             pFileAttributes = default;
             return FileSystemStatus.STATUS_SUCCESS;
@@ -81,10 +102,13 @@ namespace StorageType.Passthrough {
 
         public int Open(string pFileName, uint pGrantedAccess, out object pFileNode, out IFSEntryPointer pFileDesc, out IEntry pEntry, out string pNormalizedName) {
             var FullPath = PathNormalizer.ConcatPath(SourcePath, pFileName);
-            if (PassthroughDirectory.Exists(FullPath)) {
-                pFileDesc = PassthroughDirectory.Open(FullPath, out pEntry);
+            if (DirectoryActions.Exists(FullPath)) {
+                pFileDesc = DirectoryActions.Open(FullPath, out pEntry);
+            } else if (FileActions.Exists(FullPath)) {
+                pFileDesc = FileActions.Open(FullPath, pGrantedAccess, out pEntry);
             } else {
-                pFileDesc = PassthroughFile.Open(FullPath, pGrantedAccess, out pEntry);
+                pFileDesc = default;
+                pEntry = default;
             }
             pNormalizedName = default;
             pFileNode = default;
@@ -119,13 +143,14 @@ namespace StorageType.Passthrough {
         }
 
         public int Rename(string pOldPath, string pNewPath, bool pReplaceIfExists) {
-            if (PassthroughFile.Exists(pOldPath)) {
-                return PassthroughFile.Move(pOldPath, pNewPath);
-            } else if (PassthroughDirectory.Exists(pOldPath)) {
-                return PassthroughDirectory.Move(pOldPath, pNewPath);
+            if (FileActions.Exists(pOldPath)) {
+                FileActions.Move(pOldPath, pNewPath);
+            } else if (DirectoryActions.Exists(pOldPath)) {
+                DirectoryActions.Move(pOldPath, pNewPath);
             } else {
                 throw new FileNotFoundException();
             }
+            return FileSystemStatus.STATUS_SUCCESS;
         }
 
         public int SetBasicInfo(IFSEntryPointer pFileDesc, uint pFileAttributes, ulong pCreationTime, ulong pLastAccessTime, ulong pLastWriteTime, ulong pChangeTime, out IEntry pEntry) {

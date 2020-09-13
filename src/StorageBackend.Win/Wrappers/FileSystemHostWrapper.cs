@@ -1,6 +1,6 @@
 ﻿using Fsp;
 
-namespace StorageBackend.Win {
+namespace StorageBackend.Win.Winfsp {
 
     public class FileSystemHostWrapper : IFileSystemHost {
         private readonly FileSystemHost FileSystemHost;

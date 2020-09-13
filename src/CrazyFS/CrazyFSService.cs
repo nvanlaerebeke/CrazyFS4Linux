@@ -4,11 +4,12 @@ using StorageBackend;
 using System;
 
 namespace CrazyFS {
+
     internal class CrazyFSService : Service {
         private readonly Options Options;
-        private readonly IFileSystem FileSystem;
+        private readonly IVolumeActions FileSystem;
 
-        public CrazyFSService(IFileSystem pFileSystem, Options pOptions) : base("CrazyFS") {
+        public CrazyFSService(IVolumeActions pFileSystem, Options pOptions) : base("CrazyFS") {
             FileSystem = pFileSystem;
             Options = pOptions;
         }

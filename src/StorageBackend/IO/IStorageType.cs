@@ -1,5 +1,4 @@
 ﻿using StorageBackend.IO;
-using StorageBackend.Volume;
 using System;
 using System.Security.AccessControl;
 
@@ -8,10 +7,6 @@ namespace StorageBackend {
     public interface IStorageType {
 
         void Setup(string pSource);
-
-        int Init(IFileSystemHost pHost);
-
-        int GetVolumeInfo(out IVolumeInfo pVolumeInfo);
 
         int GetSecurityByName(string pFileName, out uint pFileAttributes /* or ReparsePointIndex */, ref byte[] pSecurityDescriptor);
 

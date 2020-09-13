@@ -2,14 +2,14 @@
 using System;
 using FileInfo = Fsp.Interop.FileInfo;
 
-namespace StorageBackend.Win {
+namespace StorageBackend.Win.Winfsp {
 
-    internal class WindowsFileSystemBase<T> : FileSystemBase, IFileSystem where T : IStorageType, new() {
+    internal class WindowsFileSystemBase<T> : FileSystemBase, IVolumeActions where T : IStorageType, new() {
         private readonly IWindowsFileSystemBaseWrapper Wrapper;
 
         public WindowsFileSystemBase(IWindowsFileSystemBaseWrapper pWrapper) => Wrapper = pWrapper;
 
-        public WindowsFileSystemBase(string pSource) => Wrapper = new WindowsFileSystemBaseWrapper<T>(pSource, new VolumeManager(this));
+        public WindowsFileSystemBase(string pSource) => Wrapper = new WindowsFileSystemBaseWrapper<T>(pSource, new VolumeManager(this, pSource));
 
         public override int ExceptionHandler(Exception ex) => Wrapper.ExceptionHandler(ex);
 

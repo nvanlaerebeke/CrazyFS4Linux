@@ -1,28 +1,47 @@
 ﻿using StorageBackend.IO;
-using System.IO;
+using System.IO.Abstractions;
 
 namespace StorageType.Passthrough.IO {
 
     internal class PassthroughEntry : IEntry {
         private readonly bool _IsFile = false;
 
-        internal PassthroughEntry(FileSystemInfo pFileSystemInfo) {
+        private PassthroughEntry(IEntry pEntry) {
+            FileSize = pEntry.FileSize;
+            AllocationSize = pEntry.AllocationSize;
+
+            ReparseTag = pEntry.ReparseTag;
+            IndexNumber = pEntry.IndexNumber;
+            HardLinks = pEntry.HardLinks;
+            EaSize = pEntry.EaSize;
+
+            Attributes = pEntry.Attributes;
+            CreationTime = pEntry.CreationTime;
+            LastAccessTime = pEntry.LastAccessTime;
+            LastWriteTime = pEntry.LastWriteTime;
+            ChangeTime = pEntry.ChangeTime;
+
+            _IsFile = pEntry.IsFile();
+        }
+
+        internal PassthroughEntry(IFileSystemInfo pFileSystemInfo) {
             FileSize = 0;
             AllocationSize = 0;
 
             ReparseTag = 0;
             IndexNumber = 0;
             HardLinks = 0;
+            EaSize = 0;
 
             Attributes = (uint)pFileSystemInfo.Attributes;
             CreationTime = (ulong)pFileSystemInfo.CreationTimeUtc.ToFileTimeUtc();
             LastAccessTime = (ulong)pFileSystemInfo.LastAccessTimeUtc.ToFileTimeUtc();
             LastWriteTime = (ulong)pFileSystemInfo.LastWriteTimeUtc.ToFileTimeUtc();
-            ChangeTime = (ulong)pFileSystemInfo.LastAccessTime.ToFileTimeUtc();
+            ChangeTime = LastWriteTime;
 
-            if ((pFileSystemInfo.Attributes & FileAttributes.Directory) != FileAttributes.Directory) {
+            if ((pFileSystemInfo.Attributes & System.IO.FileAttributes.Directory) != System.IO.FileAttributes.Directory) {
                 _IsFile = true;
-                FileSize = (ulong)(pFileSystemInfo as FileInfo).Length;
+                FileSize = (ulong)(pFileSystemInfo as FileInfoBase).Length;
                 AllocationSize = (FileSize + 4096 - 1) / 4096 * 4096;
             }
         }
@@ -40,5 +59,7 @@ namespace StorageType.Passthrough.IO {
         public uint EaSize { get; protected set; }
 
         public bool IsFile() => _IsFile;
+
+        public object Clone() => new PassthroughEntry(this);
     }
 }

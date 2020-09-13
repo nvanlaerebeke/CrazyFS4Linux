@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using StorageBackend.Win.Tests.TestObject;
+using StorageBackend.Win.Winfsp;
 
 namespace StorageBackend.Win.Tests.Extensions {
 

@@ -10,55 +10,7 @@ namespace StorageType.Passthrough.IO {
 
         public int Flush(out IEntry pEntry) {
             pEntry = GetEntry();
-            Stream?.Flush(true);
-            return FileSystemStatus.STATUS_SUCCESS;
-        }
-
-        public void Close() => Stream?.Dispose();
-
-        /// <summary>
-        /// ToDo: SetSecurity was removed for .net standard support
-        /// </summary>
-        internal static PassthroughFile Create(string pFileName, uint pGrantedAccess, uint pFileAttributes, byte[] pSecurityDescriptor, out IEntry pEntry) {
-            PassthroughFile objFileDesc = null;
-            try {
-                objFileDesc = new PassthroughFile(
-                    new FileStream(pFileName, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.Read | FileShare.Write | FileShare.Delete, 4096, FileOptions.SequentialScan)
-                );
-                //objFileDesc.SetSecurity((FileSystemRights)pGrantedAccess | FileSystemRights.WriteAttributes, pSecurityDescriptor);
-                _ = objFileDesc.SetBasicInfo(pFileAttributes | (uint)FileAttributes.Archive, 0, 0, 0, out pEntry);
-                return objFileDesc;
-            } catch {
-                if (objFileDesc?.Stream != null) {
-                    objFileDesc.Stream.Dispose();
-                }
-                throw;
-            }
-        }
-
-        internal static PassthroughFile Open(string pFileName, uint pGrantedAccess, out IEntry pEntry) {
-            PassthroughFile objFileDesc = null;
-            try {
-                //SetSecurity(pFileName, (FileSystemRights)pGrantedAccess);
-                objFileDesc = new PassthroughFile(
-                    new FileStream(pFileName, FileMode.Open, FileAccess.ReadWrite, FileShare.Read | FileShare.Write | FileShare.Delete, 4096, false)
-                );
-            } catch (FileNotFoundException) {
-                //File not found can be safely ignored
-                //this will let w/e is doing the listing know the file/dir does not exist
-                throw;
-            } catch {
-                if (objFileDesc?.Stream != null) {
-                    objFileDesc.Stream.Dispose();
-                }
-                throw;
-            }
-            pEntry = objFileDesc.GetEntry();
-            return objFileDesc;
-        }
-
-        public static int Move(string pOldPath, string pNewPath) {
-            new FileInfo(pOldPath).MoveTo(pNewPath);
+            Stream?.Flush();
             return FileSystemStatus.STATUS_SUCCESS;
         }
 
@@ -93,13 +45,6 @@ namespace StorageType.Passthrough.IO {
             PBytesTransferred = (uint)Bytes.Length;
             pEntry = GetEntry();
             return FileSystemStatus.STATUS_SUCCESS;
-        }
-
-        public void Cleanup(uint pFlags, uint pCleanupDelete) {
-            if ((pFlags & pCleanupDelete) != 0) {
-                SetDisposition(true);
-                Stream?.Dispose();
-            }
         }
     }
 }

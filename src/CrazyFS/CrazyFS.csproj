@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\StorageBackend.Win\StorageBackend.Win.csproj" />
+    <ProjectReference Include="..\StorageBackend.Win\StorageBackend.Win.Winfsp.csproj" />
     <ProjectReference Include="..\StorageBackend\StorageBackend.csproj" />
     <ProjectReference Include="..\StorageType.Passthrough\StorageType.Passthrough.csproj" />
   </ItemGroup>

@@ -43,7 +43,8 @@ namespace StorageBackend.Win.Tests.TestObject {
 
         public int SetSecurity(IFSEntryPointer pFileDesc, AccessControlSections pSections, byte[] pSecurityDescriptor) => throw new NotImplementedException();
 
-        public void Setup(string pSource) => throw new NotImplementedException();
+        public void Setup(string pSource) {
+        }
 
         public int Write(object pFileNode, IFSEntryPointer pFileDesc, IntPtr pBuffer, ulong pOffset, uint pLength, bool pWriteToEndOfFile, bool pConstrainedIo, out uint pBytesTransferred, out IEntry pEntry) => throw new NotImplementedException();
     }

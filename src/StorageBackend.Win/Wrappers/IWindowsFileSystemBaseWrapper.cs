@@ -2,7 +2,7 @@
 using System;
 using System.Security.AccessControl;
 
-namespace StorageBackend.Win {
+namespace StorageBackend.Win.Winfsp {
 
     internal interface IWindowsFileSystemBaseWrapper {
 

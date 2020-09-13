@@ -12,7 +12,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\StorageBackend.Win\StorageBackend.Win.csproj" />
+    <ProjectReference Include="..\StorageBackend.Win\StorageBackend.Win.Winfsp.csproj" />
   </ItemGroup>
   
   <ItemGroup>

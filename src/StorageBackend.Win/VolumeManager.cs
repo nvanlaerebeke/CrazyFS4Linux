@@ -1,13 +1,23 @@
 ﻿using Fsp;
+using StorageBackend.Volume;
+using System.IO;
+using System.IO.Abstractions;
 
-namespace StorageBackend.Win {
+namespace StorageBackend.Win.Winfsp {
 
     internal class VolumeManager {
         private readonly IFileSystemHost Host;
+        private readonly string Source;
 
-        public VolumeManager(IFileSystemHost pHost) => Host = pHost;
+        public VolumeManager(IFileSystemHost pHost, string pSource) {
+            Host = pHost;
+            Source = pSource;
+        }
 
-        public VolumeManager(FileSystemBase pFileSystem) => Host = new FileSystemHostWrapper(new FileSystemHost(pFileSystem));
+        public VolumeManager(FileSystemBase pFileSystem, string pSource) {
+            Host = new FileSystemHostWrapper(new FileSystemHost(pFileSystem));
+            Source = pSource;
+        }
 
         public void Mount(string pMountPoint, byte[] pSecurityDescriptor, bool pSynchonized, uint pDebugLog, string pLogFile) {
             _ = Host.Mount(pMountPoint, pSecurityDescriptor, pSynchonized, pDebugLog);
@@ -38,6 +48,10 @@ namespace StorageBackend.Win {
             } catch (NTException ex) {
                 throw WindowsExceptionGenerator.GetIOException(ex);
             }
+        }
+
+        public IVolumeInfo GetVolumeInfo() {
+            return new VolumeInfo(new DriveInfoWrapper(new FileSystem(), new DriveInfo(Source)));
         }
     }
 }

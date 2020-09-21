@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using Fsp;
+using Moq;
 using NUnit.Framework;
 using StorageBackend.Win.Winfsp;
 
@@ -11,7 +12,7 @@ namespace StorageBackend.Win.Tests {
         public void TestGetIOExceptionFromNTException() {
             //Arrange
             var NTException = new Mock<INTException>();
-            _ = NTException.Setup(e => e.GetCode()).Returns(FileSystemStatus.STATUS_SUCCESS);
+            _ = NTException.Setup(e => e.GetCode()).Returns(FileSystemBase.STATUS_SUCCESS);
 
             //Act
             var Exception = WindowsExceptionGenerator.GetIOException(NTException.Object);
@@ -25,7 +26,7 @@ namespace StorageBackend.Win.Tests {
         public void TestGetIOExceptionFromWin32Exception() {
             //Arrange
             var Win32Exception = new Mock<IWin32Exception>();
-            _ = Win32Exception.Setup(e => e.GetCode()).Returns(FileSystemStatus.STATUS_SUCCESS);
+            _ = Win32Exception.Setup(e => e.GetCode()).Returns(FileSystemBase.STATUS_SUCCESS);
 
             //Act
             var Exception = WindowsExceptionGenerator.GetIOException(Win32Exception.Object);

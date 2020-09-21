@@ -1,7 +1,8 @@
 ﻿namespace StorageBackend.Volume {
 
     public interface IVolumeInfo {
-        ulong FreeSize { get; }
-        ulong TotalSize { get; }
+        string Label { get; }
+        long FreeSize { get; }
+        long TotalSize { get; }
     }
 }

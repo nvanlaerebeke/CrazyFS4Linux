@@ -1,16 +1,12 @@
 ﻿using StorageBackend.IO;
-using System;
-using System.IO;
 using System.IO.Abstractions;
 
 namespace StorageType.Passthrough.IO {
 
-    internal class PassthroughEntry : IEntry {
+    internal class Entry : IEntry {
         private readonly bool _IsFile = false;
 
-        private PassthroughEntry(IEntry pEntry) {
-            FullName = pEntry.FullName;
-            Name = pEntry.Name;
+        private Entry(IEntry pEntry) {
             FileSize = pEntry.FileSize;
             AllocationSize = pEntry.AllocationSize;
 
@@ -28,9 +24,7 @@ namespace StorageType.Passthrough.IO {
             _IsFile = pEntry.IsFile();
         }
 
-        internal PassthroughEntry(IFileSystemInfo pFileSystemInfo) {
-            FullName = pFileSystemInfo.FullName;
-            Name = pFileSystemInfo.Name;
+        internal Entry(IFileSystemInfo pFileSystemInfo) {
             FileSize = 0;
             AllocationSize = 0;
 
@@ -39,35 +33,33 @@ namespace StorageType.Passthrough.IO {
             HardLinks = 0;
             EaSize = 0;
 
-            Attributes = pFileSystemInfo.Attributes;
-            CreationTime = pFileSystemInfo.CreationTimeUtc;
-            LastAccessTime = pFileSystemInfo.LastAccessTimeUtc;
-            LastWriteTime = pFileSystemInfo.LastWriteTimeUtc;
+            Attributes = (uint)pFileSystemInfo.Attributes;
+            CreationTime = (ulong)pFileSystemInfo.CreationTimeUtc.ToFileTimeUtc();
+            LastAccessTime = (ulong)pFileSystemInfo.LastAccessTimeUtc.ToFileTimeUtc();
+            LastWriteTime = (ulong)pFileSystemInfo.LastWriteTimeUtc.ToFileTimeUtc();
             ChangeTime = LastWriteTime;
 
             if ((pFileSystemInfo.Attributes & System.IO.FileAttributes.Directory) != System.IO.FileAttributes.Directory) {
                 _IsFile = true;
-                FileSize = (pFileSystemInfo as FileInfoBase).Length;
+                FileSize = (ulong)(pFileSystemInfo as FileInfoBase).Length;
                 AllocationSize = (FileSize + 4096 - 1) / 4096 * 4096;
             }
         }
 
-        public string FullName { get; protected set; }
-        public string Name { get; protected set; }
-        public FileAttributes Attributes { get; protected set; }
+        public uint Attributes { get; protected set; }
         public uint ReparseTag { get; protected set; }
-        public long AllocationSize { get; protected set; }
-        public long FileSize { get; protected set; }
-        public DateTime CreationTime { get; protected set; }
-        public DateTime LastAccessTime { get; protected set; }
-        public DateTime LastWriteTime { get; protected set; }
-        public DateTime ChangeTime { get; protected set; }
+        public ulong AllocationSize { get; protected set; }
+        public ulong FileSize { get; protected set; }
+        public ulong CreationTime { get; protected set; }
+        public ulong LastAccessTime { get; protected set; }
+        public ulong LastWriteTime { get; protected set; }
+        public ulong ChangeTime { get; protected set; }
         public ulong IndexNumber { get; protected set; }
         public uint HardLinks { get; protected set; }
         public uint EaSize { get; protected set; }
 
         public bool IsFile() => _IsFile;
 
-        public object Clone() => new PassthroughEntry(this);
+        public object Clone() => new Entry(this);
     }
 }

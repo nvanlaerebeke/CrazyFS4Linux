@@ -4,7 +4,7 @@ namespace StorageBackend {
 
     public static class StorageBackendFactoryExtension {
 
-        public static IVolumeActions CreateWindowsStorageBackend<T>(
+        public static IVolumeActions CreateWindowsWinfspStorageBackend<T>(
             this StorageBackendFactory pFactory,
             string pSource
         ) where T : IStorageType, new() {

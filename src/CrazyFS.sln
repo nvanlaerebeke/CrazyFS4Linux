@@ -24,6 +24,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StorageBackend.Win.Dokan", "StorageBackend.Win.Dokan\StorageBackend.Win.Dokan.csproj", "{A79ED0AD-9A07-40FD-B90A-4B599D764BFD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StorageType.Mirror", "StorageType.Mirror\StorageType.Mirror.csproj", "{2FD3DF79-7420-4472-8A6E-FB8E42BCC04E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -62,6 +66,14 @@ Global
 		{B0146404-5502-4497-83E7-86369DAB69E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B0146404-5502-4497-83E7-86369DAB69E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B0146404-5502-4497-83E7-86369DAB69E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A79ED0AD-9A07-40FD-B90A-4B599D764BFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A79ED0AD-9A07-40FD-B90A-4B599D764BFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A79ED0AD-9A07-40FD-B90A-4B599D764BFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A79ED0AD-9A07-40FD-B90A-4B599D764BFD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FD3DF79-7420-4472-8A6E-FB8E42BCC04E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FD3DF79-7420-4472-8A6E-FB8E42BCC04E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FD3DF79-7420-4472-8A6E-FB8E42BCC04E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FD3DF79-7420-4472-8A6E-FB8E42BCC04E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

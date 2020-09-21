@@ -1,92 +1,67 @@
 ﻿using StorageBackend;
 using StorageBackend.IO;
 using System;
-using System.Collections;
 using System.IO.Abstractions;
+using System.Linq;
 using System.Security.AccessControl;
 
 namespace StorageType.Passthrough.IO {
 
     internal class PassthroughDirectory : PassthroughFileSystemBase {
-        private static readonly DirectoryEntryComparer _DirectoryEntryComparer = new DirectoryEntryComparer();
         private readonly IDirectoryInfo DirectoryInfo;
-        private DictionaryEntry[] FileSystemInfos;
+        private readonly IFileSystem FileSystem;
+        private IFSEntryPointer[] FileSystemInfos;
 
-        public PassthroughDirectory(IDirectoryInfo pDirectoryInfo) => DirectoryInfo = pDirectoryInfo;
+        public PassthroughDirectory(IDirectoryInfo pDirectoryInfo) : this(pDirectoryInfo, new FileSystem()) {
+        }
 
-        public override int SetBasicInfo(uint Attributes, ulong CreationTime, ulong LastAccessTime, ulong LastWriteTime, out IEntry pEntry) {
-            if (Attributes == 0) {
-                Attributes = (uint)System.IO.FileAttributes.Directory;
+        public PassthroughDirectory(IDirectoryInfo pDirectoryInfo, IFileSystem pFileSystem) {
+            FileSystem = pFileSystem;
+            DirectoryInfo = pDirectoryInfo;
+        }
+
+        public override Result SetBasicInfo(System.IO.FileAttributes Attributes, DateTime CreationTime, DateTime LastAccessTime, DateTime LastWriteTime) {
+            if ((Attributes & System.IO.FileAttributes.Directory) == 0) {
+                Attributes |= System.IO.FileAttributes.Directory;
             }
-            if (unchecked((uint)-1) != Attributes) {
-                DirectoryInfo.Attributes = (System.IO.FileAttributes)Attributes;
+            DirectoryInfo.Attributes = Attributes;
+            if (CreationTime != default) {
+                DirectoryInfo.CreationTimeUtc = CreationTime;
             }
-            if (CreationTime != 0) {
-                DirectoryInfo.CreationTimeUtc = DateTime.FromFileTimeUtc((long)CreationTime);
+            if (LastAccessTime != default) {
+                DirectoryInfo.LastAccessTimeUtc = LastAccessTime;
             }
-            if (LastAccessTime != 0) {
-                DirectoryInfo.LastAccessTimeUtc = DateTime.FromFileTimeUtc((long)LastAccessTime);
+            if (LastWriteTime != default) {
+                DirectoryInfo.LastWriteTimeUtc = LastWriteTime;
             }
-            if (LastWriteTime != 0) {
-                DirectoryInfo.LastWriteTimeUtc = DateTime.FromFileTimeUtc((long)LastWriteTime);
-            }
-            pEntry = GetEntry();
-            return FileSystemStatus.STATUS_SUCCESS;
+            return new Result(ResultStatus.Success);
         }
 
         public override byte[] GetSecurityDescriptor() => DirectoryInfo.GetAccessControl().GetSecurityDescriptorBinaryForm();
 
-        public override int SetSecurityDescriptor(AccessControlSections Sections, byte[] SecurityDescriptor) {
+        public override Result SetSecurityDescriptor(AccessControlSections Sections, byte[] SecurityDescriptor) {
             DirectoryInfo.SetAccessControl(new DirectorySecurity(DirectoryInfo.FullName, Sections));
-            return FileSystemStatus.STATUS_SUCCESS;
+            return new Result(ResultStatus.Success);
         }
 
-        public bool ReadDirectory(string pPattern, string pMarker, ref object pContext, out string pFileName, out IEntry pEntry) {
+        public IFSEntryPointer[] ReadDirectory(string pPattern, bool pCaseSensitive, string pMarker) {
             if (FileSystemInfos == null) {
-                if (pPattern != null) {
-                    pPattern = pPattern.Replace('<', '*').Replace('>', '?').Replace('"', '.');
-                } else {
-                    pPattern = "*";
-                }
-                var Enum = DirectoryInfo.EnumerateFileSystemInfos(pPattern);
-                var lstItems = new SortedList();
-                if (DirectoryInfo?.Parent != null) {
-                    lstItems.Add(".", DirectoryInfo);
-                    lstItems.Add("..", DirectoryInfo.Parent);
-                }
-                foreach (var Info in Enum) {
-                    lstItems.Add(Info.Name, Info);
-                }
-                FileSystemInfos = new DictionaryEntry[lstItems.Count];
-                lstItems.CopyTo(FileSystemInfos, 0);
+                FileSystemInfos = DirectoryInfo
+                    .EnumerateFileSystemInfos()
+                    .Where(finfo => NameMatcher.Match(pPattern, finfo.Name, pCaseSensitive))
+                    .Select(finfo => finfo.GetIFSEntryPointer(FileSystem))
+                    .ToArray();
             }
-            int Index;
-            if (pContext == null) {
-                Index = 0;
-                if (pMarker != null) {
-                    Index = Array.BinarySearch(FileSystemInfos, new DictionaryEntry(pMarker, null), _DirectoryEntryComparer);
-                    if (0 <= Index) {
-                        Index++;
-                    } else {
-                        Index = ~Index;
-                    }
-                }
-            } else {
-                Index = (int)pContext;
-            }
-
-            if (FileSystemInfos.Length > Index) {
-                pContext = Index + 1;
-                pFileName = (string)FileSystemInfos[Index].Key;
-                pEntry = new PassthroughEntry((FileSystemInfoBase)FileSystemInfos[Index].Value);
-                return true;
-            } else {
-                pFileName = default;
-                pEntry = default;
-                return false;
-            }
+            return FileSystemInfos;
         }
 
         public override IEntry GetEntry() => new PassthroughEntry(DirectoryInfo);
+
+        public override FileSystemSecurity GetSecurity() => FileSystem.Directory.GetAccessControl(DirectoryInfo.FullName);
+
+        public override Result SetSecurity(FileSystemSecurity pFileSystemSecurity) {
+            FileSystem.Directory.SetAccessControl(DirectoryInfo.FullName, (DirectorySecurity)pFileSystemSecurity);
+            return new Result(ResultStatus.Success);
+        }
     }
 }

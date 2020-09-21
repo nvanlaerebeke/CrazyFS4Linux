@@ -9,8 +9,8 @@ namespace StorageBackend {
             out Fsp.Interop.VolumeInfo VolumeInfo
         ) {
             VolumeInfo = default;
-            VolumeInfo.FreeSize = pVolumeInfo.FreeSize;
-            VolumeInfo.TotalSize = pVolumeInfo.TotalSize;
+            VolumeInfo.FreeSize = (ulong)pVolumeInfo.FreeSize;
+            VolumeInfo.TotalSize = (ulong)pVolumeInfo.TotalSize;
         }
     }
 }

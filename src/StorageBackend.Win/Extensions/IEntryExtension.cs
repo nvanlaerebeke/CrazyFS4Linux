@@ -14,17 +14,16 @@ namespace StorageBackend.Win {
             if (pEntry == null) {
                 return;
             }
-
-            FileInfo.AllocationSize = pEntry.AllocationSize;
-            FileInfo.ChangeTime = pEntry.ChangeTime;
-            FileInfo.CreationTime = pEntry.CreationTime;
+            FileInfo.AllocationSize = (ulong)pEntry.AllocationSize;
+            FileInfo.ChangeTime = (ulong)pEntry.ChangeTime.ToFileTimeUtc();
+            FileInfo.CreationTime = (ulong)pEntry.CreationTime.ToFileTimeUtc();
             FileInfo.EaSize = pEntry.EaSize;
-            FileInfo.FileAttributes = pEntry.Attributes;
-            FileInfo.FileSize = pEntry.FileSize;
+            FileInfo.FileAttributes = (uint)pEntry.Attributes;
+            FileInfo.FileSize = (ulong)pEntry.FileSize;
             FileInfo.HardLinks = pEntry.HardLinks;
             FileInfo.IndexNumber = pEntry.IndexNumber;
-            FileInfo.LastAccessTime = pEntry.LastAccessTime;
-            FileInfo.LastWriteTime = pEntry.LastWriteTime;
+            FileInfo.LastAccessTime = (ulong)pEntry.LastAccessTime.ToFileTimeUtc();
+            FileInfo.LastWriteTime = (ulong)pEntry.LastWriteTime.ToFileTimeUtc();
             FileInfo.ReparseTag = pEntry.ReparseTag;
         }
     }

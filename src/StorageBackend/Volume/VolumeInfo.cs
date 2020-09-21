@@ -4,12 +4,14 @@ namespace StorageBackend.Volume {
 
     public class VolumeInfo : IVolumeInfo {
 
-        public VolumeInfo(IDriveInfo driveInfo) {
-            TotalSize = (ulong)driveInfo.TotalSize;
-            FreeSize = (ulong)driveInfo.AvailableFreeSpace;
+        public VolumeInfo(IDriveInfo driveInfo, string pLabel) {
+            Label = pLabel;
+            TotalSize = driveInfo.TotalSize;
+            FreeSize = driveInfo.AvailableFreeSpace;
         }
 
-        public ulong TotalSize { get; }
-        public ulong FreeSize { get; }
+        public string Label { get; }
+        public long TotalSize { get; }
+        public long FreeSize { get; }
     }
 }

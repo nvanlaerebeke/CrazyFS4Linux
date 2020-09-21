@@ -1,5 +1,6 @@
 ﻿using CrazyFS.CommandLine;
 using StorageBackend;
+using StorageBackend.Win.Dokan;
 using StorageType.Passthrough;
 
 namespace CrazyFS {
@@ -8,7 +9,7 @@ namespace CrazyFS {
 
         internal int Start(string[] pArgs) {
             var o = new Input().Get(pArgs);
-            return new CrazyFSService(new StorageBackendFactory().CreateWindowsStorageBackend<PassthroughStorage>(o.SourcePath), o).Run();
+            return new CrazyFSService(new StorageBackendFactory().CreateWindowsDokanStorageBackend<PassthroughStorage>(o.SourcePath), o).Run();
         }
     }
 }

@@ -10,7 +10,7 @@ namespace StorageBackend.Win.Tests.Extensions {
         [Test]
         public void TestCreateWindowsStorageBackend() {
             //Act
-            var fs = new StorageBackendFactory().CreateWindowsStorageBackend<TestStorageType>("Source");
+            var fs = new StorageBackendFactory().CreateWindowsWinfspStorageBackend<TestStorageType>("Source");
 
             //Assert
             Assert.AreEqual(typeof(WindowsFileSystemBase<TestStorageType>), fs.GetType());

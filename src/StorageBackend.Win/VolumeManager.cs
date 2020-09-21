@@ -27,7 +27,7 @@ namespace StorageBackend.Win.Winfsp {
 
         public void UnMount() => Host.Unmount();
 
-        public int Initialize(long pCreationTimeUtc) {
+        public Result Initialize(long pCreationTimeUtc) {
             try {
                 Host.SectorSize = 4096;
                 Host.SectorsPerAllocationUnit = 1;
@@ -42,7 +42,7 @@ namespace StorageBackend.Win.Winfsp {
                 Host.FlushAndPurgeOnCleanup = true;
                 Host.VolumeCreationTime = (ulong)pCreationTimeUtc;
                 Host.VolumeSerialNumber = 0;
-                return FileSystemStatus.STATUS_SUCCESS;
+                return new Result(ResultStatus.Success);
             } catch (Win32Exception ex) {
                 throw WindowsExceptionGenerator.GetIOException(ex);
             } catch (NTException ex) {
@@ -51,7 +51,7 @@ namespace StorageBackend.Win.Winfsp {
         }
 
         public IVolumeInfo GetVolumeInfo() {
-            return new VolumeInfo(new DriveInfoWrapper(new FileSystem(), new DriveInfo(Source)));
+            return new VolumeInfo(new DriveInfoWrapper(new System.IO.Abstractions.FileSystem(), new DriveInfo(Source)), "MyLabel");
         }
     }
 }

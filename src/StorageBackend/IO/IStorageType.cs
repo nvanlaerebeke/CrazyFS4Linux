@@ -1,45 +1,56 @@
 ﻿using StorageBackend.IO;
+using StorageBackend.Volume;
 using System;
+using System.IO;
 using System.Security.AccessControl;
 
 namespace StorageBackend {
 
     public interface IStorageType {
+        IVolume VolumeManager { get; }
 
         void Setup(string pSource);
 
-        int GetSecurityByName(string pFileName, out uint pFileAttributes /* or ReparsePointIndex */, ref byte[] pSecurityDescriptor);
+        Result GetSecurityByName(string pFileName, out FileAttributes pFileAttributes /* or ReparsePointIndex */, ref byte[] pSecurityDescriptor);
 
-        int Create(string pFileName, uint pCreateOptions, uint pGrantedAccess, uint pFileAttributes, byte[] pSecurityDescriptor, out object pFileNode, out IFSEntryPointer pFileDesc, out IEntry pEntry, out string pNormalizedName);
+        Result Create(string pFileName, bool pIsFile, FileAccess pFileAccess, FileShare pShare, FileMode pMode, FileOptions pOptions, FileAttributes pAttributes, out IFSEntryPointer pNode);
 
-        int Open(string pFileName, uint pGrantedAccess, out object pFileNode, out IFSEntryPointer pFileDesc, out IEntry pEntry, out string pNormalizedName);
+        Result Open(string pFileName, uint pGrantedAccess, out object pFileNode, out IFSEntryPointer pFileDesc, out IEntry pEntry, out string pNormalizedName);
 
-        int OverWrite(IFSEntryPointer pFileDesc, uint pFileAttributes, bool pReplaceFileAttributes, out IEntry pEntry);
+        Result OverWrite(IFSEntryPointer pFileDesc, FileAttributes pFileAttributes, bool pReplaceFileAttributes, out IEntry pEntry);
 
-        void Cleanup(IFSEntryPointer pFileDesc, string pFileName, uint pFlags, uint pCleanupDelete);
+        void Cleanup(IFSEntryPointer pFileDesc, bool pCleanupDelete);
 
         void Close(IFSEntryPointer pFileDesc);
 
-        int Read(IFSEntryPointer pFileDesc, IntPtr pBuffer, ulong pOffset, uint pLength, out uint pBytesTransferred);
+        Result Read(IFSEntryPointer pFileDesc, out byte[] pBuffer, long pOffset, int pLength, out int pBytesTransferred);
 
-        int Write(object pFileNode, IFSEntryPointer pFileDesc, IntPtr pBuffer, ulong pOffset, uint pLength, bool pWriteToEndOfFile, bool pConstrainedIo, out uint pBytesTransferred, out IEntry pEntry);
+        Result Write(IFSEntryPointer pFileDesc, byte[] pBuffer, long pOffset, out int pBytesWritten);
 
-        int Flush(IFSEntryPointer pFileDesc, out IEntry pEntry);
+        Result Delete(IFSEntryPointer iFSEntryPointer, bool pRecursive);
 
-        int GetFileInfo(IFSEntryPointer pFileDesc, out IEntry pEntry);
+        Result Flush(IFSEntryPointer pFileDesc);
 
-        int SetBasicInfo(IFSEntryPointer pFileDesc, uint pFileAttributes, ulong pCreationTime, ulong pLastAccessTime, ulong pLastWriteTime, ulong pChangeTime, out IEntry pEntry);
+        Result GetFileInfo(IFSEntryPointer pFileDesc, out IEntry pEntry);
 
-        int SetFileSize(object pFileNode, IFSEntryPointer pFileDesc, ulong pNewSize, bool pSetAllocationSize, out IEntry pEntry);
+        Result SetBasicInfo(IFSEntryPointer pFileDesc, FileAttributes pFileAttributes, DateTime pCreationTime, DateTime pLastAccessTime, DateTime pLastWriteTime, DateTime pChangeTime);
 
-        int CanDelete(IFSEntryPointer pFileDesc);
+        Result SetFileSize(IFSEntryPointer pFileDesc, long pNewSize);
 
-        int Rename(string pOldPath, string pNewPath, bool pReplaceIfExists);
+        Result CanDelete(IFSEntryPointer pFileDesc);
 
-        int GetSecurity(IFSEntryPointer pFileDesc, ref byte[] pSecurityDescriptor);
+        Result Rename(string pOldPath, string pNewPath, bool pReplaceIfExists);
 
-        int SetSecurity(IFSEntryPointer pFileDesc, AccessControlSections pSections, byte[] pSecurityDescriptor);
+        Result GetSecurity(IFSEntryPointer pEntry, out FileSystemSecurity pFileSystemSecurity);
 
-        bool ReadDirectory(object pFileNode, IFSEntryPointer pFileDesc, string pPattern, string pMarker, ref object pContext, out string pFileName, out IEntry pEntry);
+        Result SetSecurity(IFSEntryPointer pFileDesc, AccessControlSections pSections, byte[] pSecurityDescriptor);
+
+        Result ReadDirectory(IFSEntryPointer pEntry, string pPattern, bool pCaseSensitive, string pMarker, out IFSEntryPointer[] pEntries);
+
+        Result Lock(IFSEntryPointer iFSEntryPointer, long offset, long length);
+
+        Result SetSecurity(IFSEntryPointer iFSEntryPointer, FileSystemSecurity security);
+
+        Result UnLock(IFSEntryPointer iFSEntryPointer, long offset, long length);
     }
 }

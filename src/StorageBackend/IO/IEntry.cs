@@ -1,18 +1,21 @@
 ﻿using System;
+using System.IO;
 
 namespace StorageBackend.IO {
 
     public interface IEntry : ICloneable {
-        ulong AllocationSize { get; }
-        ulong ChangeTime { get; }
-        ulong CreationTime { get; }
+        string FullName { get; }
+        string Name { get; }
+        long AllocationSize { get; }
+        DateTime ChangeTime { get; }
+        DateTime CreationTime { get; }
         uint EaSize { get; }
-        uint Attributes { get; }
-        ulong FileSize { get; }
+        FileAttributes Attributes { get; }
+        long FileSize { get; }
         uint HardLinks { get; }
         ulong IndexNumber { get; }
-        ulong LastAccessTime { get; }
-        ulong LastWriteTime { get; }
+        DateTime LastAccessTime { get; }
+        DateTime LastWriteTime { get; }
         uint ReparseTag { get; }
 
         bool IsFile();

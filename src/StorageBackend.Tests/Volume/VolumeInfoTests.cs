@@ -16,7 +16,7 @@ namespace StorageBackend.Tests.Exception {
             _ = vinfo.SetupGet(i => i.TotalSize).Returns(999);
 
             //Act
-            var o = new VolumeInfo(vinfo.Object);
+            var o = new VolumeInfo(vinfo.Object, "MyLabel");
 
             //Assert
             Assert.AreEqual(666, o.FreeSize);

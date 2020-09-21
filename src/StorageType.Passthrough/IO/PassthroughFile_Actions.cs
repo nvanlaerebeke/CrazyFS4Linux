@@ -31,65 +31,82 @@ namespace StorageType.Passthrough.IO {
             Stream = null;
         }
 
-        public override int SetBasicInfo(uint FileAttributes, ulong CreationTime, ulong LastAccessTime, ulong LastWriteTime, out IEntry pEntry) {
+        public override Result SetBasicInfo(FileAttributes FileAttributes, DateTime CreationTime, DateTime LastAccessTime, DateTime LastWriteTime) {
             if (FileAttributes == 0) {
-                FileSystem.File.SetAttributes(Info.FullName, System.IO.FileAttributes.Normal);
+                FileSystem.File.SetAttributes(Info.FullName, FileAttributes.Normal);
             } else {
-                FileSystem.File.SetAttributes(Info.FullName, (System.IO.FileAttributes)FileAttributes);
+                FileSystem.File.SetAttributes(Info.FullName, FileAttributes);
             }
-            if (CreationTime != 0) {
-                FileSystem.File.SetCreationTimeUtc(Info.FullName, DateTime.FromFileTimeUtc((long)CreationTime));
+            if (CreationTime != default) {
+                FileSystem.File.SetCreationTimeUtc(Info.FullName, CreationTime);
             }
-            if (LastAccessTime != 0) {
-                FileSystem.File.SetLastAccessTimeUtc(Info.FullName, DateTime.FromFileTimeUtc((long)LastAccessTime));
+            if (LastAccessTime != default) {
+                FileSystem.File.SetLastAccessTimeUtc(Info.FullName, LastAccessTime);
             }
-            if (LastWriteTime != 0) {
-                FileSystem.File.SetLastWriteTimeUtc(Info.FullName, DateTime.FromFileTimeUtc((long)LastWriteTime));
+            if (LastWriteTime != default) {
+                FileSystem.File.SetLastWriteTimeUtc(Info.FullName, LastWriteTime);
             }
-            pEntry = GetEntry();
-            return FileSystemStatus.STATUS_SUCCESS;
+            return new Result(ResultStatus.Success);
         }
 
-        internal void CanDelete(out int Status) => Status = FileSystemStatus.STATUS_SUCCESS;
+        internal void CanDelete(out Result Status) => Status = new Result(ResultStatus.Success);
 
         public override byte[] GetSecurityDescriptor() => FileSystem.File.GetAccessControl(Info.FullName).GetSecurityDescriptorBinaryForm();
 
-        public override int SetSecurityDescriptor(AccessControlSections Sections, byte[] SecurityDescriptor) {
+        public override Result SetSecurityDescriptor(AccessControlSections Sections, byte[] SecurityDescriptor) {
             Info.SetAccessControl(new FileSecurity(Info.FullName, Sections));
-            return FileSystemStatus.STATUS_SUCCESS;
+            return new Result(ResultStatus.Success);
         }
 
-        public int SetFileSize(ulong pNewSize, bool pSetAllocationSize, out IEntry pEntry) {
-            if (!pSetAllocationSize || (ulong)Stream.Length > pNewSize) {
-                /*
-                 * "FileInfo.FileSize > NewSize" explanation:
-                 * Ptfs does not support allocation size. However if the new AllocationSize
-                 * is less than the current FileSize we must truncate the file.
-                 */
-                Stream.SetLength((long)pNewSize);
+        public Result SetFileSize(long pNewSize) {
+            if (Stream == null) {
+                Open(FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
             }
-            pEntry = GetEntry();
-            return FileSystemStatus.STATUS_SUCCESS;
+            (Stream as FileStream)?.SetLength(pNewSize);
+            return new Result(ResultStatus.Success);
         }
 
-        public int OverWrite(uint pFileAttributes, bool pReplaceFileAttributes, out IEntry pEntry) {
+        public Result OverWrite(FileAttributes pFileAttributes, bool pReplaceFileAttributes, out IEntry pEntry) {
             pEntry = new PassthroughEntry(Info);
             if (pReplaceFileAttributes) {
-                _ = SetBasicInfo(pFileAttributes | (uint)FileAttributes.Archive, 0, 0, 0, out pEntry);
+                _ = SetBasicInfo(pFileAttributes | FileAttributes.Archive, default, default, default);
             } else if (pFileAttributes != 0) {
-                _ = SetBasicInfo(pEntry.Attributes | pFileAttributes | (uint)FileAttributes.Archive, 0, 0, 0, out pEntry);
+                _ = SetBasicInfo(pEntry.Attributes | pFileAttributes | FileAttributes.Archive, default, default, default);
             }
             Stream.SetLength(0);
-            return FileSystemStatus.STATUS_SUCCESS;
+            return new Result(ResultStatus.Success);
         }
 
         public override IEntry GetEntry() => new PassthroughEntry(Info);
 
-        internal void GetSecurityByName(out uint pFileAttributes, ref byte[] pSecurityDescriptor) {
-            pFileAttributes = (uint)Info.Attributes;
+        internal void GetSecurityByName(out FileAttributes pFileAttributes, ref byte[] pSecurityDescriptor) {
+            pFileAttributes = Info.Attributes;
             if (pSecurityDescriptor != null && Info.Exists) {
                 pSecurityDescriptor = Info.GetAccessControl().GetSecurityDescriptorBinaryForm();
             }
+        }
+
+        public override FileSystemSecurity GetSecurity() => FileSystem.File.GetAccessControl(Info.FullName);
+
+        internal Result Lock(long offset, long length) {
+            if (Stream != null) {
+                Open(FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+            }
+            (Stream as FileStream)?.Lock(offset, length);
+            return new Result(ResultStatus.Success);
+        }
+
+        public override Result SetSecurity(FileSystemSecurity pFileSystemSecurity) {
+            FileSystem.File.SetAccessControl(Info.FullName, (FileSecurity)pFileSystemSecurity);
+            return new Result(ResultStatus.Success);
+        }
+
+        internal Result UnLock(long offset, long length) {
+            if (Stream != null) {
+                Open(FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+            }
+            (Stream as FileStream)?.Unlock(offset, length);
+            return new Result(ResultStatus.Success);
         }
     }
 }

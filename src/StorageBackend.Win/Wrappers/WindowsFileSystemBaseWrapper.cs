@@ -68,7 +68,7 @@ namespace StorageBackend.Win.Winfsp {
                 if (r.Status == ResultStatus.Success) {
                     FileDesc0 = Node;
 
-                    var e = Node.GetEntry();
+                    var e = Node;
                     FileNode = e;
                     e.GetStruct(out pFileInfo);
                     NormalizedName = e.Name;
@@ -151,7 +151,7 @@ namespace StorageBackend.Win.Winfsp {
                 Marshal.Copy(Buffer, Bytes, 0, Bytes.Length);
                 var r = Storage.Write(p, Bytes, (long)Offset, out var Transfered);
                 PBytesTransferred = (uint)Transfered;
-                p.GetEntry().GetStruct(out pFileInfo);
+                p.GetStruct(out pFileInfo);
                 return HandleResult(r).GetNtStatus();
             } catch (Win32Exception ex) {
                 throw WindowsExceptionGenerator.GetIOException(ex);
@@ -163,7 +163,7 @@ namespace StorageBackend.Win.Winfsp {
         public int Flush(object FileNode, object FileDesc0, out FileInfo pFileInfo) {
             try {
                 var r = Storage.Flush((IFSEntryPointer)FileDesc0);
-                ((IFSEntryPointer)FileDesc0).GetEntry().GetStruct(out pFileInfo);
+                ((IFSEntryPointer)FileDesc0).GetStruct(out pFileInfo);
                 return HandleResult(r).GetNtStatus();
             } catch (Win32Exception ex) {
                 throw WindowsExceptionGenerator.GetIOException(ex);
@@ -195,7 +195,7 @@ namespace StorageBackend.Win.Winfsp {
                     DateTime.FromFileTimeUtc((long)LastWriteTime),
                     DateTime.FromFileTimeUtc((long)ChangeTime)
                 );
-                p.GetEntry().GetStruct(out pFileInfo);
+                p.GetStruct(out pFileInfo);
                 return HandleResult(r).GetNtStatus();
             } catch (Win32Exception ex) {
                 throw WindowsExceptionGenerator.GetIOException(ex);
@@ -207,7 +207,7 @@ namespace StorageBackend.Win.Winfsp {
         public int SetFileSize(object FileNode, object FileDesc0, ulong NewSize, bool SetAllocationSize, out FileInfo pFileInfo) {
             try {
                 var r = Storage.SetFileSize((IFSEntryPointer)FileDesc0, (long)NewSize);
-                ((IFSEntryPointer)FileDesc0).GetEntry().GetStruct(out pFileInfo);
+                ((IFSEntryPointer)FileDesc0).GetStruct(out pFileInfo);
                 return HandleResult(r).GetNtStatus();
             } catch (Win32Exception ex) {
                 throw WindowsExceptionGenerator.GetIOException(ex);

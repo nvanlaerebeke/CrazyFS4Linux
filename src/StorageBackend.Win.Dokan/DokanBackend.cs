@@ -1,159 +1,303 @@
 ﻿using DokanNet;
+using StorageBackend.IO;
+using StorageBackend.Win.Dokan.Enum;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.AccessControl;
+using FileAccess = DokanNet.FileAccess;
 
 namespace StorageBackend.Win.Dokan {
 
     internal class DokanBackend<T> : IDokanOperations where T : IStorageType, new() {
+        private readonly string path;
         private readonly IStorageType Storage;
 
         public DokanBackend(string pSource) {
             Storage = new T();
             Storage.Setup(pSource);
+
+            path = pSource;
         }
 
-        public void Cleanup(string fileName, IDokanFileInfo info)
-            => Storage.Cleanup(info.GetFSEntryPointer(), info.DeleteOnClose);
-
-        public void CloseFile(string fileName, IDokanFileInfo info)
-            => Storage.Close(info.GetFSEntryPointer());
-
-        public NtStatus CreateFile(string pFileName, DokanNet.FileAccess pAccess, FileShare pShare, FileMode pMode, FileOptions pOptions, FileAttributes pAttributes, IDokanFileInfo pInfo) {
-            var r = Storage.Create(pFileName, !pInfo.IsDirectory, pAccess.GetFileAccess(), pShare, pMode, pOptions, pAttributes, out var e).GetNtStatus();
-            if (e != null) {
-                pInfo.IsDirectory = !e.GetEntry().IsFile();
-                pInfo.Context = e;
-            }
-            return r;
-        }
-
-        public NtStatus DeleteDirectory(string fileName, IDokanFileInfo info)
-            => Storage.Delete(info.GetFSEntryPointer(), false).GetNtStatus();
-
-        public NtStatus DeleteFile(string fileName, IDokanFileInfo info)
-            => Storage.Delete(info.GetFSEntryPointer(), false).GetNtStatus();
-
-        public NtStatus FindFiles(string fileName, out IList<FileInformation> files, IDokanFileInfo info)
-            => FindFilesWithPattern(fileName, "*", out files, info);
-
-        public NtStatus FindFilesWithPattern(string fileName, string searchPattern, out IList<FileInformation> files, IDokanFileInfo info) {
-            var r = Storage.ReadDirectory(info.GetFSEntryPointer(), searchPattern, false, "", out var Entries);
-            files = new List<FileInformation>();
-            if (Entries != null) {
-                foreach (var e in Entries) {
-                    var entry = e.GetEntry();
-                    files.Add(new FileInformation() {
-                        Attributes = entry.Attributes,
-                        CreationTime = entry.CreationTime,
-                        FileName = entry.Name,
-                        LastAccessTime = entry.LastAccessTime,
-                        LastWriteTime = entry.LastWriteTime,
-                        Length = entry.FileSize
-                    });
-                }
+        public NtStatus CreateFile(string fileName, FileAccess access, FileShare share, FileMode mode, FileOptions options, FileAttributes attributes, IDokanFileInfo info) {
+            var r = Storage.Create(fileName, !info.IsDirectory, FileAccessConverter.Get(access), share, mode, options, attributes, out var node);
+            info.Context = node;
+            if (node != null) {
+                info.IsDirectory = !node.IsFile();
             }
             return r.GetNtStatus();
         }
 
-        public NtStatus FindStreams(string fileName, out IList<FileInformation> streams, IDokanFileInfo info) {
-            var entry = info.GetFSEntryPointer().GetEntry();
-            streams = new List<FileInformation>() {
-                new FileInformation() {
-                    Attributes = entry.Attributes,
-                    CreationTime = entry.CreationTime,
-                    FileName = entry.Name,
-                    LastAccessTime = entry.LastAccessTime,
-                    LastWriteTime = entry.LastWriteTime,
-                    Length = entry.FileSize
+        public NtStatus GetFileSecurity(string fileName, out FileSystemSecurity security, AccessControlSections sections, IDokanFileInfo info) {
+            if (info.Context == null) {
+                info.Context = Storage.GetFileInfo(fileName);
+            }
+            return info.GetFSEntryPointer().GetAccessControl(out security).GetNtStatus();
+        }
+
+        public NtStatus SetFileSecurity(string fileName, FileSystemSecurity security, AccessControlSections sections, IDokanFileInfo info) {
+            if (info.Context == null) {
+                info.Context = Storage.GetFileInfo(fileName);
+            }
+            var e = info.GetFSEntryPointer();
+            if (e.IsFile()) {
+                return (e as IFSFile).SetAccessControl((FileSecurity)security).GetNtStatus();
+            } else {
+                return (e as IFSDirectory).SetAccessControl((DirectorySecurity)security).GetNtStatus();
+            }
+        }
+
+        public void Cleanup(string fileName, IDokanFileInfo info) {
+            if (info.Context == null) {
+                info.Context = Storage.GetFileInfo(fileName);
+            }
+            var e = info.GetFSEntryPointer();
+            ;
+            if (e != null) {
+                e.Cleanup(info.DeleteOnClose);
+            }
+            info.Context = null;
+        }
+
+        public void CloseFile(string fileName, IDokanFileInfo info) {
+            if (info.Context != null) {
+                var e = info.GetFSEntryPointer();
+                if (e != null) {
+                    e.Close();
                 }
-            };
+            }
+            info.Context = null;
+        }
+
+        public NtStatus ReadFile(string fileName, byte[] buffer, out int bytesRead, long offset, IDokanFileInfo info) {
+            if (info.Context == null) {
+                info.Context = Storage.GetFileInfo(fileName);
+            }
+            var e = info.GetFSEntryPointer();
+            if (e?.IsFile() == true) {
+                return (e as IFSFile).Read(buffer, out bytesRead, offset).GetNtStatus();
+            }
+            bytesRead = 0;
             return NtStatus.Success;
         }
 
-        public NtStatus FlushFileBuffers(string fileName, IDokanFileInfo info)
-            => Storage.Flush(info.GetFSEntryPointer()).GetNtStatus();
+        public NtStatus WriteFile(string fileName, byte[] buffer, out int bytesWritten, long offset, IDokanFileInfo info) {
+            if (info.Context == null) {
+                info.Context = Storage.GetFileInfo(fileName);
+            }
+            var e = info.GetFSEntryPointer();
+            if (e?.IsFile() == true) {
+                return (e as IFSFile).Write(buffer, out bytesWritten, offset).GetNtStatus();
+            }
+            bytesWritten = 0;
+            return NtStatus.Success;
+        }
 
-        public NtStatus GetDiskFreeSpace(out long freeBytesAvailable, out long totalNumberOfBytes, out long totalNumberOfFreeBytes, IDokanFileInfo info) {
-            var v = Storage.VolumeManager.GetVolumeInfo();
-            freeBytesAvailable = v.FreeSize;
-            totalNumberOfBytes = v.TotalSize;
-            totalNumberOfFreeBytes = v.TotalSize - v.FreeSize;
+        public NtStatus FlushFileBuffers(string fileName, IDokanFileInfo info) {
+            var e = info.GetFSEntryPointer();
+            if (e?.IsFile() == true) {
+                (e as IFSFile)?.Flush();
+            }
             return NtStatus.Success;
         }
 
         public NtStatus GetFileInformation(string fileName, out FileInformation fileInfo, IDokanFileInfo info) {
-            var entry = info.GetFSEntryPointer().GetEntry();
-            fileInfo = new FileInformation() {
-                Attributes = entry.Attributes,
-                CreationTime = entry.CreationTime,
-                FileName = entry.Name,
-                LastAccessTime = entry.LastAccessTime,
-                LastWriteTime = entry.LastWriteTime,
-                Length = entry.FileSize
-            };
-            return NtStatus.Success;
+            if (info.Context == null) {
+                info.Context = Storage.GetFileInfo(fileName);
+            }
+            var e = info.GetFSEntryPointer();
+            if (e != null) {
+                fileInfo = e.ToFileInformation();
+                return NtStatus.Success;
+            }
+            fileInfo = default;
+            return NtStatus.ObjectNameNotFound;
         }
-
-        public NtStatus GetFileSecurity(string fileName, out FileSystemSecurity security, AccessControlSections sections, IDokanFileInfo info)
-            => Storage.GetSecurity(info.GetFSEntryPointer(), out security).GetNtStatus();
-
-        public NtStatus GetVolumeInformation(out string volumeLabel, out FileSystemFeatures features, out string fileSystemName, out uint maximumComponentLength, IDokanFileInfo info) {
-            var v = Storage.VolumeManager.GetVolumeInfo();
-            features = (FileSystemFeatures)(int)Storage.VolumeManager.GetFeatures();
-            volumeLabel = v.Label;
-            fileSystemName = "CrazyFS";
-            maximumComponentLength = 256;
-            return NtStatus.Success;
-        }
-
-        public NtStatus LockFile(string fileName, long offset, long length, IDokanFileInfo info)
-            => Storage.Lock(info.GetFSEntryPointer(), offset, length).GetNtStatus();
-
-        public NtStatus Mounted(IDokanFileInfo info)
-            => NtStatus.Success;
-
-        public NtStatus MoveFile(string oldName, string newName, bool replace, IDokanFileInfo info)
-            => Storage.Rename(oldName, newName, replace).GetNtStatus();
-
-        public NtStatus ReadFile(string fileName, byte[] buffer, out int bytesRead, long offset, IDokanFileInfo info)
-            => Storage.Read(info.GetFSEntryPointer(), out buffer, offset, buffer.Length, out bytesRead).GetNtStatus();
-
-        public NtStatus SetAllocationSize(string fileName, long length, IDokanFileInfo info)
-            => Storage.SetFileSize(info.GetFSEntryPointer(), length).GetNtStatus();
-
-        public NtStatus SetEndOfFile(string fileName, long length, IDokanFileInfo info)
-            => Storage.SetFileSize(info.GetFSEntryPointer(), length).GetNtStatus();
 
         public NtStatus SetFileAttributes(string fileName, FileAttributes attributes, IDokanFileInfo info) {
-            var p = info.GetFSEntryPointer();
-            var e = p.GetEntry();
-            return Storage.SetBasicInfo(p, attributes, e.CreationTime, e.LastAccessTime, e.LastWriteTime, e.ChangeTime).GetNtStatus();
+            if (info.Context == null) {
+                info.Context = Storage.GetFileInfo(fileName);
+            }
+            var e = info.GetFSEntryPointer();
+            if (e?.IsFile() == true) {
+                return (e as IFSFile).SetAttributes(attributes).GetNtStatus();
+            } else {
+                return NtStatus.ObjectTypeMismatch;
+            }
         }
-
-        public NtStatus SetFileSecurity(string fileName, FileSystemSecurity security, AccessControlSections sections, IDokanFileInfo info)
-            => Storage.SetSecurity(info.GetFSEntryPointer(), security).GetNtStatus();
 
         public NtStatus SetFileTime(string fileName, DateTime? creationTime, DateTime? lastAccessTime, DateTime? lastWriteTime, IDokanFileInfo info) {
-            var p = info.GetFSEntryPointer();
-            return Storage.SetBasicInfo(
-                p,
-                p.GetEntry().Attributes,
-                (creationTime != null) ? (DateTime)creationTime : default,
-                (lastAccessTime != null) ? (DateTime)lastAccessTime : default,
-                (lastWriteTime != null) ? (DateTime)lastWriteTime : default,
-                default
-            ).GetNtStatus();
+            if (info.Context == null) {
+                info.Context = Storage.GetFileInfo(fileName);
+            }
+            var e = info.GetFSEntryPointer();
+            if (e?.IsFile() == true) {
+                var f = (e as IFSFile);
+                if (f != null) {
+                    try {
+                        if (creationTime.HasValue) {
+                            f.SetCreationTime(creationTime.Value);
+                        }
+                        if (lastAccessTime.HasValue) {
+                            f.SetLastAccessTime(lastAccessTime.Value);
+                        }
+                        if (lastWriteTime.HasValue) {
+                            f.SetLastWriteTime(lastWriteTime.Value);
+                        }
+                        return NtStatus.Success;
+                    } catch (UnauthorizedAccessException) {
+                        return NtStatus.AccessDenied;
+                    }
+                }
+            }
+            return NtStatus.ObjectNameNotFound;
         }
 
-        public NtStatus UnlockFile(string fileName, long offset, long length, IDokanFileInfo info)
-            => Storage.UnLock(info.GetFSEntryPointer(), offset, length).GetNtStatus();
+        /// <summary>
+        /// we just check here if we could delete the file - the true deletion is in Cleanup
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <param name="info"></param>
+        /// <returns></returns>
+        public NtStatus DeleteFile(string fileName, IDokanFileInfo info) {
+            if (info.Context == null) {
+                info.Context = Storage.GetFileInfo(fileName);
+            }
+            var e = info.GetFSEntryPointer();
+            if (e?.IsFile() == false) {
+                return NtStatus.AccessDenied;
+            }
+            return NtStatus.Success;
+        }
 
-        public NtStatus Unmounted(IDokanFileInfo info)
-            => NtStatus.Success;
+        public NtStatus MoveFile(string oldName, string newName, bool replace, IDokanFileInfo info) {
+            return Storage.Move(PathNormalizer.ConcatPath(path, oldName), PathNormalizer.ConcatPath(path, newName), replace).GetNtStatus();
+        }
 
-        public NtStatus WriteFile(string fileName, byte[] buffer, out int bytesWritten, long offset, IDokanFileInfo info)
-            => Storage.Write(info.GetFSEntryPointer(), buffer, offset, out bytesWritten).GetNtStatus();
+        public NtStatus SetEndOfFile(string fileName, long length, IDokanFileInfo info) {
+            try {
+                if (info.Context == null) {
+                    info.Context = Storage.GetFileInfo(fileName);
+                }
+                var e = info.GetFSEntryPointer();
+                if (e?.IsFile() == true) {
+                    (e as IFSFile).SetLength(length);
+                }
+                return NtStatus.Success;
+            } catch (IOException) {
+                return NtStatus.DiskFull;
+            }
+        }
+
+        public NtStatus SetAllocationSize(string fileName, long length, IDokanFileInfo info) {
+            return SetEndOfFile(fileName, length, info);
+        }
+
+        public NtStatus LockFile(string fileName, long offset, long length, IDokanFileInfo info) {
+            try {
+                if (info.Context == null) {
+                    info.Context = Storage.GetFileInfo(fileName);
+                }
+                var e = info.GetFSEntryPointer();
+                if (e?.IsFile() == true) {
+                    (e as IFSFile).Lock(offset, length);
+                    return NtStatus.Success;
+                }
+                return NtStatus.ObjectTypeMismatch;
+            } catch (IOException) {
+                return NtStatus.AccessDenied;
+            }
+        }
+
+        public NtStatus UnlockFile(string fileName, long offset, long length, IDokanFileInfo info) {
+            try {
+                if (info.Context == null) {
+                    info.Context = Storage.GetFileInfo(fileName);
+                }
+                var e = info.GetFSEntryPointer();
+                if (e?.IsFile() == true) {
+                    (e as IFSFile).UnLock(offset, length);
+                    return NtStatus.Success;
+                }
+                return NtStatus.ObjectTypeMismatch;
+            } catch (IOException) {
+                return NtStatus.AccessDenied;
+            }
+        }
+
+        /// <summary>
+        /// if dir is not empty it can't be deleted
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <param name="info"></param>
+        /// <returns></returns>
+        public NtStatus DeleteDirectory(string fileName, IDokanFileInfo info) {
+            var e = info.GetFSEntryPointer();
+            if (e == null) {
+                e = Storage.GetFileInfo(fileName);
+            }
+            if (e != null && !e.IsFile()) {
+                return Storage.DeleteDirectory(e as IFSDirectory).GetNtStatus();
+            }
+            return NtStatus.ObjectNameNotFound;
+        }
+
+        public NtStatus FindFilesWithPattern(string fileName, string searchPattern, out IList<FileInformation> files, IDokanFileInfo info) {
+            files = new List<FileInformation>();
+            if (info.Context == null) {
+                info.Context = Storage.GetFileInfo(fileName);
+            }
+            var e = info.GetFSEntryPointer();
+            if (e?.IsFile() == false) {
+                foreach (var i in (e as IFSDirectory).GetContent(searchPattern)) {
+                    files.Add(i.ToFileInformation());
+                }
+            }
+            return NtStatus.Success;
+        }
+
+        /// <summary>
+        /// This function is not called because FindFilesWithPattern is implemented
+        /// Return DokanResult.NotImplemented in FindFilesWithPattern to make FindFiles called
+        /// </summary>
+        public NtStatus FindFiles(string fileName, out IList<FileInformation> files, IDokanFileInfo info) {
+            return FindFilesWithPattern(fileName, "*", out files, info);
+        }
+
+        /// <summary>
+        /// Currently alternative streams are not implemented, see here for more info about alt streams:
+        /// http://ntfs.com/ntfs-multiple.htm
+        /// </summary>
+        public NtStatus FindStreams(string fileName, IntPtr enumContext, out string streamName, out long streamSize, IDokanFileInfo info) {
+            streamName = string.Empty;
+            streamSize = 0;
+            return NtStatus.NotImplemented;
+        }
+
+        /// <summary>
+        /// Currently alternative streams are not implemented, see here for more info about alt streams:
+        /// http://ntfs.com/ntfs-multiple.htm
+        /// </summary>
+        public NtStatus FindStreams(string fileName, out IList<FileInformation> streams, IDokanFileInfo info) {
+            streams = new FileInformation[0];
+            return NtStatus.NotImplemented;
+        }
+
+        public NtStatus GetDiskFreeSpace(out long freeBytesAvailable, out long totalNumberOfBytes, out long totalNumberOfFreeBytes, IDokanFileInfo info) {
+            return Volume.VolumeManager.GetDiskFreeSpace(path, out freeBytesAvailable, out totalNumberOfBytes, out totalNumberOfFreeBytes);
+        }
+
+        public NtStatus GetVolumeInformation(out string volumeLabel, out FileSystemFeatures features, out string fileSystemName, out uint maximumComponentLength, IDokanFileInfo info) {
+            return Volume.VolumeManager.GetVolumeInformation(out volumeLabel, out features, out fileSystemName, out maximumComponentLength);
+        }
+
+        public NtStatus Mounted(IDokanFileInfo info) {
+            return NtStatus.Success;
+        }
+
+        public NtStatus Unmounted(IDokanFileInfo info) {
+            return NtStatus.Success;
+        }
     }
 }

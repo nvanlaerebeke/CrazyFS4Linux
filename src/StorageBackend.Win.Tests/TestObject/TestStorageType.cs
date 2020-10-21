@@ -23,6 +23,8 @@ namespace StorageBackend.Win.Tests.TestObject {
 
         public Result GetFileInfo(IFSEntryPointer pFileDesc, out IEntry pEntry) => throw new NotImplementedException();
 
+        public Result GetFileInfo(string pPath, out IFSEntryPointer pFileDesc) => throw new NotImplementedException();
+
         public Result GetSecurity(IFSEntryPointer pFileDesc, out FileSystemSecurity pSecurity) => throw new NotImplementedException();
 
         public Result GetSecurityByName(string pFileName, out FileAttributes pFileAttributes, ref byte[] pSecurityDescriptor) => throw new NotImplementedException();
@@ -42,6 +44,8 @@ namespace StorageBackend.Win.Tests.TestObject {
         public Result ReadDirectory(IFSEntryPointer pFileDesc, string pPattern, bool pCaseSensitive, string pMarker, out IFSEntryPointer[] pEntries) => throw new NotImplementedException();
 
         public Result Rename(string pOldPath, string pNewPath, bool pReplaceIfExists) => throw new NotImplementedException();
+
+        public Result SetAllocationSize(string fileName, long length, IFSEntryPointer info) => throw new NotImplementedException();
 
         public Result SetBasicInfo(IFSEntryPointer pFileDesc, FileAttributes pFileAttributes, DateTime pCreationTime, DateTime pLastAccessTime, DateTime pLastWriteTime, DateTime pChangeTime) => throw new NotImplementedException();
 

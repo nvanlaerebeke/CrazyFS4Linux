@@ -29,6 +29,9 @@ namespace StorageBackend.Win.Dokan {
                 case ResultStatus.Error:
                     return NtStatus.Error;
 
+                case ResultStatus.EndOfFile:
+                    return NtStatus.EndOfFile;
+
                 case ResultStatus.FileExists:
                     return NtStatus.ObjectNameCollision;
 

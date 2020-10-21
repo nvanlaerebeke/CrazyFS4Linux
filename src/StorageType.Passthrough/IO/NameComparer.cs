@@ -2,7 +2,10 @@
 
 namespace StorageType.Passthrough.IO {
 
-    internal static class NameMatcher {
+    /// <summary>
+    /// %Dokan functions helpers for user <see cref="IDokanOperations"/> implementation.
+    /// </summary>
+    internal static class NameComparer {
 
         /// <summary>
         /// Matches zero or more characters until encountering and matching the final . in the name.
@@ -43,9 +46,9 @@ namespace StorageType.Passthrough.IO {
         /// </remarks>
         /// <param name="expression">The matching pattern. Can contain: ?, *, &lt;, &quot;, &gt;.</param>
         /// <param name="name">The string that will be tested.</param>
-        /// <param name="casesensitive">When set to true a case insensitive match will be performed.</param>
+        /// <param name="ignoreCase">When set to true a case insensitive match will be performed.</param>
         /// <returns>Returns true if Expression match Name, false otherwise.</returns>
-        public static bool Match(string expression, string name, bool casesensitive) {
+        public static bool IsNameInExpression(string expression, string name, bool ignoreCase) {
             var ei = 0;
             var ni = 0;
 
@@ -57,7 +60,7 @@ namespace StorageType.Passthrough.IO {
                             return true;
 
                         while (ni < name.Length) {
-                            if (Match(expression.Substring(ei), name.Substring(ni), casesensitive))
+                            if (IsNameInExpression(expression.Substring(ei), name.Substring(ni), ignoreCase))
                                 return true;
                             ni++;
                         }
@@ -70,10 +73,10 @@ namespace StorageType.Passthrough.IO {
 
                         var endReached = false;
                         while (!endReached) {
-                            endReached = ni >= name.Length || (lastDotIndex > -1 && ni > lastDotIndex);
+                            endReached = (ni >= name.Length || lastDotIndex > -1 && ni > lastDotIndex);
 
                             if (!endReached) {
-                                if (Match(expression.Substring(ei), name.Substring(ni), casesensitive))
+                                if (IsNameInExpression(expression.Substring(ei), name.Substring(ni), ignoreCase))
                                     return true;
                                 ni++;
                             }
@@ -118,10 +121,10 @@ namespace StorageType.Passthrough.IO {
                         break;
 
                     default:
-                        if (!casesensitive && char.ToUpperInvariant(expression[ei]) == char.ToUpperInvariant(name[ni])) {
+                        if (ignoreCase && char.ToUpperInvariant(expression[ei]) == char.ToUpperInvariant(name[ni])) {
                             ei++;
                             ni++;
-                        } else if (casesensitive && expression[ei] == name[ni]) {
+                        } else if (!ignoreCase && expression[ei] == name[ni]) {
                             ei++;
                             ni++;
                         } else {

@@ -1,67 +1,88 @@
 ﻿using StorageBackend;
 using StorageBackend.IO;
 using System;
-using System.IO.Abstractions;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.AccessControl;
 
 namespace StorageType.Passthrough.IO {
 
-    internal class PassthroughDirectory : PassthroughFileSystemBase {
-        private readonly IDirectoryInfo DirectoryInfo;
-        private readonly IFileSystem FileSystem;
-        private IFSEntryPointer[] FileSystemInfos;
+    internal partial class PassthroughDirectory : PassthroughFileSystemBase, IFSDirectory {
 
-        public PassthroughDirectory(IDirectoryInfo pDirectoryInfo) : this(pDirectoryInfo, new FileSystem()) {
+        protected PassthroughDirectory() {
         }
 
-        public PassthroughDirectory(IDirectoryInfo pDirectoryInfo, IFileSystem pFileSystem) {
-            FileSystem = pFileSystem;
-            DirectoryInfo = pDirectoryInfo;
+        public PassthroughDirectory(DirectoryInfo info) : base(info) {
         }
 
-        public override Result SetBasicInfo(System.IO.FileAttributes Attributes, DateTime CreationTime, DateTime LastAccessTime, DateTime LastWriteTime) {
-            if ((Attributes & System.IO.FileAttributes.Directory) == 0) {
-                Attributes |= System.IO.FileAttributes.Directory;
+        public override object Clone() {
+            return new PassthroughDirectory() {
+                AllocationSize = AllocationSize,
+                Attributes = Attributes,
+                ChangeTime = ChangeTime,
+                CreationTime = CreationTime,
+                EaSize = EaSize,
+                FileSize = FileSize,
+                FullName = FullName,
+                HardLinks = HardLinks,
+                IndexNumber = IndexNumber,
+                LastAccessTime = LastAccessTime,
+                LastWriteTime = LastWriteTime,
+                Name = Name,
+                ReparseTag = ReparseTag
+            };
+        }
+
+        public override void Cleanup(bool deleteOnClose) {
+            if (deleteOnClose) {
+                Directory.Delete(FullName);
             }
-            DirectoryInfo.Attributes = Attributes;
-            if (CreationTime != default) {
-                DirectoryInfo.CreationTimeUtc = CreationTime;
-            }
-            if (LastAccessTime != default) {
-                DirectoryInfo.LastAccessTimeUtc = LastAccessTime;
-            }
-            if (LastWriteTime != default) {
-                DirectoryInfo.LastWriteTimeUtc = LastWriteTime;
+        }
+
+        public override Result GetAccessControl(out FileSystemSecurity security) {
+            try {
+                security = new DirectoryInfo(FullName).GetAccessControl();
+            } catch (UnauthorizedAccessException) {
+                security = null;
+                return new Result(ResultStatus.AccessDenied);
             }
             return new Result(ResultStatus.Success);
         }
 
-        public override byte[] GetSecurityDescriptor() => DirectoryInfo.GetAccessControl().GetSecurityDescriptorBinaryForm();
-
-        public override Result SetSecurityDescriptor(AccessControlSections Sections, byte[] SecurityDescriptor) {
-            DirectoryInfo.SetAccessControl(new DirectorySecurity(DirectoryInfo.FullName, Sections));
-            return new Result(ResultStatus.Success);
-        }
-
-        public IFSEntryPointer[] ReadDirectory(string pPattern, bool pCaseSensitive, string pMarker) {
-            if (FileSystemInfos == null) {
-                FileSystemInfos = DirectoryInfo
-                    .EnumerateFileSystemInfos()
-                    .Where(finfo => NameMatcher.Match(pPattern, finfo.Name, pCaseSensitive))
-                    .Select(finfo => finfo.GetIFSEntryPointer(FileSystem))
-                    .ToArray();
+        public Result SetAccessControl(DirectorySecurity security) {
+            try {
+                new DirectoryInfo(FullName).SetAccessControl(security);
+                return new Result(ResultStatus.Success);
+            } catch (UnauthorizedAccessException) {
+                return new Result(ResultStatus.AccessDenied);
             }
-            return FileSystemInfos;
         }
 
-        public override IEntry GetEntry() => new PassthroughEntry(DirectoryInfo);
+        public override void Close() {
+        }
 
-        public override FileSystemSecurity GetSecurity() => FileSystem.Directory.GetAccessControl(DirectoryInfo.FullName);
+        public bool HasContent() {
+            return (new DirectoryInfo(FullName).GetFileSystemInfos().Length > 0);
+        }
 
-        public override Result SetSecurity(FileSystemSecurity pFileSystemSecurity) {
-            FileSystem.Directory.SetAccessControl(DirectoryInfo.FullName, (DirectorySecurity)pFileSystemSecurity);
-            return new Result(ResultStatus.Success);
+        public List<IFSEntryPointer> GetContent(string searchPattern = "") {
+            var e = new List<IFSEntryPointer>();
+            var list = new List<FileSystemInfo>();
+
+            if (string.IsNullOrEmpty(searchPattern)) {
+                list = (new DirectoryInfo(FullName).GetFileSystemInfos()).ToList();
+            } else {
+                list = new DirectoryInfo(FullName).EnumerateFileSystemInfos().Where(finfo => NameComparer.IsNameInExpression(searchPattern, finfo.Name, true)).ToList();
+            }
+            list.ForEach(i => {
+                if ((i.Attributes & FileAttributes.Directory) == FileAttributes.Directory) {
+                    e.Add(new PassthroughDirectory(i as DirectoryInfo));
+                } else {
+                    e.Add(new PassthroughFile(i as FileInfo));
+                }
+            });
+            return e;
         }
     }
 }

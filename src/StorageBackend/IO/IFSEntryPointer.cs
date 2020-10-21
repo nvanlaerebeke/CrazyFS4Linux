@@ -1,7 +1,13 @@
-﻿namespace StorageBackend.IO {
+﻿using System.Security.AccessControl;
 
-    public interface IFSEntryPointer {
+namespace StorageBackend.IO {
 
-        IEntry GetEntry();
+    public interface IFSEntryPointer : IEntry {
+
+        Result GetAccessControl(out FileSystemSecurity security);
+
+        void Cleanup(bool deleteOnCleanup);
+
+        void Close();
     }
 }

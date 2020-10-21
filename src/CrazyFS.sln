@@ -7,17 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StorageBackend", "StorageBa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StorageType.Passthrough", "StorageType.Passthrough\StorageType.Passthrough.csproj", "{B7D235F2-99FB-488A-B39F-B5D29FF8BB64}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StorageBackend.Win.Winfsp", "StorageBackend.Win\StorageBackend.Win.Winfsp.csproj", "{19762B72-7FBD-4756-8228-B02FA87312C6}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CrazyFS", "CrazyFS\CrazyFS.csproj", "{E48E1AD0-A3FA-4287-AA0D-8E1F699F3225}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CrazyFS.Tests", "CrazyFS.Tests\CrazyFS.Tests.csproj", "{7CAFB315-1DBD-47E4-A681-B2663F0E3938}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StorageBackend.Tests", "StorageBackend.Tests\StorageBackend.Tests.csproj", "{AD68DB1F-3310-4DD4-A1AE-EAC5475ED555}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StorageBackend.Win.Winfsp.Tests", "StorageBackend.Win.Tests\StorageBackend.Win.Winfsp.Tests.csproj", "{9BF3B2C6-2BF2-4A8E-904A-16D96A64DDE5}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StorageType.Passthrough.Tests", "StorageType.Passthrough.Tests\StorageType.Passthrough.Tests.csproj", "{B0146404-5502-4497-83E7-86369DAB69E3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{16BE8DF6-75A4-4E27-948B-FB27DD55E377}"
 	ProjectSection(SolutionItems) = preProject
@@ -25,8 +19,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StorageBackend.Win.Dokan", "StorageBackend.Win.Dokan\StorageBackend.Win.Dokan.csproj", "{A79ED0AD-9A07-40FD-B90A-4B599D764BFD}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StorageType.Mirror", "StorageType.Mirror\StorageType.Mirror.csproj", "{2FD3DF79-7420-4472-8A6E-FB8E42BCC04E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnDiskInfoProvider.cs", "OnDiskInfoProvider.cs\OnDiskInfoProvider.cs.csproj", "{36CDAC82-2C91-41E7-8BF0-5AA8BFF1CE3F}"
 EndProject
@@ -44,10 +36,6 @@ Global
 		{B7D235F2-99FB-488A-B39F-B5D29FF8BB64}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B7D235F2-99FB-488A-B39F-B5D29FF8BB64}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B7D235F2-99FB-488A-B39F-B5D29FF8BB64}.Release|Any CPU.Build.0 = Release|Any CPU
-		{19762B72-7FBD-4756-8228-B02FA87312C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{19762B72-7FBD-4756-8228-B02FA87312C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{19762B72-7FBD-4756-8228-B02FA87312C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{19762B72-7FBD-4756-8228-B02FA87312C6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E48E1AD0-A3FA-4287-AA0D-8E1F699F3225}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E48E1AD0-A3FA-4287-AA0D-8E1F699F3225}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E48E1AD0-A3FA-4287-AA0D-8E1F699F3225}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -60,22 +48,10 @@ Global
 		{AD68DB1F-3310-4DD4-A1AE-EAC5475ED555}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AD68DB1F-3310-4DD4-A1AE-EAC5475ED555}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AD68DB1F-3310-4DD4-A1AE-EAC5475ED555}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9BF3B2C6-2BF2-4A8E-904A-16D96A64DDE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9BF3B2C6-2BF2-4A8E-904A-16D96A64DDE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9BF3B2C6-2BF2-4A8E-904A-16D96A64DDE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9BF3B2C6-2BF2-4A8E-904A-16D96A64DDE5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B0146404-5502-4497-83E7-86369DAB69E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B0146404-5502-4497-83E7-86369DAB69E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B0146404-5502-4497-83E7-86369DAB69E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B0146404-5502-4497-83E7-86369DAB69E3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A79ED0AD-9A07-40FD-B90A-4B599D764BFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A79ED0AD-9A07-40FD-B90A-4B599D764BFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A79ED0AD-9A07-40FD-B90A-4B599D764BFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A79ED0AD-9A07-40FD-B90A-4B599D764BFD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2FD3DF79-7420-4472-8A6E-FB8E42BCC04E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2FD3DF79-7420-4472-8A6E-FB8E42BCC04E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2FD3DF79-7420-4472-8A6E-FB8E42BCC04E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2FD3DF79-7420-4472-8A6E-FB8E42BCC04E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{36CDAC82-2C91-41E7-8BF0-5AA8BFF1CE3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{36CDAC82-2C91-41E7-8BF0-5AA8BFF1CE3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{36CDAC82-2C91-41E7-8BF0-5AA8BFF1CE3F}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -1,24 +1,23 @@
 ﻿using StorageBackend;
 using StorageBackend.IO;
 using System;
-using System.IO;
-using System.Linq;
+using System.IO.Abstractions;
 using System.Runtime.InteropServices;
 
 namespace StorageType.Passthrough.IO {
 
     internal partial class PassthroughFile : PassthroughFileSystemBase {
 
-        public static Result CreateFile(string filePath, FileAccess access, FileShare share, FileMode mode, FileOptions options, FileAttributes attributes, bool isdirectory, out IFSEntryPointer entry) {
+        public static Result CreateFile(FileSystem FileSystem, string filePath, System.IO.FileAccess access, System.IO.FileShare share, System.IO.FileMode mode, System.IO.FileOptions options, System.IO.FileAttributes attributes, bool isdirectory, out IFSEntryPointer entry) {
             var result = ResultStatus.Success;
 
             if (isdirectory) {
                 try {
                     switch (mode) {
-                        case FileMode.Open:
-                            if (!Directory.Exists(filePath)) {
+                        case System.IO.FileMode.Open:
+                            if (!FileSystem.Directory.Exists(filePath)) {
                                 try {
-                                    if (!File.GetAttributes(filePath).HasFlag(FileAttributes.Directory)) {
+                                    if (!FileSystem.File.GetAttributes(filePath).HasFlag(System.IO.FileAttributes.Directory)) {
                                         entry = null;
                                         return new Result(ResultStatus.NotADirectory);
                                     }
@@ -29,25 +28,23 @@ namespace StorageType.Passthrough.IO {
                                 entry = null;
                                 return new Result(ResultStatus.PathNotFound);
                             }
-
-                            new DirectoryInfo(filePath).EnumerateFileSystemInfos().Any();
                             // you can't list the directory
                             break;
 
-                        case FileMode.CreateNew:
-                            if (Directory.Exists(filePath)) {
+                        case System.IO.FileMode.CreateNew:
+                            if (FileSystem.Directory.Exists(filePath)) {
                                 entry = null;
                                 return new Result(ResultStatus.FileExists);
                             }
 
                             try {
-                                _ = File.GetAttributes(filePath).HasFlag(FileAttributes.Directory);
+                                _ = FileSystem.File.GetAttributes(filePath).HasFlag(System.IO.FileAttributes.Directory);
                                 entry = null;
                                 return new Result(ResultStatus.AlreadyExists);
-                            } catch (IOException) {
+                            } catch (System.IO.IOException) {
                             }
 
-                            _ = Directory.CreateDirectory(filePath);
+                            _ = FileSystem.Directory.CreateDirectory(filePath);
                             break;
                     }
                 } catch (UnauthorizedAccessException) {
@@ -59,34 +56,34 @@ namespace StorageType.Passthrough.IO {
                 var pathIsDirectory = false;
 
                 try {
-                    pathExists = (Directory.Exists(filePath) || File.Exists(filePath));
-                    pathIsDirectory = pathExists ? File.GetAttributes(filePath).HasFlag(FileAttributes.Directory) : false;
-                } catch (IOException) {
+                    pathExists = (FileSystem.Directory.Exists(filePath) || FileSystem.File.Exists(filePath));
+                    pathIsDirectory = pathExists ? FileSystem.File.GetAttributes(filePath).HasFlag(System.IO.FileAttributes.Directory) : false;
+                } catch (System.IO.IOException) {
                 }
 
                 switch (mode) {
-                    case FileMode.Open:
+                    case System.IO.FileMode.Open:
 
                         if (pathExists) {
                             // must set it to something if you return DokanError.Success
                             if (pathIsDirectory) {
-                                entry = new PassthroughDirectory(new DirectoryInfo(filePath));
+                                entry = new PassthroughDirectory(FileSystem.DirectoryInfo.FromDirectoryName(filePath));
                             } else {
-                                entry = new PassthroughFile(new FileInfo(filePath));
+                                entry = new PassthroughFile(FileSystem.FileInfo.FromFileName(filePath));
                             }
                             return new Result(ResultStatus.Success);
                         } else {
                             entry = null;
                             return new Result(ResultStatus.FileNotFound);
                         }
-                    case FileMode.CreateNew:
+                    case System.IO.FileMode.CreateNew:
                         if (pathExists) {
                             entry = null;
                             return new Result(ResultStatus.FileExists);
                         }
                         break;
 
-                    case FileMode.Truncate:
+                    case System.IO.FileMode.Truncate:
                         if (!pathExists) {
                             entry = null;
                             return new Result(ResultStatus.FileNotFound);
@@ -95,19 +92,20 @@ namespace StorageType.Passthrough.IO {
                 }
 
                 try {
-                    entry = new PassthroughFile(new FileInfo(filePath));
+                    entry = new PassthroughFile(FileSystem.FileInfo.FromFileName(filePath));
 
-                    if (pathExists && (mode == FileMode.OpenOrCreate || mode == FileMode.Create)) {
+                    if (pathExists && (mode == System.IO.FileMode.OpenOrCreate || mode == System.IO.FileMode.Create)) {
                         result = ResultStatus.AlreadyExists;
                     }
 
-                    if (mode == FileMode.CreateNew || mode == FileMode.Create) //Files are always created as Archive
-                        attributes |= FileAttributes.Archive;
-                    File.SetAttributes(filePath, attributes);
+                    if (mode == System.IO.FileMode.CreateNew || mode == System.IO.FileMode.Create) { //Files are always created as Archive
+                        attributes |= System.IO.FileAttributes.Archive;
+                    }
+                    FileSystem.File.SetAttributes(filePath, attributes);
                 } catch (UnauthorizedAccessException) { // don't have access rights
                     entry = null;
                     return new Result(ResultStatus.AccessDenied);
-                } catch (DirectoryNotFoundException) {
+                } catch (System.IO.DirectoryNotFoundException) {
                     entry = null;
                     return new Result(ResultStatus.PathNotFound);
                 } catch (Exception ex) {
@@ -126,14 +124,14 @@ namespace StorageType.Passthrough.IO {
             return new Result(result);
         }
 
-        internal static Result Move(string oldpath, string newpath, bool replace) {
+        internal static Result Move(FileSystem filesystem, string oldpath, string newpath, bool replace) {
             try {
-                if (File.Exists(newpath)) {
-                    File.Move(oldpath, newpath);
+                if (filesystem.File.Exists(newpath)) {
+                    filesystem.File.Move(oldpath, newpath);
                     return new Result(ResultStatus.Success);
                 } else if (replace) {
-                    File.Delete(newpath);
-                    File.Move(oldpath, newpath);
+                    filesystem.File.Delete(newpath);
+                    filesystem.File.Move(oldpath, newpath);
                     return new Result(ResultStatus.Success);
                 }
             } catch (UnauthorizedAccessException) {

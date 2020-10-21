@@ -1,22 +1,22 @@
 ﻿using StorageBackend;
 using StorageBackend.IO;
 using System;
-using System.IO;
+using System.IO.Abstractions;
 using System.Security.AccessControl;
 
 namespace StorageType.Passthrough.IO {
 
     internal partial class PassthroughFile : PassthroughFileSystemBase, IFSFile {
 
-        protected PassthroughFile() {
+        protected PassthroughFile() : base() {
         }
 
-        public PassthroughFile(FileInfo info) : base(info) {
+        public PassthroughFile(IFileInfo info) : base(info) {
         }
 
         public override void Cleanup(bool deleteOnClose) {
             if (deleteOnClose) {
-                File.Delete(FullName);
+                FileSystem.File.Delete(FullName);
             }
         }
 
@@ -42,7 +42,7 @@ namespace StorageType.Passthrough.IO {
         }
 
         public Result Read(byte[] buffer, out int bytesRead, long offset) {
-            using (var s = new FileStream(FullName, FileMode.Open, FileAccess.Read)) {
+            using (var s = FileSystem.FileStream.Create(FullName, System.IO.FileMode.Open, System.IO.FileAccess.Read)) {
                 s.Position = offset;
                 bytesRead = s.Read(buffer, 0, buffer.Length);
             }
@@ -50,7 +50,7 @@ namespace StorageType.Passthrough.IO {
         }
 
         public Result Write(byte[] buffer, out int bytesWritten, long offset) {
-            using (var s = new FileStream(FullName, FileMode.Open, FileAccess.Write)) {
+            using (var s = FileSystem.FileStream.Create(FullName, System.IO.FileMode.Open, System.IO.FileAccess.Write)) {
                 s.Position = offset;
                 s.Write(buffer, 0, buffer.Length);
                 bytesWritten = buffer.Length;
@@ -61,59 +61,56 @@ namespace StorageType.Passthrough.IO {
         public void Flush() {
         }
 
-        public Result SetAttributes(FileAttributes attributes) {
+        public Result SetAttributes(System.IO.FileAttributes attributes) {
             try {
-                File.SetAttributes(FullName, attributes);
+                FileSystem.File.SetAttributes(FullName, attributes);
                 return new Result(ResultStatus.Success);
             } catch (UnauthorizedAccessException) {
                 return new Result(ResultStatus.AccessDenied);
-            } catch (FileNotFoundException) {
+            } catch (System.IO.FileNotFoundException) {
                 return new Result(ResultStatus.FileNotFound);
-            } catch (DirectoryNotFoundException) {
+            } catch (System.IO.DirectoryNotFoundException) {
                 return new Result(ResultStatus.PathNotFound);
             }
         }
 
         public void SetCreationTime(DateTime creationTime) {
-            File.SetCreationTime(FullName, creationTime);
+            FileSystem.File.SetCreationTime(FullName, creationTime);
             CreationTime = creationTime;
         }
 
         public void SetLastAccessTime(DateTime lastAccessTime) {
-            File.SetLastAccessTime(FullName, lastAccessTime);
+            FileSystem.File.SetLastAccessTime(FullName, lastAccessTime);
             LastAccessTime = lastAccessTime;
         }
 
         public void SetLastWriteTime(DateTime lastWriteTime) {
-            File.SetLastWriteTime(FullName, lastWriteTime);
+            FileSystem.File.SetLastWriteTime(FullName, lastWriteTime);
             LastWriteTime = lastWriteTime;
         }
 
         public void SetLength(long length) {
-            using (var stream = new FileStream(FullName, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.None)) {
-                stream.SetLength(length);
+            using (var s = FileSystem.FileStream.Create(FullName, System.IO.FileMode.Open, System.IO.FileAccess.ReadWrite)) {
+                s.SetLength(length);
             }
             FileSize = length;
         }
 
         public void Lock(long offset, long length) {
-            using (var stream = new FileStream(FullName, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.None)) {
-                stream.Lock(offset, length);
+            using (var s = FileSystem.FileStream.Create(FullName, System.IO.FileMode.Open, System.IO.FileAccess.ReadWrite)) {
+                (s as System.IO.FileStream).Lock(offset, length);
             }
         }
 
         public void UnLock(long offset, long length) {
-            using (var stream = new FileStream(FullName, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.None)) {
-                stream.Unlock(offset, length);
+            using (var s = FileSystem.FileStream.Create(FullName, System.IO.FileMode.Open, System.IO.FileAccess.ReadWrite)) {
+                (s as System.IO.FileStream).Unlock(offset, length);
             }
-        }
-
-        internal void Open(FileMode mode, FileAccess access, FileShare share, int buffersize, FileOptions options) {
         }
 
         public override Result GetAccessControl(out FileSystemSecurity security) {
             try {
-                security = new FileInfo(FullName).GetAccessControl();
+                security = FileSystem.FileInfo.FromFileName(FullName).GetAccessControl();
             } catch (UnauthorizedAccessException) {
                 security = null;
                 return new Result(ResultStatus.AccessDenied);
@@ -123,7 +120,7 @@ namespace StorageType.Passthrough.IO {
 
         public Result SetAccessControl(FileSecurity security) {
             try {
-                new FileInfo(FullName).SetAccessControl(security);
+                FileSystem.FileInfo.FromFileName(FullName).SetAccessControl(security);
                 return new Result(ResultStatus.Success);
             } catch (UnauthorizedAccessException) {
                 return new Result(ResultStatus.AccessDenied);

@@ -2,17 +2,20 @@
 using StorageBackend.IO;
 using System;
 using System.IO;
+using System.IO.Abstractions;
 using System.Security.AccessControl;
 
 namespace StorageType.Passthrough.IO {
 
     internal abstract class PassthroughFileSystemBase : IFSEntryPointer {
         private readonly bool _IsFile = false;
+        protected FileSystem FileSystem;
 
         protected PassthroughFileSystemBase() {
+            FileSystem = new FileSystem();
         }
 
-        protected PassthroughFileSystemBase(FileSystemInfo pFileSystemInfo) {
+        protected PassthroughFileSystemBase(IFileSystemInfo pFileSystemInfo) : this() {
             FullName = pFileSystemInfo.FullName;
             Name = pFileSystemInfo.Name;
             FileSize = 0;
@@ -29,9 +32,9 @@ namespace StorageType.Passthrough.IO {
             LastWriteTime = pFileSystemInfo.LastWriteTimeUtc;
             ChangeTime = LastWriteTime;
 
-            if (!((Attributes & FileAttributes.Directory) != 0)) {
+            if ((Attributes & FileAttributes.Directory) == 0) {
                 _IsFile = true;
-                FileSize = (pFileSystemInfo as FileInfo).Length;
+                FileSize = (pFileSystemInfo as IFileInfo).Length;
                 AllocationSize = (FileSize + 4096 - 1) / 4096 * 4096;
             }
         }

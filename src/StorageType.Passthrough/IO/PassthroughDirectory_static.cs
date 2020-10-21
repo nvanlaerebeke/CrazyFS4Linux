@@ -1,15 +1,15 @@
 ﻿using StorageBackend;
 using System;
-using System.IO;
+using System.IO.Abstractions;
 
 namespace StorageType.Passthrough.IO {
 
     internal partial class PassthroughDirectory : PassthroughFileSystemBase {
 
-        internal static Result Move(string oldpath, string newpath) {
+        internal static Result Move(FileSystem filesystem, string oldpath, string newpath) {
             try {
-                if (!Directory.Exists(newpath)) {
-                    Directory.Move(oldpath, newpath);
+                if (!filesystem.Directory.Exists(newpath)) {
+                    filesystem.Directory.Move(oldpath, newpath);
                     return new Result(ResultStatus.Success);
                 } else {
                     return new Result(ResultStatus.AccessDenied);

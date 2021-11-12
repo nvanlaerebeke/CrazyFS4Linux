@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\CrazyFS.FileSystem\CrazyFS.FileSystem.csproj" />
+      <ProjectReference Include="..\CrazyFS.Linux\CrazyFS.Linux.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
+      <PackageReference Include="System.IO.Abstractions" Version="13.2.47" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Mono.Posix.NETStandard, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
+        <HintPath>..\CrazyFS\bin\Debug\net5.0\runtimes\linux-x64\lib\netstandard2.0\Mono.Posix.NETStandard.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+</Project>

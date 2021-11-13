@@ -1,7 +1,10 @@
 using System;
+using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
+using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Text;
 using CrazyFS.FileSystem;
@@ -18,7 +21,7 @@ namespace CrazyFS {
 		{
 			basedir = source;
 			MountPoint = destination;
-			_fileSystem = new Fuse<PassthroughFileSystem>();
+			_fileSystem = new FileSystem.Fuse(new PassthroughFileSystem(basedir));
 		}
 
 		protected override Errno OnGetPathStatus (string path, out Stat buf)
@@ -39,44 +42,15 @@ namespace CrazyFS {
 
 		protected override Errno OnReadSymbolicLink (string path, out string target)
 		{
-			target = null;
-			StringBuilder buf = new StringBuilder (256);
-			do {
-				int r = Syscall.readlink (basedir+path, buf);
-				if (r < 0) {
-					return Stdlib.GetLastError ();
-				}
-				else if (r == buf.Capacity) {
-					buf.Capacity *= 2;
-				}
-				else {
-					target = buf.ToString (0, r);
-					return 0;
-				}
-			} while (true);
+
+			return _fileSystem.GetSymbolicLinkTarget(GetPath(path), out target).ToErrno();
 		}
 
-		protected override Errno OnReadDirectory (string path, OpenedPathInfo fi,
-				out IEnumerable<DirectoryEntry> paths)
+		protected override Errno OnReadDirectory (string path, OpenedPathInfo fi, out IEnumerable<DirectoryEntry> paths)
 		{
-			IntPtr dp = Syscall.opendir (basedir+path);
-			if (dp == IntPtr.Zero) {
-				paths = null;
-				return Stdlib.GetLastError ();
-			}
-
-			Dirent de;
-			List<DirectoryEntry> entries = new List<DirectoryEntry> ();
-			while ((de = Syscall.readdir (dp)) != null) {
-				DirectoryEntry e = new DirectoryEntry (de.d_name);
-				e.Stat.st_ino  = de.d_ino;
-				e.Stat.st_mode = (FilePermissions) (de.d_type << 12);
-				entries.Add (e);
-			}
-			Syscall.closedir (dp);
-
-			paths = entries;
-			return 0;
+			var result = _fileSystem.Ls(GetPath(path), out var items).ToErrno();
+			paths = items.ToList().ConvertAll(x => new DirectoryEntry(x.Name));
+			return result;
 		}
 
 		protected override Errno OnCreateSpecialFile (string path, FilePermissions mode, ulong rdev)
@@ -91,18 +65,12 @@ namespace CrazyFS {
 
 		protected override Errno OnRemoveFile (string path)
 		{
-			int r = Syscall.unlink (basedir+path);
-			if (r == -1)
-				return Stdlib.GetLastError ();
-			return 0;
+			return _fileSystem.RemoveFile(GetPath(path)).ToErrno();
 		}
 
 		protected override Errno OnRemoveDirectory (string path)
 		{
-			int r = Syscall.rmdir (basedir+path);
-			if (r == -1)
-				return Stdlib.GetLastError ();
-			return 0;
+			return _fileSystem.RemoveDirectory(GetPath(path)).ToErrno();
 		}
 
 		protected override Errno OnCreateSymbolicLink (string from, string to)
@@ -132,10 +100,7 @@ namespace CrazyFS {
 
 		protected override Errno OnTruncateFile (string path, long size)
 		{
-			int r = Syscall.truncate (basedir+path, size);
-			if (r == -1)
-				return Stdlib.GetLastError ();
-			return 0;
+			return _fileSystem.Truncate(GetPath(path), size).ToErrno();
 		}
 
 		protected override Errno OnChangePathTimes (string path, ref Utimbuf buf)
@@ -145,25 +110,17 @@ namespace CrazyFS {
 
 		protected override Errno OnOpenHandle (string path, OpenedPathInfo info)
 		{
-			return ProcessFile (basedir+path, info.OpenFlags, delegate (int fd) {return 0;});
+			return _fileSystem.Open(GetPath(path), info);
 		}
 
-		private delegate int FdCb (int fd);
-		private static Errno ProcessFile (string path, OpenFlags flags, FdCb cb)
+		protected override Errno OnReadHandleUnsafe (string file, OpenedPathInfo info, IntPtr buf, ulong size, long offset, out int bytesWritten)
 		{
-			int fd = Syscall.open (path, flags);
-			if (fd == -1)
-				return Stdlib.GetLastError ();
-			int r = cb (fd);
-			Errno res = 0;
-			if (r == -1)
-				res = Stdlib.GetLastError ();
-			Syscall.close (fd);
-			return res;
-		}
-
-		protected override unsafe Errno OnReadHandle (string path, OpenedPathInfo info, byte[] buf, long offset, out int bytesRead)
-		{
+			var r = _fileSystem.Read(GetPath(file), offset, size, out var buffer, out bytesWritten).ToErrno();
+			Marshal.Copy(buffer, 0, buf, (int)size);
+			return r;
+			/*
+			
+			
 			int br = 0;
 			Errno e = ProcessFile (basedir+path, OpenFlags.O_RDONLY, delegate (int fd) {
 				fixed (byte *pb = buf) {
@@ -172,8 +129,10 @@ namespace CrazyFS {
 			});
 			bytesRead = br;
 			return e;
+			bytesWritten = 0;
+			return Errno.ENOSYS;*/
 		}
-
+		
 		protected override Errno OnWriteHandle (string path, OpenedPathInfo info, byte[] buf, long offset, out int bytesWritten)
 		{
 			return _fileSystem.Write(GetPath(path), buf, out bytesWritten, offset).ToErrno();
@@ -196,46 +155,50 @@ namespace CrazyFS {
 
 		protected override Errno OnSetPathExtendedAttribute (string path, string name, byte[] value, XattrFlags flags)
 		{
-			int r = Syscall.lsetxattr (basedir+path, name, value, (ulong) value.Length, flags);
-			if (r == -1)
-				return Stdlib.GetLastError ();
-			return 0;
+			return _fileSystem.SetPathExtendedAttribute(GetPath(path), name, value, flags);
 		}
 
 		protected override Errno OnGetPathExtendedAttribute (string path, string name, byte[] value, out int bytesWritten)
 		{
-			int r = bytesWritten = (int) Syscall.lgetxattr (basedir+path, name, value, (ulong) (value?.Length ?? 0));
-			if (r == -1)
-				return Stdlib.GetLastError ();
-			return 0;
+			return _fileSystem.GetPathExtendedAttribute(GetPath(path), name, value, out bytesWritten);
 		}
 
 		protected override Errno OnListPathExtendedAttributes (string path, out string[] names)
 		{
-			int r = (int) Syscall.llistxattr (basedir+path, out names);
-			if (r == -1)
-				return Stdlib.GetLastError ();
-			return 0;
+			return _fileSystem.ListPathExtendedAttributes(GetPath(path), out names);
 		}
 
 		protected override Errno OnRemovePathExtendedAttribute (string path, string name)
 		{
-			int r = Syscall.lremovexattr (basedir+path, name);
-			if (r == -1)
-				return Stdlib.GetLastError ();
-			return 0;
+			return _fileSystem.RemovePathExtendedAttribute(GetPath(path), name);
 		}
 
 		protected override Errno OnLockHandle (string file, OpenedPathInfo info, FcntlCommand cmd, ref Flock @lock)
 		{
-			Flock _lock = @lock;
-			Errno e = ProcessFile (basedir+file, info.OpenFlags, fd => Syscall.fcntl (fd, cmd, ref _lock));
-			@lock = _lock;
-			return e;
+			return _fileSystem.Lock(GetPath(file), info, cmd, ref @lock);
 		}
 		private string GetPath(string path)
 		{
 			return Path.Combine(basedir, path.TrimStart(Path.DirectorySeparatorChar));
+		}
+		
+		private delegate int FdCb (int fd);
+		private static Errno ProcessFile (string path, OpenFlags flags, FdCb cb)
+		{
+			int fd = Syscall.open (path, flags);
+			if (fd == -1)
+			{
+				return Stdlib.GetLastError();
+			}
+
+			int r = cb (fd);
+			Errno res = 0;
+			if (r == -1)
+			{
+				res = Stdlib.GetLastError();
+			}
+			Syscall.close (fd);
+			return res;
 		}
 	}
 }

@@ -30,5 +30,10 @@ namespace CrazyFS.FileSystem.Helpers
             f.CreateSymbolicLink(to);
             return new Result(ResultStatus.Success);
         }
+
+        public static string GetSymlinkTarget(string path)
+        {
+            return (new UnixFileInfo(path).IsSymbolicLink) ?  Mono.Unix.UnixPath.GetRealPath(path) :  path;
+        }
     }
 }

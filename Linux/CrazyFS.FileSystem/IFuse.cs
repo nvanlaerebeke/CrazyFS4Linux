@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.IO.Abstractions;
+using Fuse.NET;
 using Mono.Unix.Native;
 
 namespace CrazyFS.FileSystem
@@ -14,10 +16,20 @@ namespace CrazyFS.FileSystem
         Errno CreateSpecialFile(string path, FilePermissions mode, ulong rdev);
         Result CreateSymlink(string from, string to);
         Errno GetFileSystemStatus(string path, out Statvfs stbuf);
-        Result Move(string from, string to);
-        
+        Errno GetPathExtendedAttribute(string path, string name, byte[] value, out int bytesWritten);
         Result GetPathInfo(string path, out IFileSystemInfo info);
+        Result GetSymbolicLinkTarget(string path, out string target);
+        Errno ListPathExtendedAttributes(string path, out string[] names);
+        Result Ls(string path, out IEnumerable<IFileSystemInfo> paths);
+        Errno Lock(string file, OpenedPathInfo info, FcntlCommand cmd, ref Flock @lock);
+        Errno Open(string path, OpenedPathInfo info);
+        Result Move(string from, string to);
+        Result Read(string path, long offset, ulong size, out byte[] buffer, out int bytesRead);
+        Result RemoveFile(string path);
+        Result RemoveDirectory(string path);
+        Errno RemovePathExtendedAttribute(string path, string name);
+        Errno SetPathExtendedAttribute(string path, string name, byte[] value, XattrFlags flags);
+        Result Truncate(string path, long size);
         Result Write(string path, byte[] buffer, out int bytesWritten, long offset);
-        
     }
 }

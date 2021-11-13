@@ -4,12 +4,22 @@ using Mono.Unix.Native;
 
 namespace CrazyFS.Linux
 {
-    class LinuxDirectoryInfo : DirectoryInfoWrapper, ILinuxFileSystemInfo
+    public class LinuxDirectoryInfo : DirectoryInfoWrapper, ILinuxFileSystemInfo
     {
         private Stat _stat;
         public LinuxDirectoryInfo(IFileSystem fileSystem, DirectoryInfo info) : base(fileSystem, info)
         {
             _ = Syscall.stat(info.FullName, out _stat);
+        }
+        
+        public LinuxDirectoryInfo(IFileSystem fileSystem, DirectoryInfo info, bool lstat) : base(fileSystem, info)
+        {
+            if (lstat)
+            {
+                Syscall.lstat(info.FullName, out _stat);
+            } else {
+                Syscall.stat(info.FullName, out _stat);
+            }
         }
         
         public ulong st_dev => _stat.st_dev;

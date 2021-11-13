@@ -1,19 +1,21 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
 using System.IO.Abstractions;
 using CrazyFS.FileSystem.Helpers;
 using CrazyFS.Linux;
+using Fuse.NET;
 using Mono.Unix.Native;
 
 namespace CrazyFS.FileSystem
 {
-    public class Fuse<T> : IFuse 
-        where T: IFileSystem, new()
+    public class Fuse : IFuse 
     {
         private readonly IFileSystem _fileSystem;
-        public Fuse()
+        public Fuse(IFileSystem fileSystem)
         {
-            
-            _fileSystem = new T();
+            _fileSystem = fileSystem;
         }
 
         public Result ChangeTimes(string path, long atime, long mtime)
@@ -94,6 +96,100 @@ namespace CrazyFS.FileSystem
             return 0;
         }
 
+        public Errno GetPathExtendedAttribute(string path, string name, byte[] value, out int bytesWritten)
+        {
+            int r = bytesWritten = (int) Syscall.lgetxattr (path, name, value, (ulong) (value?.Length ?? 0));
+            if (r == -1)
+                return Stdlib.GetLastError ();
+            return 0;
+        }
+        public Result GetPathInfo(string path, out IFileSystemInfo info)
+        {
+            info = null;
+            if (_fileSystem.File.Exists(path))
+            {
+                info = new LinuxFileInfo(_fileSystem, new System.IO.FileInfo(path), true);
+            } else if (_fileSystem.Directory.Exists((path)))
+            {
+                info = new LinuxDirectoryInfo(_fileSystem, new System.IO.DirectoryInfo(path), true);
+            }
+            return new Result(info ==  null ? ResultStatus.PathNotFound : ResultStatus.Success);
+        }
+
+        public Result GetSymbolicLinkTarget(string path, out string target)
+        {
+            target = LinuxHelper.GetSymlinkTarget(path);
+            return new Result(ResultStatus.Success);
+        }
+        
+        public Errno ListPathExtendedAttributes(string path, out string[] names)
+        {
+            int r = (int) Syscall.llistxattr (path, out names);
+            if (r == -1)
+                return Stdlib.GetLastError ();
+            return 0; 
+        }
+
+        public Result Ls(string path, out IEnumerable<IFileSystemInfo> paths)
+        {
+            //var result = _fileSystem.Directory.;
+            var dir = _fileSystem.DirectoryInfo.FromDirectoryName(path);
+            paths = dir.EnumerateFileSystemInfos();
+            return new Result(ResultStatus.Success);
+        }
+        
+        public Errno Lock(string file, OpenedPathInfo info, FcntlCommand cmd, ref Flock @lock)
+        {
+            Flock _lock = @lock;
+            Errno e = ProcessFile (file, info.OpenFlags, fd => Syscall.fcntl (fd, cmd, ref _lock));
+            @lock = _lock;
+            return e;
+        }
+
+        public Result Read(string path, long offset, ulong size, out byte[] buffer, out int bytesRead)
+        {
+            buffer = new byte[size];
+            using (var s = _fileSystem.FileInfo.FromFileName(path).OpenRead())
+            {
+                //make sure the offset isn't higher than the filesize
+                if (offset > s.Length)
+                {
+                    bytesRead = 0;
+                    return new Result(ResultStatus.Success);
+                }
+                //Set the position to start reading
+                s.Position = offset;
+                //read until this byte
+                var end = (long) size + offset;
+                //make sure we don't read passed the filesize
+                if (end <= s.Length)
+                {
+                    bytesRead = s.Read(buffer, 0, (int)size);
+                }
+                else
+                {
+                    bytesRead = s.Read(buffer, 0, (int)(s.Length - offset));
+                }
+            }
+            return new Result(ResultStatus.Success);
+        }
+        public Result RemoveFile(string path)
+        {
+            _fileSystem.File.Delete(path);
+            return new Result(ResultStatus.Success);
+        }
+
+        public Result RemoveDirectory(string path)
+        {
+            _fileSystem.Directory.Delete(path);
+            return new Result(ResultStatus.Success);
+        }
+
+        public Errno Open(string path, OpenedPathInfo info)
+        {
+            return ProcessFile (path, info.OpenFlags, delegate (int fd) {return 0;});
+        }
+
         public Result Move(string from, string to)
         {
             if (_fileSystem.File.Exists(to) || _fileSystem.Directory.Exists(to))
@@ -113,6 +209,44 @@ namespace CrazyFS.FileSystem
             return new Result(ResultStatus.Success);
         }
         
+        public Errno RemovePathExtendedAttribute(string path, string name)
+        {
+            int r = Syscall.lremovexattr (path, name);
+            if (r == -1)
+                return Stdlib.GetLastError ();
+            return 0;
+        }
+        
+        public Errno SetPathExtendedAttribute (string path, string name, byte[] value, XattrFlags flags)
+        {
+            int r = Syscall.lsetxattr (path, name, value, (ulong) value.Length, flags);
+            if (r == -1) {
+                return Stdlib.GetLastError();
+            }
+            return 0;
+        }
+
+        public Result Truncate(string path, long size)
+        {
+            try
+            {
+                var f = _fileSystem.FileInfo.FromFileName(path);
+                using (var s = f.Open(FileMode.Open))
+                {
+                    s.SetLength(size);
+                }
+                return new Result(ResultStatus.Success);
+            }
+            catch (FileNotFoundException)
+            {
+                return new Result(ResultStatus.FileNotFound);
+            }
+            catch (Exception)
+            {
+                return new Result(ResultStatus.Error);
+            }
+        }
+        
         public Result Write(string path, byte[] buffer, out int bytesWritten, long offset) {
             using (var s = _fileSystem.FileStream.Create(path, System.IO.FileMode.Open, System.IO.FileAccess.Write)) {
                 s.Position = offset;
@@ -122,17 +256,27 @@ namespace CrazyFS.FileSystem
             return new Result(ResultStatus.Success);
         }
 
-        public Result GetPathInfo(string path, out IFileSystemInfo info)
+
+        /**
+         * Private - to be replaced
+         */
+        private delegate int FdCb (int fd);
+        private static Errno ProcessFile (string path, OpenFlags flags, FdCb cb)
         {
-            info = null;
-            if (_fileSystem.File.Exists(path))
+            int fd = Syscall.open (path, flags);
+            if (fd == -1)
             {
-                info = _fileSystem.FileInfo.FromFileName(path);
-            } else if (_fileSystem.Directory.Exists((path)))
-            {
-                info = _fileSystem.DirectoryInfo.FromDirectoryName(path);
+                return Stdlib.GetLastError();
             }
-            return new Result(info ==  null ? ResultStatus.PathNotFound : ResultStatus.Success);
+
+            int r = cb (fd);
+            Errno res = 0;
+            if (r == -1)
+            {
+                res = Stdlib.GetLastError();
+            }
+            Syscall.close (fd);
+            return res;
         }
     }
 }

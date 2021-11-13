@@ -44,3 +44,8 @@ This step is to solve the issue of the ever growing file that is used in step 4,
 The biggest issue with the result of step 5 is fragmentation, it is much easier and faster to read sequential data inside the file.
 
 In this step a background process should run to optimize the existing file structure and move data blocks around so that file data is stored sequential.
+
+## Step 7
+
+Even with all of the above done, the `FUSE` version used is still a very very old 2.6 one, this step is to upgrade the entire interface to a newer one.  
+This might have to happen sooner as the `dokany` fuse compatible interface might be for a different version.

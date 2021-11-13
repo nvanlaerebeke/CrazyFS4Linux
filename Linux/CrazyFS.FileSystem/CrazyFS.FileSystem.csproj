@@ -5,11 +5,22 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
       <PackageReference Include="System.IO.Abstractions" Version="13.2.47" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\CrazyFS.Linux\CrazyFS.Linux.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Fuse.NET, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+        <HintPath>..\..\..\Fuse.NET\src\Fuse.NET\bin\Debug\net5.0\Fuse.NET.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Objects" />
     </ItemGroup>
 
 </Project>

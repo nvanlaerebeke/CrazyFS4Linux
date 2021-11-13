@@ -5,8 +5,12 @@ namespace CrazyFS.Passthrough
 {
     public class PassthroughFileSystem : IFileSystem
     {
-        public PassthroughFileSystem()
+        private readonly string _basePath;
+
+        public PassthroughFileSystem(string basePath)
         {
+            _basePath = basePath;
+            
             DriveInfo = new DriveInfoFactory(this);
             DirectoryInfo = new LinuxDirectoryInfoFactory(this);
             FileInfo = new LinuxFileInfoFactory(this);

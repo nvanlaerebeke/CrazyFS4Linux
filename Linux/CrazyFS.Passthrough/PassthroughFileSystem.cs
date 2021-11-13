@@ -12,8 +12,8 @@ namespace CrazyFS.Passthrough
             _basePath = basePath;
             
             DriveInfo = new DriveInfoFactory(this);
-            DirectoryInfo = new LinuxDirectoryInfoFactory(this);
-            FileInfo = new LinuxFileInfoFactory(this);
+            DirectoryInfo = new LinuxDirectoryInfoFactory(this, basePath);
+            FileInfo = new LinuxFileInfoFactory(this, basePath);
             Path = new PathWrapper(this);
             File = new FileWrapper(this);
             Directory = new DirectoryWrapper(this);

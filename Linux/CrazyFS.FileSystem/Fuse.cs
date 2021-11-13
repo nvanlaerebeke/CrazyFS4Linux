@@ -108,17 +108,39 @@ namespace CrazyFS.FileSystem
             info = null;
             if (_fileSystem.File.Exists(path))
             {
-                info = new LinuxFileInfo(_fileSystem, new System.IO.FileInfo(path), true);
+                info = _fileSystem.FileInfo.FromFileName(path);
+                //info = new LinuxFileInfo(_fileSystem, new System.IO.FileInfo(path), true);
             } else if (_fileSystem.Directory.Exists((path)))
             {
-                info = new LinuxDirectoryInfo(_fileSystem, new System.IO.DirectoryInfo(path), true);
+                info = _fileSystem.DirectoryInfo.FromDirectoryName(path);
+                //info = new LinuxDirectoryInfo(_fileSystem, new System.IO.DirectoryInfo(path), true);
+            }
+            if (info != null)
+            {
+                if (info.IsSymlink())
+                {
+                    return GetPathInfo(info.GetRealPath(), out info);
+                }
             }
             return new Result(info ==  null ? ResultStatus.PathNotFound : ResultStatus.Success);
         }
 
         public Result GetSymbolicLinkTarget(string path, out string target)
         {
-            target = LinuxHelper.GetSymlinkTarget(path);
+            target = path;
+            IFileSystemInfo info = null;
+            if (_fileSystem.File.Exists(path))
+            {
+                info = _fileSystem.FileInfo.FromFileName(path);
+            } else if (_fileSystem.Directory.Exists((path)))
+            {
+                info = _fileSystem.DirectoryInfo.FromDirectoryName(path);
+            }
+
+            if (info != null && info.IsSymlink())
+            {
+                target = info.GetRealPath();
+            }
             return new Result(ResultStatus.Success);
         }
         
@@ -144,6 +166,10 @@ namespace CrazyFS.FileSystem
             Errno e = ProcessFile (file, info.OpenFlags, fd => Syscall.fcntl (fd, cmd, ref _lock));
             @lock = _lock;
             return e;
+        }
+
+        public void Mount()
+        {
         }
 
         public Result Read(string path, long offset, ulong size, out byte[] buffer, out int bytesRead)
@@ -246,7 +272,11 @@ namespace CrazyFS.FileSystem
                 return new Result(ResultStatus.Error);
             }
         }
-        
+
+        public void UnMount()
+        {
+        }
+
         public Result Write(string path, byte[] buffer, out int bytesWritten, long offset) {
             using (var s = _fileSystem.FileStream.Create(path, System.IO.FileMode.Open, System.IO.FileAccess.Write)) {
                 s.Position = offset;
@@ -255,8 +285,7 @@ namespace CrazyFS.FileSystem
             }
             return new Result(ResultStatus.Success);
         }
-
-
+        
         /**
          * Private - to be replaced
          */

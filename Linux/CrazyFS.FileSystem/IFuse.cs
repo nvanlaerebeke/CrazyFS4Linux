@@ -24,12 +24,14 @@ namespace CrazyFS.FileSystem
         Errno Lock(string file, OpenedPathInfo info, FcntlCommand cmd, ref Flock @lock);
         Errno Open(string path, OpenedPathInfo info);
         Result Move(string from, string to);
+        void Mount();
         Result Read(string path, long offset, ulong size, out byte[] buffer, out int bytesRead);
         Result RemoveFile(string path);
         Result RemoveDirectory(string path);
         Errno RemovePathExtendedAttribute(string path, string name);
         Errno SetPathExtendedAttribute(string path, string name, byte[] value, XattrFlags flags);
         Result Truncate(string path, long size);
+        void UnMount();
         Result Write(string path, byte[] buffer, out int bytesWritten, long offset);
     }
 }

@@ -6,7 +6,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrazyFS.FileSystem", "Crazy
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrazyFS.Passthrough", "CrazyFS.Passthrough\CrazyFS.Passthrough.csproj", "{A0BA2CE9-1EEB-4679-91DF-EE1DB46928C9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrazyFS.Linux", "CrazyFS.Linux\CrazyFS.Linux.csproj", "{DCDF90FB-0109-48A0-AA88-FA92575DEDEA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrazyFS.Passthrough.Linux", "CrazyFS.Passthrough.Linux\CrazyFS.Passthrough.Linux.csproj", "{DCDF90FB-0109-48A0-AA88-FA92575DEDEA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

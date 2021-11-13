@@ -6,7 +6,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\CrazyFS.FileSystem\CrazyFS.FileSystem.csproj" />
-      <ProjectReference Include="..\CrazyFS.Linux\CrazyFS.Linux.csproj" />
+      <ProjectReference Include="..\CrazyFS.Passthrough.Linux\CrazyFS.Passthrough.Linux.csproj" />
     </ItemGroup>
 
 </Project>

@@ -8,7 +8,7 @@ namespace CrazyFS
                 fs.Start ();
             }*/
             
-            using (Redirect fs = new ("/mnt/test/source", "/mnt/test/dest")) {
+            using (CrazyFSFileSystem fs = new ("/mnt/test/source", "/mnt/test/dest")) {
                 fs.Start ();
             }
         }

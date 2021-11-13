@@ -81,28 +81,7 @@ namespace CrazyFS {
 
 		protected override Errno OnCreateSpecialFile (string path, FilePermissions mode, ulong rdev)
 		{
-			throw new NotImplementedException();
-			/*int r;
-
-			// On Linux, this could just be `mknod(basedir+path, mode, rdev)' but this is
-			// more portable.
-			if ((mode & FilePermissions.S_IFMT) == FilePermissions.S_IFREG) {
-				r = Syscall.open (basedir+path, OpenFlags.O_CREAT | OpenFlags.O_EXCL |
-						OpenFlags.O_WRONLY, mode);
-				if (r >= 0)
-					r = Syscall.close (r);
-			}
-			else if ((mode & FilePermissions.S_IFMT) == FilePermissions.S_IFIFO) {
-				r = Syscall.mkfifo (basedir+path, mode);
-			}
-			else {
-				r = Syscall.mknod (basedir+path, mode, rdev);
-			}
-
-			if (r == -1)
-				return Stdlib.GetLastError ();
-
-			return 0;*/
+			return _fileSystem.CreateSpecialFile(GetPath(path), mode, rdev);
 		}
 
 		protected override Errno OnCreateDirectory (string path, FilePermissions mode)
@@ -202,10 +181,7 @@ namespace CrazyFS {
 
 		protected override Errno OnGetFileSystemStatus (string path, out Statvfs stbuf)
 		{
-			int r = Syscall.statvfs (basedir+path, out stbuf);
-			if (r == -1)
-				return Stdlib.GetLastError ();
-			return 0;
+			return _fileSystem.GetFileSystemStatus(GetPath(path), out stbuf);
 		}
 
 		protected override Errno OnReleaseHandle (string path, OpenedPathInfo info)

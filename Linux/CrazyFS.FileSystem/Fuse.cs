@@ -71,10 +71,27 @@ namespace CrazyFS.FileSystem
         {
             return LinuxHelper.CreateHardLink(from, to);
         }
-
+        public Errno CreateSpecialFile(string path, FilePermissions mode, ulong rdev)
+        {
+            var result = Syscall.mknod(path, mode, rdev);
+            if (result == -1)
+            {
+                return Stdlib.GetLastError ();
+            }
+            return 0;
+        }
         public Result CreateSymlink(string from, string to)
         {
             return LinuxHelper.CreateSymlink(from, to);
+        }
+        public Errno GetFileSystemStatus(string path, out Statvfs stbuf)
+        {
+            int r = Syscall.statvfs (path, out stbuf);
+            if (r == -1)
+            {
+                return Stdlib.GetLastError();
+            }
+            return 0;
         }
 
         public Result Move(string from, string to)
@@ -95,6 +112,7 @@ namespace CrazyFS.FileSystem
 
             return new Result(ResultStatus.Success);
         }
+        
         public Result Write(string path, byte[] buffer, out int bytesWritten, long offset) {
             using (var s = _fileSystem.FileStream.Create(path, System.IO.FileMode.Open, System.IO.FileAccess.Write)) {
                 s.Position = offset;

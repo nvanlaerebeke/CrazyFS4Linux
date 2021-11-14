@@ -1,5 +1,8 @@
-namespace CrazyFS.FileSystem
+using System;
+
+namespace CrazyFS.Linux
 {
+    [Flags]
     public enum PathAccessModes
     {
         R_OK = 1,

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO.Abstractions;
+using CrazyFS.Linux;
 using Fuse.NET;
 using Mono.Unix.Native;
 
@@ -21,7 +22,7 @@ namespace CrazyFS.FileSystem
         Result GetSymbolicLinkTarget(string path, out string target);
         Errno ListPathExtendedAttributes(string path, out string[] names);
         Result Ls(string path, out IEnumerable<IFileSystemInfo> paths);
-        Errno Lock(string file, OpenedPathInfo info, FcntlCommand cmd, ref Flock @lock);
+        Errno Lock(string path, OpenedPathInfo info, FcntlCommand cmd, ref Flock @lock);
         Errno Open(string path, OpenedPathInfo info);
         Result Move(string from, string to);
         void Mount();

@@ -9,27 +9,29 @@ namespace CrazyFS.Linux
 {
     public class LinuxFileInfo : IFileInfo, ILinuxFileSystemInfo
     {
-        private readonly string _basePath;
+        private readonly string _source;
+        private readonly string _destination;
         private readonly IFileInfo _info;
         private Stat _stat;
-        public LinuxFileInfo(IFileSystem fileSystem, string basePath, string filePath) :
-            this(fileSystem, basePath, new FileInfo(Path.Combine(basePath, filePath.Trim(Path.DirectorySeparatorChar))))
+        public LinuxFileInfo(IFileSystem fileSystem, string source, string destination, string filePath) :
+            this(fileSystem, source, destination, new FileInfo(Path.Combine(source, filePath.Trim(Path.DirectorySeparatorChar))))
         { }
 
-        public LinuxFileInfo(IFileSystem fileSystem, string basePath, FileInfo info):
-            this(fileSystem, basePath, new FileInfoWrapper(fileSystem, info))
+        public LinuxFileInfo(IFileSystem fileSystem, string source, string destination, FileInfo info):
+            this(fileSystem, source, destination, new FileInfoWrapper(fileSystem, info))
         { }
         
-        public LinuxFileInfo(IFileSystem fileSystem, string basePath, IFileSystemInfo info):
-            this(fileSystem, basePath, info as IFileInfo)
+        public LinuxFileInfo(IFileSystem fileSystem, string source, string destination, IFileSystemInfo info):
+            this(fileSystem, source, destination, info as IFileInfo)
         { }
         
-        public LinuxFileInfo(IFileSystem fileSystem, string basePath, IFileInfo info) 
+        public LinuxFileInfo(IFileSystem fileSystem, string source, string destination, IFileInfo info) 
         {
-            _basePath = basePath;
+            _source = source;
+            _destination = destination;
             FileSystem = fileSystem;
             _info = info;
-            _ = Syscall.stat(_info.FullName, out _stat);
+            _ = Syscall.lstat(_info.FullName, out _stat);
         }
         public ulong st_dev => _stat.st_dev;
         public ulong st_ino => _stat.st_ino;
@@ -77,7 +79,9 @@ namespace CrazyFS.Linux
 
         public bool Exists => _info.Exists;
         public string Extension => _info.Extension;
+
         public string FullName => _info.FullName;
+        
         public DateTime LastAccessTime
         {
             get => _info.LastAccessTime;
@@ -100,26 +104,26 @@ namespace CrazyFS.Linux
         }
         public string Name => _info.Name;
         public StreamWriter AppendText() => _info.AppendText();
-        public IFileInfo CopyTo(string destFileName) => _info.CopyTo(destFileName).GetPassthroughFileInfo(_basePath);
-        public IFileInfo CopyTo(string destFileName, bool overwrite) => _info.CopyTo(destFileName, overwrite).GetPassthroughFileInfo(_basePath);
+        public IFileInfo CopyTo(string destFileName) => _info.CopyTo(Path.Combine(_destination, destFileName.Trim('/'))).GetPassthroughFileInfo(_source, _destination);
+        public IFileInfo CopyTo(string destFileName, bool overwrite) => _info.CopyTo(Path.Combine(_destination, destFileName.Trim('/')), overwrite).GetPassthroughFileInfo(_source, _destination);
         public Stream Create() => _info.Create();
         public StreamWriter CreateText() => _info.CreateText();
         public void Decrypt() => _info.Decrypt();
         public void Encrypt() => _info.Encrypt();
         public FileSecurity GetAccessControl() => _info.GetAccessControl();
         public FileSecurity GetAccessControl(AccessControlSections includeSections) => _info.GetAccessControl(includeSections);
-        public void MoveTo(string destFileName) => _info.MoveTo(destFileName);
-        public void MoveTo(string destFileName, bool overwrite) => _info.MoveTo(destFileName, overwrite);
+        public void MoveTo(string destFileName) => _info.MoveTo(Path.Combine(_destination, destFileName));
+        public void MoveTo(string destFileName, bool overwrite) => _info.MoveTo(Path.Combine(_destination, destFileName), overwrite);
         public Stream Open(FileMode mode) => _info.Open(mode);
         public Stream Open(FileMode mode, FileAccess access) => _info.Open(mode, access);
         public Stream Open(FileMode mode, FileAccess access, FileShare share) => _info.Open(mode, access, share);
         public Stream OpenRead() => _info.OpenRead();
         public StreamReader OpenText() => _info.OpenText();
         public Stream OpenWrite() => _info.OpenWrite();
-        public IFileInfo Replace(string destinationFileName, string destinationBackupFileName) => _info.Replace(destinationFileName, destinationBackupFileName).GetPassthroughFileInfo(_basePath);
-        public IFileInfo Replace(string destinationFileName, string destinationBackupFileName, bool ignoreMetadataErrors) => _info.Replace(destinationFileName, destinationBackupFileName, ignoreMetadataErrors).GetPassthroughFileInfo(_basePath);
+        public IFileInfo Replace(string destinationFileName, string destinationBackupFileName) => _info.Replace(Path.Combine(_destination, destinationFileName.Trim('/')), Path.Combine(_destination, destinationBackupFileName.Trim('/'))).GetPassthroughFileInfo(_source, _destination);
+        public IFileInfo Replace(string destinationFileName, string destinationBackupFileName, bool ignoreMetadataErrors) => _info.Replace(Path.Combine(_destination, destinationFileName.Trim('/')), Path.Combine(_destination, destinationBackupFileName.Trim('/')), ignoreMetadataErrors).GetPassthroughFileInfo(_source, _destination);
         public void SetAccessControl(FileSecurity fileSecurity) => _info.SetAccessControl(fileSecurity);
-        public IDirectoryInfo Directory => _info.Directory.GetPassthroughDirectoryInfo(_basePath);
+        public IDirectoryInfo Directory => _info.Directory.GetPassthroughDirectoryInfo(_source, _destination);
         public string DirectoryName => _info.DirectoryName;
         public bool IsReadOnly
         {

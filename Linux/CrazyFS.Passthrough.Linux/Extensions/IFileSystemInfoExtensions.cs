@@ -33,39 +33,39 @@ namespace CrazyFS.FileSystem
             return UnixPath.GetRealPath(fileSystemInfo.FullName);
         }
         
-        public static IEnumerable<IFileSystemInfo> GetPassthroughFileSystemInfo(this IEnumerable<IFileSystemInfo> fileSystemInfos, string basePath)
+        public static IEnumerable<IFileSystemInfo> GetPassthroughFileSystemInfo(this IEnumerable<IFileSystemInfo> fileSystemInfos, string source, string destination)
         {
             return fileSystemInfos.ToList().ConvertAll<IFileSystemInfo>(x =>
             {
                 if (x.Attributes.HasFlag(FileAttributes.Directory))
                 {
-                    return new LinuxDirectoryInfo(x.FileSystem, basePath, x);
+                    return new LinuxDirectoryInfo(x.FileSystem, source, destination, x);
                 }
                 else
                 {
-                    return new LinuxFileInfo(x.FileSystem, basePath, x);
+                    return new LinuxFileInfo(x.FileSystem, source, destination, x);
                 }
             });
         }
         
-        public static IEnumerable<IDirectoryInfo> GetPassthroughDirectoryInfos(this IEnumerable<IDirectoryInfo> fileSystemInfos, string basePath)
+        public static IEnumerable<IDirectoryInfo> GetPassthroughDirectoryInfos(this IEnumerable<IDirectoryInfo> fileSystemInfos, string source, string destination)
         {
-            return fileSystemInfos.ToList().ConvertAll<IDirectoryInfo>(x => new LinuxDirectoryInfo(x.FileSystem, basePath, x));
+            return fileSystemInfos.ToList().ConvertAll<IDirectoryInfo>(x => new LinuxDirectoryInfo(x.FileSystem, source, destination, x));
         }
         
-        public static IEnumerable<IFileInfo> GetPassthroughFileInfos(this IEnumerable<IFileInfo> fileSystemInfos, string basePath)
+        public static IEnumerable<IFileInfo> GetPassthroughFileInfos(this IEnumerable<IFileInfo> fileSystemInfos, string source, string destination)
         {
-            return fileSystemInfos.ToList().ConvertAll<IFileInfo>(x => new LinuxFileInfo(x.FileSystem, basePath, x));
+            return fileSystemInfos.ToList().ConvertAll<IFileInfo>(x => new LinuxFileInfo(x.FileSystem, source, destination, x));
         }
         
-        public static IDirectoryInfo GetPassthroughDirectoryInfo(this IDirectoryInfo fileSystemInfo, string basePath)
+        public static IDirectoryInfo GetPassthroughDirectoryInfo(this IDirectoryInfo fileSystemInfo, string source, string destination)
         {
-            return new LinuxDirectoryInfo(fileSystemInfo.FileSystem, basePath, fileSystemInfo);
+            return new LinuxDirectoryInfo(fileSystemInfo.FileSystem, source, destination, fileSystemInfo);
         }
         
-        public static IFileInfo GetPassthroughFileInfo(this IFileInfo fileSystemInfo, string basePath)
+        public static IFileInfo GetPassthroughFileInfo(this IFileInfo fileSystemInfo, string source, string destination)
         {
-            return new LinuxFileInfo(fileSystemInfo.FileSystem, basePath, fileSystemInfo);
+            return new LinuxFileInfo(fileSystemInfo.FileSystem, source, destination, fileSystemInfo);
         }
     }
 }

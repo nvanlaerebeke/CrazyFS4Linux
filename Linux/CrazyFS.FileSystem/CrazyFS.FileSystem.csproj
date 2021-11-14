@@ -1,15 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net5.0</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
+      <PackageReference Include="Serilog" Version="2.10.0" />
       <PackageReference Include="System.IO.Abstractions" Version="13.2.47" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\CrazyFS.Log\CrazyFS.Log.csproj" />
       <ProjectReference Include="..\CrazyFS.Passthrough.Linux\CrazyFS.Passthrough.Linux.csproj" />
     </ItemGroup>
 
@@ -17,10 +19,6 @@
       <Reference Include="Fuse.NET, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
         <HintPath>..\..\..\Fuse.NET\src\Fuse.NET\bin\Debug\net5.0\Fuse.NET.dll</HintPath>
       </Reference>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Objects" />
     </ItemGroup>
 
 </Project>

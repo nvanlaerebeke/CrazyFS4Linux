@@ -3,59 +3,61 @@ using System.IO;
 using System.IO.Abstractions;
 using Microsoft.Win32.SafeHandles;
 
-namespace CrazyFS.FileSystem
+namespace CrazyFS.Linux
 {
     [Serializable]
-    internal sealed class FileStreamFactory : IFileStreamFactory
+    public sealed class LinuxFileStreamFactory : IFileStreamFactory
     {
-        private readonly IFileSystem _fileSystem;
+        private readonly string _source;
+        private readonly string _destination;
 
-        public FileStreamFactory(IFileSystem fileSystem)
+        public LinuxFileStreamFactory(string source, string destination)
         {
-            _fileSystem = fileSystem;
+            _source = source;
+            _destination = destination;
         }
 
         public Stream Create(string path, FileMode mode)
-            => _fileSystem.FileStream.Create(path, mode);
+            => new FileStream(path, mode);
 
         public Stream Create(string path, FileMode mode, FileAccess access)
-            => _fileSystem.FileStream.Create(path, mode, access);
+            => new FileStream(path, mode, access);
 
         public Stream Create(string path, FileMode mode, FileAccess access, FileShare share)
-            => _fileSystem.FileStream.Create(path, mode, access, share);
+            => new FileStream(path, mode, access, share);
 
         public Stream Create(string path, FileMode mode, FileAccess access, FileShare share, int bufferSize)
-            => _fileSystem.FileStream.Create(path, mode, access, share, bufferSize);
+            => new FileStream(path, mode, access, share, bufferSize);
 
         public Stream Create(string path, FileMode mode, FileAccess access, FileShare share, int bufferSize, FileOptions options)
-            => _fileSystem.FileStream.Create(path, mode, access, share, bufferSize, options);
+            => new FileStream(path, mode, access, share, bufferSize, options);
 
         public Stream Create(string path, FileMode mode, FileAccess access, FileShare share, int bufferSize, bool useAsync)
-            => _fileSystem.FileStream.Create(path, mode, access, share, bufferSize, useAsync);
+            => new FileStream(path, mode, access, share, bufferSize, useAsync);
 
         public Stream Create(SafeFileHandle handle, FileAccess access)
-            => _fileSystem.FileStream.Create(handle, access);
+            => new FileStream(handle, access);
 
         public Stream Create(SafeFileHandle handle, FileAccess access, int bufferSize)
-            => _fileSystem.FileStream.Create(handle, access, bufferSize);
+            => new FileStream(handle, access, bufferSize);
 
         public Stream Create(SafeFileHandle handle, FileAccess access, int bufferSize, bool isAsync)
-            => _fileSystem.FileStream.Create(handle, access, bufferSize, isAsync);
+            => new FileStream(handle, access, bufferSize, isAsync);
 
         [Obsolete("This method has been deprecated. Please use new Create(SafeFileHandle handle, FileAccess access) instead. http://go.microsoft.com/fwlink/?linkid=14202")]
         public Stream Create(IntPtr handle, FileAccess access)
-            => _fileSystem.FileStream.Create(handle, access);
-        
+            => new FileStream(handle, access);
+
         [Obsolete("This method has been deprecated. Please use new Create(SafeFileHandle handle, FileAccess access) instead, and optionally make a new SafeFileHandle with ownsHandle=false if needed. http://go.microsoft.com/fwlink/?linkid=14202")]
         public Stream Create(IntPtr handle, FileAccess access, bool ownsHandle)
-            => _fileSystem.FileStream.Create(handle, access, ownsHandle);
+            => new FileStream(handle, access, ownsHandle);
 
         [Obsolete("This method has been deprecated. Please use new Create(SafeFileHandle handle, FileAccess access, int bufferSize) instead, and optionally make a new SafeFileHandle with ownsHandle=false if needed. http://go.microsoft.com/fwlink/?linkid=14202")]
         public Stream Create(IntPtr handle, FileAccess access, bool ownsHandle, int bufferSize)
-            => _fileSystem.FileStream.Create(handle, access, ownsHandle, bufferSize);
+            => new FileStream(handle, access, ownsHandle, bufferSize);
 
         [Obsolete("This method has been deprecated. Please use new Create(SafeFileHandle handle, FileAccess access, int bufferSize, bool isAsync) instead, and optionally make a new SafeFileHandle with ownsHandle=false if needed. http://go.microsoft.com/fwlink/?linkid=14202")]
         public Stream Create(IntPtr handle, FileAccess access, bool ownsHandle, int bufferSize, bool isAsync)
-            => _fileSystem.FileStream.Create(handle, access, ownsHandle, bufferSize, isAsync);
+            => new FileStream(handle, access, ownsHandle, bufferSize, isAsync);
     }
 }

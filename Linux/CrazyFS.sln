@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrazyFS.Passthrough", "Craz
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrazyFS.Passthrough.Linux", "CrazyFS.Passthrough.Linux\CrazyFS.Passthrough.Linux.csproj", "{DCDF90FB-0109-48A0-AA88-FA92575DEDEA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrazyFS.Log", "CrazyFS.Log\CrazyFS.Log.csproj", "{5F3F3537-29CE-4625-AB73-A09E4016AB32}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{DCDF90FB-0109-48A0-AA88-FA92575DEDEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DCDF90FB-0109-48A0-AA88-FA92575DEDEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DCDF90FB-0109-48A0-AA88-FA92575DEDEA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F3F3537-29CE-4625-AB73-A09E4016AB32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F3F3537-29CE-4625-AB73-A09E4016AB32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F3F3537-29CE-4625-AB73-A09E4016AB32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F3F3537-29CE-4625-AB73-A09E4016AB32}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

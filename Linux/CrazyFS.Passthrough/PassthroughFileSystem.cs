@@ -5,20 +5,22 @@ namespace CrazyFS.Passthrough
 {
     public class PassthroughFileSystem : IFileSystem
     {
-        private readonly string _basePath;
+        private readonly string _source;
+        private readonly string _destination;
 
-        public PassthroughFileSystem(string basePath)
+        public PassthroughFileSystem(string source, string destination)
         {
-            _basePath = basePath;
-            
+            _source = source;
+            _destination = destination;
+
             DriveInfo = new DriveInfoFactory(this);
-            DirectoryInfo = new LinuxDirectoryInfoFactory(this, basePath);
-            FileInfo = new LinuxFileInfoFactory(this, basePath);
-            Path = new PathWrapper(this);
-            File = new FileWrapper(this);
-            Directory = new DirectoryWrapper(this);
-            FileStream = new FileStreamFactory();
-            FileSystemWatcher = new FileSystemWatcherFactory();
+            DirectoryInfo = new LinuxDirectoryInfoFactory(this, source, destination);
+            FileInfo = new LinuxFileInfoFactory(this, source, destination);
+            Path = new LinuxPathWrapper(this, source, destination);
+            File = new LinuxFileWrapper(this, source, destination);
+            Directory = new LinuxDirectoryWrapper(this, source, destination);
+            FileStream = new LinuxFileStreamFactory(source, destination);
+            FileSystemWatcher = new LinuxFileSystemWatcherFactory(source, destination);
         }
 
         public IFile File { get; }

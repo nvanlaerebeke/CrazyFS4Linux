@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Text;
 using CrazyFS.FileSystem;
+using CrazyFS.Linux;
 using CrazyFS.Passthrough;
 using Fuse.NET;
 using Mono.Unix.Native;
@@ -20,7 +21,7 @@ namespace CrazyFS {
 		{
 			
 			MountPoint = destination;
-			_fileSystem = new FileSystem.Fuse(new PassthroughFileSystem(source));
+			_fileSystem = new FileSystem.Fuse(new PassthroughFileSystem(source, destination));
 		}
 
 		protected override Errno OnGetPathStatus (string path, out Stat buf)

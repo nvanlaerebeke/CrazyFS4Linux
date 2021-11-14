@@ -38,6 +38,11 @@ namespace CrazyFS.FileSystem {
         NotReady,
 
         /// <summary>
+        /// Error - The data was not set
+        /// </summary>
+        NotSet,
+        
+        /// <summary>
         /// Error - The process cannot access the file because it is being used
         /// by another process.
         /// </summary>
@@ -52,7 +57,7 @@ namespace CrazyFS.FileSystem {
         /// Error - There is not enough space on the disk.
         /// </summary>
         DiskFull,
-
+        
         /// <summary>
         /// Error - This function is not supported on this system.
         /// </summary>

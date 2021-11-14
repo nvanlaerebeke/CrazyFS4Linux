@@ -3,6 +3,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Security.AccessControl;
 using CrazyFS.FileSystem;
+using Mono.Unix;
 using Mono.Unix.Native;
 
 namespace CrazyFS.Linux
@@ -80,7 +81,7 @@ namespace CrazyFS.Linux
         public bool Exists => _info.Exists;
         public string Extension => _info.Extension;
 
-        public string FullName => _info.FullName;
+        public string FullName => _info.FullName.GetMountedPath(_source, _destination);
         
         public DateTime LastAccessTime
         {
@@ -124,12 +125,18 @@ namespace CrazyFS.Linux
         public IFileInfo Replace(string destinationFileName, string destinationBackupFileName, bool ignoreMetadataErrors) => _info.Replace(Path.Combine(_destination, destinationFileName.Trim('/')), Path.Combine(_destination, destinationBackupFileName.Trim('/')), ignoreMetadataErrors).GetPassthroughFileInfo(_source, _destination);
         public void SetAccessControl(FileSecurity fileSecurity) => _info.SetAccessControl(fileSecurity);
         public IDirectoryInfo Directory => _info.Directory.GetPassthroughDirectoryInfo(_source, _destination);
-        public string DirectoryName => _info.DirectoryName;
+        public string DirectoryName => _info.DirectoryName.GetMountedPath(_source, _destination);
         public bool IsReadOnly
         {
             get => _info.IsReadOnly;
             set => _info.IsReadOnly = value;
         }
+
         public long Length => _info.Length;
+        public string GetRealPath()
+        {
+            var passThroughPath = this.FullName.GetRealPath(_source, _destination);
+            return UnixPath.GetRealPath(passThroughPath).GetMountedPath(_source, _destination);
+        }
     }
 }

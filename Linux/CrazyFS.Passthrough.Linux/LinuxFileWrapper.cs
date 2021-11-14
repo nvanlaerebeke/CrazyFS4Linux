@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CrazyFS.FileSystem;
+using Mono.Unix.Native;
 
 namespace CrazyFS.Linux
 {
@@ -14,13 +15,11 @@ namespace CrazyFS.Linux
     {
         private readonly IFileSystem _fileSystem;
         private readonly string _source;
-        private readonly string _destination;
         private readonly IFile _file;
         public LinuxFileWrapper(IFileSystem fileSystem, string source, string destination)
         {
             _fileSystem = fileSystem;
             _source = source;
-            _destination = destination;
             _file = new FileWrapper(fileSystem);
         }
 
@@ -153,7 +152,15 @@ namespace CrazyFS.Linux
         {
             return _file.Create(path.GetPath(_source), bufferSize, options);
         }
-
+        
+        public IFileInfo CreateSpecialFile(string path, FilePermissions mode, ulong rdev)
+        {
+            if (Syscall.mknod(path.GetPath(_source), mode, rdev) != -1)
+            {
+                return _fileSystem.FileInfo.FromFileName(path.GetPath(_source));
+            }
+            throw new Exception();
+        }
         public StreamWriter CreateText(string path)
         {
             return _file.CreateText(path.GetPath(_source));
@@ -181,12 +188,12 @@ namespace CrazyFS.Linux
 
         public FileSecurity GetAccessControl(string path)
         {
-            return _file.GetAccessControl(path.GetPath(_source));
+            throw new PlatformNotSupportedException();
         }
 
         public FileSecurity GetAccessControl(string path, AccessControlSections includeSections)
         {
-            return _file.GetAccessControl(path.GetPath(_source), includeSections);
+            throw new PlatformNotSupportedException();
         }
 
         public FileAttributes GetAttributes(string path)
@@ -311,7 +318,7 @@ namespace CrazyFS.Linux
 
         public void SetAccessControl(string path, FileSecurity fileSecurity)
         {
-            _file.SetAccessControl(path.GetPath(_source), fileSecurity);
+            throw new PlatformNotSupportedException();
         }
 
         public void SetAttributes(string path, FileAttributes fileAttributes)

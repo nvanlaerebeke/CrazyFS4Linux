@@ -1,12 +1,8 @@
 using System;
 using System.Linq;
-using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.IO.Abstractions;
 using System.Runtime.InteropServices;
-using System.Security.AccessControl;
-using System.Text;
 using CrazyFS.FileSystem;
 using CrazyFS.Linux;
 using CrazyFS.Passthrough;
@@ -55,7 +51,7 @@ namespace CrazyFS {
 
 		protected override Errno OnCreateSpecialFile (string path, FilePermissions mode, ulong rdev)
 		{
-			return _fileSystem.CreateSpecialFile(path, mode, rdev);
+			return _fileSystem.CreateSpecialFile(path, mode, rdev).ToErrno();
 		}
 
 		protected override Errno OnCreateDirectory (string path, FilePermissions mode)
@@ -110,7 +106,7 @@ namespace CrazyFS {
 
 		protected override Errno OnOpenHandle (string path, OpenedPathInfo info)
 		{
-			return _fileSystem.Open(path, info);
+			return _fileSystem.Open(path, info).ToErrno();
 		}
 
 		protected override Errno OnReadHandleUnsafe (string file, OpenedPathInfo info, IntPtr buf, ulong size, long offset, out int bytesWritten)
@@ -142,22 +138,22 @@ namespace CrazyFS {
 
 		protected override Errno OnSetPathExtendedAttribute (string path, string name, byte[] value, XattrFlags flags)
 		{
-			return _fileSystem.SetPathExtendedAttribute(path, name, value, flags);
+			return _fileSystem.SetPathExtendedAttribute(path, name, value, flags).ToErrno();
 		}
 
 		protected override Errno OnGetPathExtendedAttribute (string path, string name, byte[] value, out int bytesWritten)
 		{
-			return _fileSystem.GetPathExtendedAttribute(path, name, value, out bytesWritten);
+			return _fileSystem.GetPathExtendedAttribute(path, name, value, out bytesWritten).ToErrno();
 		}
 
 		protected override Errno OnListPathExtendedAttributes (string path, out string[] names)
 		{
-			return _fileSystem.ListPathExtendedAttributes(path, out names);
+			return _fileSystem.ListPathExtendedAttributes(path, out names).ToErrno();
 		}
 
 		protected override Errno OnRemovePathExtendedAttribute (string path, string name)
 		{
-			return _fileSystem.RemovePathExtendedAttribute(path, name);
+			return _fileSystem.RemovePathExtendedAttribute(path, name).ToErrno();
 		}
 
 		protected override Errno OnLockHandle (string file, OpenedPathInfo info, FcntlCommand cmd, ref Flock @lock)

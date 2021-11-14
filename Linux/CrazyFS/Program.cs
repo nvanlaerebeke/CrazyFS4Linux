@@ -1,3 +1,6 @@
+using CrazyFS.Log;
+using Serilog.Events;
+
 namespace CrazyFS
 {
     public class Program
@@ -7,9 +10,10 @@ namespace CrazyFS
             /*using (RedirectFS fs = new RedirectFS ("/mnt/test/source", "/mnt/test/dest")) {
                 fs.Start ();
             }*/
+            LogProvider.LogLevel = LogEventLevel.Debug;
             
             using (CrazyFSFileSystem fs = new ("/mnt/test/source", "/mnt/test/dest")) {
-                fs.Start ();
+                fs.Start();
             }
         }
     }

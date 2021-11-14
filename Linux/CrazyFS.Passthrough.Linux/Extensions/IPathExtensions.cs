@@ -5,11 +5,54 @@ using CrazyFS.Linux;
 using Mono.Unix;
 using Mono.Unix.Native;
 
+// ReSharper disable once CheckNamespace
 namespace CrazyFS.FileSystem
 {
-    public static class PathExtensions
+    public static class IPathExtensions
     {
-       
+        public static void GetExtendedAttribute(this IPath pathInterface, string path, string name, byte[] value, out int bytesWritten)
+        {
+            if (pathInterface is LinuxPathWrapper pathWrapper)
+            {
+                pathWrapper.GetExtendedAttribute(path, name, value, out bytesWritten);
+                return;
+            }
+
+            throw new Exception("IPath is not the linux version");
+        }
+
+        public static string[] ListExtendedAttributes(this IPath pathInterface, string path)
+        {
+            if (pathInterface is LinuxPathWrapper pathWrapper)
+            {
+                return pathWrapper.ListExtendedAttributes(path);
+            }
+
+            throw new Exception("IPath is not the linux version");
+        }
+
+        public static void RemoveExtendedAttributes(this IPath pathInterface, string path, string name)
+        {
+            if (pathInterface is LinuxPathWrapper pathWrapper)
+            {
+                pathWrapper.RemoveExtendedAttributes(path, name);
+                return;
+            }
+
+            throw new Exception("IPath is not the linux version");
+        }
+
+        public static void SetExtendedAttributes(this IPath pathInterface, string path, string name, byte[] value, XattrFlags flags)
+        {
+            if (pathInterface is LinuxPathWrapper pathWrapper)
+            {
+                pathWrapper.SetExtendedAttributes(path, name, value, flags);
+                return;
+            }
+
+            throw new Exception("IPath is not the linux version");
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -25,28 +68,33 @@ namespace CrazyFS.FileSystem
             {
                 return CheckPathAccessModes(new UnixFileInfo(fs.FileInfo.FromFileName(path).FullName).FileAccessPermissions, modes);
             }
-            else if(fs.Directory.Exists(path))
+            else if (fs.Directory.Exists(path))
             {
-                return CheckPathAccessModes(new UnixDirectoryInfo(fs.DirectoryInfo.FromDirectoryName(path).FullName).FileAccessPermissions, modes);
+                var fullPath = fs.DirectoryInfo.FromDirectoryName(path).FullName;
+                var dir = new UnixDirectoryInfo(fullPath);
+                return CheckPathAccessModes(dir.FileAccessPermissions, modes);
             }
+
             throw new FileNotFoundException();
         }
-        
+
         public static void Chmod(this IPath pathWrapper, string path, FilePermissions permissions)
         {
             if (!HasAccess(pathWrapper, path, PathAccessModes.W_OK))
             {
                 throw new UnauthorizedAccessException();
             }
+
             Syscall.chmod(pathWrapper.GetFullPath(path), permissions);
         }
-        
+
         public static void Chown(this IPath pathWrapper, string path, uint uid, uint gid)
         {
             if (!HasAccess(pathWrapper, path, PathAccessModes.W_OK))
             {
                 throw new UnauthorizedAccessException();
             }
+
             Syscall.lchown(pathWrapper.GetFullPath(path), uid, gid);
         }
 
@@ -56,7 +104,8 @@ namespace CrazyFS.FileSystem
             {
                 throw new UnauthorizedAccessException();
             }
-            if (Syscall.link (pathWrapper.GetFullPath(from),  pathWrapper.GetFullPath(to)) == -1)
+
+            if (Syscall.link(pathWrapper.GetFullPath(from), pathWrapper.GetFullPath(to)) == -1)
             {
                 throw new Exception();
             }
@@ -68,15 +117,16 @@ namespace CrazyFS.FileSystem
             {
                 throw new UnauthorizedAccessException();
             }
+
             var f = new UnixFileInfo(pathWrapper.GetFullPath(from));
             f.CreateSymbolicLink(to);
         }
 
         public static string GetSymlinkTarget(this IPath pathWrapper, string path)
         {
-            return (new UnixFileInfo(pathWrapper.GetFullPath(path)).IsSymbolicLink) ?  pathWrapper.GetRelativePath(pathWrapper.GetFullPath("/"), Mono.Unix.UnixPath.GetRealPath(path)) : pathWrapper.GetRelativePath(pathWrapper.GetFullPath("/"), path);
+            return (new UnixFileInfo(pathWrapper.GetFullPath(path)).IsSymbolicLink) ? pathWrapper.GetRelativePath(pathWrapper.GetFullPath("/"), UnixPath.GetRealPath(path)) : pathWrapper.GetRelativePath(pathWrapper.GetFullPath("/"), path);
         }
-        
+
         private static bool CheckPathAccessModes(FileAccessPermissions permissions, PathAccessModes request)
         {
             if (request.HasFlag(PathAccessModes.R_OK))
@@ -102,6 +152,7 @@ namespace CrazyFS.FileSystem
                     return false;
                 }
             }
+
             return true;
         }
     }

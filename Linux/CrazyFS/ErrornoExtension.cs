@@ -8,6 +8,11 @@ namespace CrazyFS
     {
         public static Errno ToErrno(this Result result)
         {
+            if (result.NativeCode != null)
+            {
+                return result.NativeCode.Value;
+            }
+            
             switch (result.Status)
             {
                 case ResultStatus.Success:
@@ -16,6 +21,8 @@ namespace CrazyFS
                     return Errno.EIO;
                 case ResultStatus.FileNotFound:
                     return Errno.ENOENT;
+                case ResultStatus.NotSet:
+                    return Errno.ENODATA;
                 case ResultStatus.PathNotFound:
                     return Errno.ENOENT;
                 case ResultStatus.AccessDenied:

@@ -1,14 +1,10 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
-using System.Reflection.PortableExecutable;
 using System.Security.AccessControl;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using CrazyFS.FileSystem;
+using Mono.Unix.Native;
 
 namespace CrazyFS.Linux
 {
@@ -16,13 +12,11 @@ namespace CrazyFS.Linux
     {
         private readonly IFileSystem _fileSystem;
         private readonly string _source;
-        private readonly string _destination;
         private readonly IDirectory _directory;
         public LinuxDirectoryWrapper(IFileSystem fileSystem, string source, string destination)
         {
             _fileSystem = fileSystem;
             _source = source;
-            _destination = destination;
             _directory = new DirectoryWrapper(fileSystem);
         }
 
@@ -35,7 +29,23 @@ namespace CrazyFS.Linux
         {
             return _directory.CreateDirectory(path.GetPath(_source), directorySecurity);
         }
+        public IDirectoryInfo CreateDirectory(string path, FilePermissions permissions)
+        {
+            if (Syscall.mkdir(path.GetPath(_source), permissions) != -1)
+            {
+                return _fileSystem.DirectoryInfo.FromDirectoryName(path.GetPath(_source));
+            }
+            throw new Exception();
+        }
 
+        public void CreateSpecialFile(string path, FilePermissions mode, ulong rdev)
+        {
+            if (Syscall.mknod(path.GetPath(_source), mode, rdev) != -1)
+            {
+                throw new Exception();
+            }
+        }
+            
         public void Delete(string path)
         {
             _directory.Delete(path.GetPath(_source));

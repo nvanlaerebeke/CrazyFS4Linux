@@ -5,6 +5,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Security.AccessControl;
 using CrazyFS.FileSystem;
+using Mono.Unix;
 using Mono.Unix.Native;
 
 namespace CrazyFS.Linux
@@ -17,7 +18,7 @@ namespace CrazyFS.Linux
         private readonly IDirectoryInfo _info;
         private Stat _stat;
         public LinuxDirectoryInfo(IFileSystem fileSystem, string source, string destination, string dirName) : 
-            this(fileSystem, source, destination, new System.IO.DirectoryInfo(Path.Combine(source, dirName.Trim(Path.DirectorySeparatorChar))))
+            this(fileSystem, source, destination, new DirectoryInfo(Path.Combine(source, dirName.Trim(Path.DirectorySeparatorChar))))
         { }
         
         public LinuxDirectoryInfo(IFileSystem fileSystem, string source,  string destination, DirectoryInfo info) : 
@@ -84,7 +85,7 @@ namespace CrazyFS.Linux
         public bool Exists => _info.Exists;
 
         public string Extension => _info.Extension;
-        public string FullName => _info.FullName;
+        public string FullName => _info.FullName.GetMountedPath(_source, _destination);
         public DateTime LastAccessTime
         {
             get => _info.LastAccessTime;
@@ -144,5 +145,11 @@ namespace CrazyFS.Linux
         public void SetAccessControl(DirectorySecurity directorySecurity) => _info.SetAccessControl(directorySecurity);
         public IDirectoryInfo Parent => _info.Parent.GetPassthroughDirectoryInfo(_source, _destination);
         public IDirectoryInfo Root => _info.Root.GetPassthroughDirectoryInfo(_source, _destination);
+        
+        public string GetRealPath()
+        {
+            var passThroughPath = this.FullName.GetRealPath(_source, _destination);
+            return UnixPath.GetRealPath(passThroughPath).GetMountedPath(_source, _destination);
+        }
     }
 }

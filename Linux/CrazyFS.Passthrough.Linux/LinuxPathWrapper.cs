@@ -1,6 +1,7 @@
 using System;
 using System.IO.Abstractions;
 using CrazyFS.FileSystem;
+using Mono.Unix.Native;
 
 namespace CrazyFS.Linux
 {
@@ -49,6 +50,15 @@ namespace CrazyFS.Linux
             return _path.GetDirectoryName(path);
         }
 
+        public void GetExtendedAttribute(string path, string name, byte[] value, out int bytesWritten)
+        {
+            bytesWritten = (int) Syscall.lgetxattr(path.GetPath(_source), name, value, (ulong) (value?.Length ?? 0));
+            if (bytesWritten != -1) return;
+            
+            var err = Stdlib.GetLastError();
+            if (err != Errno.ENODATA) throw new LinuxException(err);    
+        }
+        
         public string GetExtension(string path)
         {
             return _path.GetExtension(path);
@@ -134,6 +144,30 @@ namespace CrazyFS.Linux
             return _path.Join(path1, path2, path3);
         }
 
+        public string[] ListExtendedAttributes(string path)
+        {
+            if ((int) Syscall.llistxattr(path.GetPath(_source), out var names) != -1)
+            {
+                return names;    
+            }
+            throw new LinuxException(Stdlib.GetLastError());
+        }
+
+        public void RemoveExtendedAttributes(string path, string name)
+        {
+            if (Syscall.lremovexattr(path.GetPath(_source), name) == -1)
+            {
+                throw new LinuxException(Stdlib.GetLastError());
+            }
+        }
+        public void SetExtendedAttributes(string path, string name, byte[] value, XattrFlags flags)
+        {
+            if(Syscall.lsetxattr (path.GetPath(_source), name, value, (ulong) value.Length, flags) == -1) 
+            {
+                throw new LinuxException(Stdlib.GetLastError());
+            }
+        }
+            
         public bool TryJoin(ReadOnlySpan<char> path1, ReadOnlySpan<char> path2, ReadOnlySpan<char> path3, Span<char> destination, out int charsWritten)
         {
             return _path.TryJoin(path1, path2, path3, destination, out charsWritten);

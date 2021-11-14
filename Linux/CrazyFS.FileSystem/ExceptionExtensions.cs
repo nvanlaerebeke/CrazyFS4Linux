@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using CrazyFS.Linux;
 
 namespace CrazyFS.FileSystem
 {
@@ -7,15 +8,13 @@ namespace CrazyFS.FileSystem
     {
         public static Result GetResult(this Exception exception)
         {
-            if(exception is UnauthorizedAccessException)
+            return exception switch
             {
-                return new Result(ResultStatus.AccessDenied);
-            } 
-            if (exception is FileNotFoundException)
-            {
-                return new Result(ResultStatus.PathNotFound);
-            }
-            return new Result(ResultStatus.Error);
+                UnauthorizedAccessException => new Result(ResultStatus.AccessDenied),
+                FileNotFoundException => new Result(ResultStatus.PathNotFound),
+                LinuxException ex => new Result(ex.Code),
+                _ => new Result(ResultStatus.Error)
+            };
         }
     }
 }

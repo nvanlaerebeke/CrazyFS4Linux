@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.IO.Abstractions;
+using CrazyFS.FileSystem;
 using Microsoft.Win32.SafeHandles;
 
 namespace CrazyFS.Linux
@@ -9,31 +10,28 @@ namespace CrazyFS.Linux
     public sealed class LinuxFileStreamFactory : IFileStreamFactory
     {
         private readonly string _source;
-        private readonly string _destination;
-
         public LinuxFileStreamFactory(string source, string destination)
         {
             _source = source;
-            _destination = destination;
         }
 
         public Stream Create(string path, FileMode mode)
-            => new FileStream(path, mode);
+            => new FileStream(path.GetPath(_source), mode);
 
         public Stream Create(string path, FileMode mode, FileAccess access)
-            => new FileStream(path, mode, access);
+            => new FileStream(path.GetPath(_source), mode, access);
 
         public Stream Create(string path, FileMode mode, FileAccess access, FileShare share)
-            => new FileStream(path, mode, access, share);
+            => new FileStream(path.GetPath(_source), mode, access, share);
 
         public Stream Create(string path, FileMode mode, FileAccess access, FileShare share, int bufferSize)
-            => new FileStream(path, mode, access, share, bufferSize);
+            => new FileStream(path.GetPath(_source), mode, access, share, bufferSize);
 
         public Stream Create(string path, FileMode mode, FileAccess access, FileShare share, int bufferSize, FileOptions options)
-            => new FileStream(path, mode, access, share, bufferSize, options);
+            => new FileStream(path.GetPath(_source), mode, access, share, bufferSize, options);
 
         public Stream Create(string path, FileMode mode, FileAccess access, FileShare share, int bufferSize, bool useAsync)
-            => new FileStream(path, mode, access, share, bufferSize, useAsync);
+            => new FileStream(path.GetPath(_source), mode, access, share, bufferSize, useAsync);
 
         public Stream Create(SafeFileHandle handle, FileAccess access)
             => new FileStream(handle, access);

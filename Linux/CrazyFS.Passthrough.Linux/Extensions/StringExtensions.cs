@@ -1,13 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.IO.Abstractions;
-using System.Linq;
-using System.Reflection.Metadata;
-using CrazyFS.Linux;
-using Mono.Unix.Native;
-using Mono.Unix;
 
+// ReSharper disable once CheckNamespace
 namespace CrazyFS.FileSystem
 {
     public static class StringExtensions
@@ -21,7 +14,16 @@ namespace CrazyFS.FileSystem
         {
             if (path.StartsWith(source))
             {
-                return '/' + Path.Combine(path.Substring(source.Length), destination.Trim('/'));
+                return Path.Combine(destination, path.Substring(source.Length).Trim('/'));
+            }
+            return path;
+        }
+        
+        public static string GetRealPath(this string path, string source, string destination)
+        {
+            if (path.StartsWith(destination))
+            {
+                return Path.Combine(source, path.Substring(destination.Length).Trim('/'));
             }
             return path;
         }

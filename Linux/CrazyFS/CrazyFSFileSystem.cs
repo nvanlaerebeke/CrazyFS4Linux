@@ -10,12 +10,11 @@ using Fuse.NET;
 using Mono.Unix.Native;
 
 namespace CrazyFS {
-	class CrazyFSFileSystem : Fuse.NET.FileSystem {
+	class CrazyFsFileSystem : Fuse.NET.FileSystem {
 
 		private readonly IFuse _fileSystem;
-		public CrazyFSFileSystem (string source, string destination)
+		public CrazyFsFileSystem (string source, string destination)
 		{
-			
 			MountPoint = destination;
 			_fileSystem = new FileSystem.Fuse(new PassthroughFileSystem(source, destination));
 		}

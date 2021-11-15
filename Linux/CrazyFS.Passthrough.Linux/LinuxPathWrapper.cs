@@ -11,7 +11,7 @@ namespace CrazyFS.Linux
         private readonly string _source;
         private readonly string _destination;
         private readonly IPath _path;
-        
+
         public LinuxPathWrapper(IFileSystem fileSystem, string source, string destination)
         {
             _fileSystem = fileSystem;
@@ -19,12 +19,22 @@ namespace CrazyFS.Linux
             _destination = destination;
             _path = new PathWrapper(fileSystem);
         }
-        
+
         public string ChangeExtension(string path, string extension)
         {
             return _path.ChangeExtension(path, extension);
         }
 
+        public void Chmod(string path, FilePermissions permissions)
+        {
+            Syscall.chmod(path.GetPath(_source), permissions);
+        }
+        
+        public void Chown(string path, uint uid, uint gid)
+        {
+            Syscall.lchown(path.GetPath(_source), uid, gid);
+        }
+        
         public string Combine(params string[] paths)
         {
             return _path.Combine(paths);

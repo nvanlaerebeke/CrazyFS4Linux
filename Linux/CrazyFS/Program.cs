@@ -12,7 +12,7 @@ namespace CrazyFS
             }*/
             LogProvider.LogLevel = LogEventLevel.Debug;
             
-            using (CrazyFSFileSystem fs = new ("/mnt/test/source", "/mnt/test/dest")) {
+            using (CrazyFsFileSystem fs = new ("/mnt/test/source", "/mnt/test/dest")) {
                 fs.Start();
             }
         }

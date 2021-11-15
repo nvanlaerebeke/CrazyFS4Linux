@@ -17,7 +17,6 @@ namespace CrazyFS.FileSystem
                 pathWrapper.GetExtendedAttribute(path, name, value, out bytesWritten);
                 return;
             }
-
             throw new Exception("IPath is not the linux version");
         }
 
@@ -33,24 +32,20 @@ namespace CrazyFS.FileSystem
 
         public static void RemoveExtendedAttributes(this IPath pathInterface, string path, string name)
         {
-            if (pathInterface is LinuxPathWrapper pathWrapper)
+            if (pathInterface is not LinuxPathWrapper pathWrapper)
             {
-                pathWrapper.RemoveExtendedAttributes(path, name);
-                return;
+                throw new Exception("IPath is not the linux version");
             }
-
-            throw new Exception("IPath is not the linux version");
+            pathWrapper.RemoveExtendedAttributes(path, name);
         }
 
         public static void SetExtendedAttributes(this IPath pathInterface, string path, string name, byte[] value, XattrFlags flags)
         {
-            if (pathInterface is LinuxPathWrapper pathWrapper)
+            if (pathInterface is not LinuxPathWrapper pathWrapper)
             {
-                pathWrapper.SetExtendedAttributes(path, name, value, flags);
-                return;
+                throw new Exception("IPath is not the linux version");
             }
-
-            throw new Exception("IPath is not the linux version");
+            pathWrapper.SetExtendedAttributes(path, name, value, flags);
         }
 
         /// <summary>
@@ -74,28 +69,19 @@ namespace CrazyFS.FileSystem
                 var dir = new UnixDirectoryInfo(fullPath);
                 return CheckPathAccessModes(dir.FileAccessPermissions, modes);
             }
-
             throw new FileNotFoundException();
         }
 
         public static void Chmod(this IPath pathWrapper, string path, FilePermissions permissions)
         {
-            if (!HasAccess(pathWrapper, path, PathAccessModes.W_OK))
-            {
-                throw new UnauthorizedAccessException();
-            }
-
-            Syscall.chmod(pathWrapper.GetFullPath(path), permissions);
+            if (pathWrapper is not LinuxPathWrapper obj) throw new Exception("IPath is not the linux version");
+            obj.Chmod(path, permissions);
         }
 
         public static void Chown(this IPath pathWrapper, string path, uint uid, uint gid)
         {
-            if (!HasAccess(pathWrapper, path, PathAccessModes.W_OK))
-            {
-                throw new UnauthorizedAccessException();
-            }
-
-            Syscall.lchown(pathWrapper.GetFullPath(path), uid, gid);
+            if (pathWrapper is not LinuxPathWrapper obj) throw new Exception("IPath is not the linux version");
+            obj.Chown(path, uid, gid);
         }
 
         public static void CreateHardLink(this IPath pathWrapper, string from, string to)

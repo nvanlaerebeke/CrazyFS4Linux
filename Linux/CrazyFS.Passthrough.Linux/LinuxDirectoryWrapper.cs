@@ -3,17 +3,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Security.AccessControl;
-using CrazyFS.FileSystem;
 using Mono.Unix.Native;
 
-namespace CrazyFS.Linux
+namespace CrazyFS.Passthrough.Linux
 {
     public class LinuxDirectoryWrapper : IDirectory
     {
         private readonly IFileSystem _fileSystem;
         private readonly string _source;
         private readonly IDirectory _directory;
-        public LinuxDirectoryWrapper(IFileSystem fileSystem, string source, string destination)
+        public LinuxDirectoryWrapper(IFileSystem fileSystem, string source)
         {
             _fileSystem = fileSystem;
             _source = source;

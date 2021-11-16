@@ -1,7 +1,7 @@
 using System;
 using Mono.Unix.Native;
 
-namespace CrazyFS.Linux
+namespace CrazyFS.Passthrough.Linux
 {
     public class LinuxException : Exception
     {

@@ -1,12 +1,11 @@
 using System;
 using System.IO.Abstractions;
-using CrazyFS.Linux;
 using Mono.Unix.Native;
 
 // ReSharper disable once CheckNamespace
-namespace CrazyFS.FileSystem
+namespace CrazyFS.Passthrough.Linux
 {
-    public static class IDirectoryExtensions
+    public static class DirectoryExtensions
     {
         public static IDirectoryInfo CreateDirectory(this IDirectory directory, string path, FilePermissions mode)
         {

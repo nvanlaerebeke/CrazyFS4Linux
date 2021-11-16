@@ -1,20 +1,21 @@
 using System;
+using System.IO;
 using System.IO.Abstractions;
 using CrazyFS.FileSystem;
+using CrazyFS.Passthrough.Linux.Helpers;
+using Mono.Unix;
 using Mono.Unix.Native;
 
-namespace CrazyFS.Linux
+namespace CrazyFS.Passthrough.Linux
 {
     public class LinuxPathWrapper : IPath
     {
-        private readonly IFileSystem _fileSystem;
         private readonly string _source;
         private readonly string _destination;
         private readonly IPath _path;
 
         public LinuxPathWrapper(IFileSystem fileSystem, string source, string destination)
         {
-            _fileSystem = fileSystem;
             _source = source;
             _destination = destination;
             _path = new PathWrapper(fileSystem);
@@ -55,6 +56,16 @@ namespace CrazyFS.Linux
             return _path.Combine(path1, path2, path3, path4);
         }
 
+        public void CreateSymlink(string from, string to)
+        {
+            var r = Syscall.symlink (from, to.GetPath(_source));
+            if (r == -1)
+            {
+                var err = Stdlib.GetLastError();
+                throw new LinuxException(err);
+            }
+        }
+        
         public string GetDirectoryName(string path)
         {
             return _path.GetDirectoryName(path);
@@ -123,7 +134,20 @@ namespace CrazyFS.Linux
         {
             return _path.GetTempPath();
         }
-
+        public bool HasAccess(string path, PathAccessModes modes)
+        {
+            if (FileSystem.File.Exists(path))
+            {
+                return PermissionHelper.CheckPathAccessModes(new UnixFileInfo(FileSystem.FileInfo.FromFileName(path).FullName).FileAccessPermissions, modes);
+            }
+            else if (FileSystem.Directory.Exists(path))
+            {
+                var fullPath = FileSystem.DirectoryInfo.FromDirectoryName(path).FullName;
+                var dir = new UnixDirectoryInfo(fullPath);
+                return PermissionHelper.CheckPathAccessModes(dir.FileAccessPermissions, modes);
+            }
+            throw new FileNotFoundException();
+        }
         public bool HasExtension(string path)
         {
             return _path.HasExtension(path);

@@ -4,19 +4,18 @@ using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Runtime.InteropServices;
 using CrazyFS.FileSystem;
-using CrazyFS.Linux;
-using CrazyFS.Passthrough;
+using CrazyFS.Passthrough.Linux;
 using Fuse.NET;
 using Mono.Unix.Native;
 
 namespace CrazyFS {
-	class CrazyFsFileSystem : Fuse.NET.FileSystem {
+	internal class CrazyFsFileSystem : Fuse.NET.FileSystem {
 
 		private readonly IFuse _fileSystem;
 		public CrazyFsFileSystem (string source, string destination)
 		{
 			MountPoint = destination;
-			_fileSystem = new FileSystem.Fuse(new PassthroughFileSystem(source, destination));
+			_fileSystem = new LinuxPassthroughFileSystem(new PassthroughFileSystem(source, destination));
 		}
 
 		protected override Errno OnGetPathStatus (string path, out Stat buf)

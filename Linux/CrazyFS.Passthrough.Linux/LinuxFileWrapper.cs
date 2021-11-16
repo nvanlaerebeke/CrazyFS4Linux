@@ -6,17 +6,16 @@ using System.Security.AccessControl;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using CrazyFS.FileSystem;
 using Mono.Unix.Native;
 
-namespace CrazyFS.Linux
+namespace CrazyFS.Passthrough.Linux
 {
     public class LinuxFileWrapper : IFile
     {
         private readonly IFileSystem _fileSystem;
         private readonly string _source;
         private readonly IFile _file;
-        public LinuxFileWrapper(IFileSystem fileSystem, string source, string destination)
+        public LinuxFileWrapper(IFileSystem fileSystem, string source)
         {
             _fileSystem = fileSystem;
             _source = source;

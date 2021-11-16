@@ -7,17 +7,17 @@ namespace CrazyFS.Passthrough
     [Serializable]
     internal class FileInfoFactory : IFileInfoFactory
     {
-        private readonly IFileSystem fileSystem;
+        private readonly IFileSystem _fileSystem;
 
         public FileInfoFactory(IFileSystem fileSystem)
         {
-            this.fileSystem = fileSystem;
+            _fileSystem = fileSystem;
         }
 
         public IFileInfo FromFileName(string fileName)
         {
             var realFileInfo = new FileInfo(fileName);
-            return new FileInfoWrapper(fileSystem, realFileInfo);
+            return new FileInfoWrapper(_fileSystem, realFileInfo);
         }
     }
 }

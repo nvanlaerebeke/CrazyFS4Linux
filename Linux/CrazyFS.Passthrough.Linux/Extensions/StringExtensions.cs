@@ -1,7 +1,7 @@
 using System.IO;
 
 // ReSharper disable once CheckNamespace
-namespace CrazyFS.FileSystem
+namespace CrazyFS.Passthrough.Linux
 {
     public static class StringExtensions
     {

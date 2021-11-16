@@ -1,7 +1,8 @@
 using System.IO.Abstractions;
 using Mono.Unix.Native;
+// ReSharper disable InconsistentNaming
 
-namespace CrazyFS.Linux
+namespace CrazyFS.Passthrough.Linux
 {
     public interface ILinuxFileSystemInfo : IFileSystemInfo
     {

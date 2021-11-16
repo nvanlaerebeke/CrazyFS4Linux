@@ -12,7 +12,7 @@ namespace CrazyFS.Log
     public class LogProvider : ILogProvider
     {
         private static ILogger _logger;
-        private static readonly object _lock = new();
+        private static readonly object Lock = new();
         private static LogEventLevel _logLevel = LogEventLevel.Debug;
 
         public static LogEventLevel LogLevel
@@ -29,7 +29,7 @@ namespace CrazyFS.Log
         {
             if (_logger != null) return _logger;
             
-            lock (_lock)
+            lock (Lock)
             {
                 if (_logger != null) return _logger;
 
@@ -59,7 +59,6 @@ namespace CrazyFS.Log
                 }
                 _logger = conf.CreateLogger();
             }
-
             return _logger;
         }
     }

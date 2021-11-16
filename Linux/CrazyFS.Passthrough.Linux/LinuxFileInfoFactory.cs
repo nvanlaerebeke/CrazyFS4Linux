@@ -1,6 +1,6 @@
 using System.IO.Abstractions;
 
-namespace CrazyFS.Linux
+namespace CrazyFS.Passthrough.Linux
 {
     public class LinuxFileInfoFactory: IFileInfoFactory
     {

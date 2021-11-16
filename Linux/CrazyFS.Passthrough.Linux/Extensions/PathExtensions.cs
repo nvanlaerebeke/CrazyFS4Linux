@@ -1,14 +1,14 @@
 using System;
 using System.IO;
 using System.IO.Abstractions;
-using CrazyFS.Linux;
+using CrazyFS.FileSystem;
 using Mono.Unix;
 using Mono.Unix.Native;
 
 // ReSharper disable once CheckNamespace
-namespace CrazyFS.FileSystem
+namespace CrazyFS.Passthrough.Linux
 {
-    public static class IPathExtensions
+    public static class PathExtensions
     {
         public static void GetExtendedAttribute(this IPath pathInterface, string path, string name, byte[] value, out int bytesWritten)
         {
@@ -58,18 +58,11 @@ namespace CrazyFS.FileSystem
         /// <exception cref="FileNotFoundException"></exception>
         public static bool HasAccess(this IPath pathWrapper, string path, PathAccessModes modes)
         {
-            var fs = pathWrapper.FileSystem;
-            if (fs.File.Exists(path))
+            if (pathWrapper is not LinuxPathWrapper obj)
             {
-                return CheckPathAccessModes(new UnixFileInfo(fs.FileInfo.FromFileName(path).FullName).FileAccessPermissions, modes);
+                throw new Exception("IPath is not the linux version");
             }
-            else if (fs.Directory.Exists(path))
-            {
-                var fullPath = fs.DirectoryInfo.FromDirectoryName(path).FullName;
-                var dir = new UnixDirectoryInfo(fullPath);
-                return CheckPathAccessModes(dir.FileAccessPermissions, modes);
-            }
-            throw new FileNotFoundException();
+            return obj.HasAccess(path, modes);
         }
 
         public static void Chmod(this IPath pathWrapper, string path, FilePermissions permissions)
@@ -99,47 +92,23 @@ namespace CrazyFS.FileSystem
 
         public static void CreateSymlink(this IPath pathWrapper, string from, string to)
         {
-            if (!HasAccess(pathWrapper, from, PathAccessModes.R_OK) || !HasAccess(pathWrapper, Path.GetDirectoryName(to), PathAccessModes.W_OK))
+            if (pathWrapper is not LinuxPathWrapper obj)
             {
-                throw new UnauthorizedAccessException();
+                throw new Exception("IPath is not the linux version");
             }
-
-            var f = new UnixFileInfo(pathWrapper.GetFullPath(from));
-            f.CreateSymbolicLink(to);
+            obj.CreateSymlink(from, to);
+            return;
+            var fromFull = pathWrapper.GetFullPath(from);
+            var toFull = pathWrapper.GetFullPath(to);
+            var f = new UnixFileInfo(fromFull);
+            f.CreateSymbolicLink(toFull);
+            //var f = new UnixFileInfo(pathWrapper.GetFullPath(from));
+            //f.CreateSymbolicLink(pathWrapper.GetFullPath(to));
         }
 
         public static string GetSymlinkTarget(this IPath pathWrapper, string path)
         {
             return (new UnixFileInfo(pathWrapper.GetFullPath(path)).IsSymbolicLink) ? pathWrapper.GetRelativePath(pathWrapper.GetFullPath("/"), UnixPath.GetRealPath(path)) : pathWrapper.GetRelativePath(pathWrapper.GetFullPath("/"), path);
-        }
-
-        private static bool CheckPathAccessModes(FileAccessPermissions permissions, PathAccessModes request)
-        {
-            if (request.HasFlag(PathAccessModes.R_OK))
-            {
-                if (!(permissions.HasFlag(FileAccessPermissions.UserRead) || permissions.HasFlag(FileAccessPermissions.GroupRead) || permissions.HasFlag(FileAccessPermissions.OtherRead)))
-                {
-                    return false;
-                }
-            }
-
-            if (request.HasFlag(PathAccessModes.W_OK))
-            {
-                if (!(permissions.HasFlag(FileAccessPermissions.UserWrite) || permissions.HasFlag(FileAccessPermissions.GroupWrite) || permissions.HasFlag(FileAccessPermissions.OtherWrite)))
-                {
-                    return false;
-                }
-            }
-
-            if (request.HasFlag(PathAccessModes.X_OK))
-            {
-                if (!(permissions.HasFlag(FileAccessPermissions.UserExecute) || permissions.HasFlag(FileAccessPermissions.GroupExecute) || permissions.HasFlag(FileAccessPermissions.OtherExecute)))
-                {
-                    return false;
-                }
-            }
-
-            return true;
         }
     }
 }

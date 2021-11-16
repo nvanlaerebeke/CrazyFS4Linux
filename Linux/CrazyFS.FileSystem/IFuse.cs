@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.IO.Abstractions;
-using CrazyFS.Linux;
 using Fuse.NET;
 using Mono.Unix.Native;
 

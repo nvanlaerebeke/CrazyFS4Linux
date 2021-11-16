@@ -1,6 +1,6 @@
 namespace CrazyFS.FileSystem
 {
-    enum CrazyFSRequestName
+    public enum CrazyFsRequestName
     {
         ChangeTimes,
         Chown,

@@ -20,7 +20,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\..\Fuse.NET\src\Fuse.NET\Fuse.NET.csproj" />
-      <ProjectReference Include="..\CrazyFS.Passthrough\CrazyFS.Passthrough.csproj" />
+      <ProjectReference Include="..\CrazyFS.Passthrough.Linux\CrazyFS.Passthrough.Linux.csproj" />
     </ItemGroup>
 
 </Project>

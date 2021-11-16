@@ -4,15 +4,15 @@ using Serilog;
 
 namespace CrazyFS.FileSystem
 {
-    class CrazyFSRequest
+    public class CrazyFsRequest
     {
-        private readonly CrazyFSRequestName _name;
+        private readonly CrazyFsRequestName _name;
         private readonly KeyValuePair<string, string>[] _parameters;
         private static ILogger _logger;
 
         private static ILogger Logger => _logger ??= new LogProvider().Get();
 
-        public CrazyFSRequest(CrazyFSRequestName name, KeyValuePair<string, string>[] parameters)
+        public CrazyFsRequest(CrazyFsRequestName name, KeyValuePair<string, string>[] parameters)
         {
             _name = name;
             _parameters = parameters;
@@ -20,7 +20,7 @@ namespace CrazyFS.FileSystem
             _parameters = parameters;
         }
 
-        internal CrazyFSRequest Log()
+        public CrazyFsRequest Log()
         {
             Logger.Information(
                 "\nReceived filesystem request {@Name}\n With parameters: \n {@Parameters}",
@@ -30,7 +30,7 @@ namespace CrazyFS.FileSystem
             return this;
         }
 
-        internal CrazyFSRequest Log(Result result)
+        public CrazyFsRequest Log(Result result)
         {
             Logger.Information(
                 "Result for {@Name}\n is {@Result} with native code {@NativeCode}",

@@ -2,13 +2,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using CrazyFS.Linux;
 using Mono.Unix;
 
 // ReSharper disable once CheckNamespace
-namespace CrazyFS.FileSystem
+namespace CrazyFS.Passthrough.Linux
 {
-    public static class IFileSystemInfoExtensions
+    public static class FileSystemInfoExtensions
     {
         public static bool IsSymlink (this IFileSystemInfo fileSystemInfo)
         {

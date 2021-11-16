@@ -1,7 +1,6 @@
 ﻿using System.IO.Abstractions;
-using CrazyFS.Linux;
 
-namespace CrazyFS.Passthrough
+namespace CrazyFS.Passthrough.Linux
 {
     public class PassthroughFileSystem : IFileSystem
     {
@@ -11,10 +10,10 @@ namespace CrazyFS.Passthrough
             DirectoryInfo = new LinuxDirectoryInfoFactory(this, source, destination);
             FileInfo = new LinuxFileInfoFactory(this, source, destination);
             Path = new LinuxPathWrapper(this, source, destination);
-            File = new LinuxFileWrapper(this, source, destination);
-            Directory = new LinuxDirectoryWrapper(this, source, destination);
-            FileStream = new LinuxFileStreamFactory(source, destination);
-            FileSystemWatcher = new LinuxFileSystemWatcherFactory(source, destination);
+            File = new LinuxFileWrapper(this, source);
+            Directory = new LinuxDirectoryWrapper(this, source);
+            FileStream = new LinuxFileStreamFactory(source);
+            FileSystemWatcher = new LinuxFileSystemWatcherFactory(source);
         }
 
         public IFile File { get; }

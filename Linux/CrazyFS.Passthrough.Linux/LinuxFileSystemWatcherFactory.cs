@@ -1,17 +1,14 @@
 using System.IO.Abstractions;
-using CrazyFS.FileSystem;
 
-namespace CrazyFS.Linux
+namespace CrazyFS.Passthrough.Linux
 {
     public class LinuxFileSystemWatcherFactory : IFileSystemWatcherFactory
     {
         private readonly string _source;
-        private readonly IFileSystemWatcherFactory _fileSystemWatcherFactory;
-        
-        public LinuxFileSystemWatcherFactory(string source, string destination)
+
+        public LinuxFileSystemWatcherFactory(string source)
         {
             _source = source;
-            _fileSystemWatcherFactory = new FileSystemWatcherFactory();
         }
         
         public IFileSystemWatcher CreateNew()

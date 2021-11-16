@@ -7,17 +7,17 @@ namespace CrazyFS.Passthrough
     [Serializable]
     internal class DirectoryInfoFactory : IDirectoryInfoFactory
     {
-        private readonly IFileSystem fileSystem;
+        private readonly IFileSystem _fileSystem;
 
         public DirectoryInfoFactory(IFileSystem fileSystem)
         {
-            this.fileSystem = fileSystem;
+            _fileSystem = fileSystem;
         }
 
         public IDirectoryInfo FromDirectoryName(string directoryName)
         {
             var realDirectoryInfo = new DirectoryInfo(directoryName);
-            return new DirectoryInfoWrapper(fileSystem, realDirectoryInfo);
+            return new DirectoryInfoWrapper(_fileSystem, realDirectoryInfo);
         }
     }
 }

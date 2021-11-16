@@ -2,25 +2,24 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
-using CrazyFS.Linux;
 using Fuse.NET;
 using Mono.Unix.Native;
 
 namespace CrazyFS.FileSystem
 {
-    public class Fuse : IFuse 
+    public abstract class Fuse : IFuse 
     {
-        private readonly IFileSystem _fileSystem;
-        
-        public Fuse(IFileSystem fileSystem)
+        protected readonly IFileSystem FileSystem;
+
+        protected Fuse(IFileSystem fileSystem)
         {
-            _fileSystem = fileSystem;
+            FileSystem = fileSystem;
         }
 
         public Result ChangeTimes(string path, long atime, long mtime)
         {
 #if DEBUG
-            var request = new CrazyFSRequest(CrazyFSRequestName.ChangeTimes, new[]
+            var request = new CrazyFsRequest(CrazyFsRequestName.ChangeTimes, new[]
             {
                 new KeyValuePair<string, string>("path", path),
                 new KeyValuePair<string, string>("atime", atime.ToString()),
@@ -56,214 +55,22 @@ namespace CrazyFS.FileSystem
                 return result;
             }
         }
-        public Result Chown(string path, long uid, long gid)
-        {
-#if DEBUG            
-            var request = new CrazyFSRequest(CrazyFSRequestName.Chown, new[]
-            {
-                new KeyValuePair<string, string>("path", path),
-                new KeyValuePair<string, string>("uid", uid.ToString()),
-                new KeyValuePair<string, string>("gid", gid.ToString())
-            }).Log();
-#endif
-            
-            try
-            {
-                _fileSystem.Path.Chown(path, (uint)uid, (uint)gid);
-                var result = new Result(ResultStatus.Success);
-#if DEBUG
-                request.Log(result);                
-#endif
-                return result;
-            }
-            catch (Exception ex)
-            {
-                var result = ex.GetResult();
-#if DEBUG
-                request.Log(result);                
-#endif                
-                return result;
-            }
-        }
-        public Result Chmod(string path, FilePermissions permissions)
-        {
-#if DEBUG            
-            var request = new CrazyFSRequest(CrazyFSRequestName.Chmod, new []
-            {
-                new KeyValuePair<string, string>("path", path),
-                new KeyValuePair<string, string>("permissions", permissions.ToString())
-            }).Log();
-#endif
-           
-            try
-            {
-                _fileSystem.Path.Chmod(path, permissions);
-                var result = new Result(ResultStatus.Success);
-#if DEBUG
-                request.Log(result);                
-#endif                
-                return result;
-            }
-            catch (Exception ex)
-            {
-                var result = ex.GetResult(); 
-#if DEBUG
-                request.Log(result);                
-#endif
-                return result;
-            }
-        }
-        
-        /// <summary>
-        /// R_OK = read allowed
-        /// W_OK = write allowed
-        /// x_OK = exec allowed
-        /// F_OK = exists
-        /// </summary>
-        /// <param name="path"></param>
-        /// <param name="access"></param>
-        /// <returns></returns>
-        public Result CheckAccess(string path, PathAccessModes access)
-        {
-#if DEBUG
-            var request = new CrazyFSRequest(CrazyFSRequestName.CheckAccess, new[]
-            {
-                new KeyValuePair<string, string>("path", path),
-                new KeyValuePair<string, string>("access", access.ToString())
-            }).Log();
- #endif           
-            try
-            {
-                var result = _fileSystem.Path.HasAccess(path, access) ? new Result(ResultStatus.Success) : new Result(ResultStatus.AccessDenied);
-#if DEBUG
-                request.Log(result);                
-#endif                
-                return result;
-            }
-            catch (Exception ex)
-            {
-                var result = ex.GetResult();
-#if DEBUG
-                request.Log(result);                
-#endif
-                return result;
-            }
-        }
 
-        public Result CreateDirectory(string path, FilePermissions mode)
-        {
-#if DEBUG
-            var request = new CrazyFSRequest(CrazyFSRequestName.CreateDirectory, new[]
-            {
-                new KeyValuePair<string, string>("path", path),
-                new KeyValuePair<string, string>("mode", mode.ToString())
-            }).Log();
-#endif            
-            try
-            {
-                _fileSystem.Directory.CreateDirectory(path, mode);
-                var result = new Result(ResultStatus.Success);
-#if DEBUG
-                request.Log(result);                
-#endif
-                return result;
-            }
-            catch (Exception ex)
-            {
-                var result = ex.GetResult();
-#if DEBUG
-                request.Log(result);                
-#endif                
-                return result;
-            }
-        }
+        public abstract Result Chmod(string path, FilePermissions permissions);
+        public abstract Result Chown(string path, long uid, long gid);
+        public abstract Result CheckAccess(string path, PathAccessModes access);
+        public abstract Result CreateDirectory(string path, FilePermissions mode);
 
-        public Result CreateHardLink(string from, string to)
-        {
-#if DEBUG
-            var request = new CrazyFSRequest(CrazyFSRequestName.CreateHardLink, new[]
-            {
-                new KeyValuePair<string, string>("from", from),
-                new KeyValuePair<string, string>("to", to)
-            }).Log();
-#endif
-            
-            try
-            {
-                _fileSystem.Path.CreateHardLink(from, to);
-                var result = new Result(ResultStatus.Success);
-#if DEBUG
-                request.Log(result);                
-#endif                
-                return result;
-            }
-            catch (Exception ex)
-            {
-                var result = ex.GetResult();
-#if DEBUG
-                request.Log(result);                
-#endif
-                return result;
-            }
-        }
-        public Result CreateSpecialFile(string path, FilePermissions mode, ulong rdev)
-        {
-#if DEBUG
-            var request = new CrazyFSRequest(CrazyFSRequestName.CreateSpecialFile, new[]
-            {
-                new KeyValuePair<string, string>("path", path),
-                new KeyValuePair<string, string>("rdev", rdev.ToString())
-            }).Log();
-#endif
-            try
-            {
-                _fileSystem.File.CreateSpecialFile(path, mode, rdev);
-                var result = new Result(ResultStatus.Success);
-#if DEBUG
-                request.Log(result);                
-#endif                
-                return result;
-            }
-            catch (Exception ex)
-            {
-                var result = ex.GetResult();
-#if DEBUG
-                request.Log(result);                
-#endif                
-                return result;
-            }
-        }
-        public Result CreateSymlink(string from, string to)
-        {
-#if DEBUG
-            var request = new CrazyFSRequest(CrazyFSRequestName.CreateSymlink, new[]
-            {
-                new KeyValuePair<string, string>("from", from),
-                new KeyValuePair<string, string>("to", to)
-            }).Log();
-#endif
-            try
-            {
-                _fileSystem.Path.CreateSymlink(from, to);
-                var result = new Result(ResultStatus.Success);
-#if DEBUG
-                request.Log(result);                
-#endif
-                return result;
-            }
-            catch (Exception ex)
-            {
-                var result = ex.GetResult();
-#if DEBUG
-                request.Log(result);                
-#endif                
-                return result;
-            }
-        }
+        public abstract Result CreateHardLink(string @from, string to);
+
+        public abstract Result CreateSpecialFile(string path, FilePermissions mode, ulong rdev);
+
+        public abstract Result CreateSymlink(string @from, string to);
+
         public Errno GetFileSystemStatus(string path, out Statvfs stbuf)
         {
 #if DEBUG
-            new CrazyFSRequest(CrazyFSRequestName.GetFileSystemStatus, new[]
+            new CrazyFsRequest(CrazyFsRequestName.GetFileSystemStatus, new[]
             {
                 new KeyValuePair<string, string>("path", path)
             }).Log();
@@ -277,39 +84,12 @@ namespace CrazyFS.FileSystem
             return 0;
         }
 
-        public Result GetPathExtendedAttribute(string path, string name, byte[] value, out int bytesWritten)
-        {
-#if DEBUG
-            var request = new CrazyFSRequest(CrazyFSRequestName.GetPathExtendedAttribute, new[]
-            {
-                new KeyValuePair<string, string>("path", path),
-                new KeyValuePair<string, string>("name", name)
-            }).Log();
-#endif
-            
-            bytesWritten = 0;
-            try
-            {
-                _fileSystem.Path.GetExtendedAttribute(path, name, value, out bytesWritten);
-                var result = (bytesWritten == -1) ? new Result(ResultStatus.NotSet) : new Result(ResultStatus.Success);
-#if DEBUG
-                request.Log(result);                
-#endif
-                return result;
-            }
-            catch (Exception ex)
-            {
-                var result = ex.GetResult();
-#if DEBUG
-                request.Log(result);                
-#endif                
-                return result;
-            }
-        }
+        public abstract Result GetPathExtendedAttribute(string path, string name, byte[] value, out int bytesWritten);
+        
         public Result GetPathInfo(string path, out IFileSystemInfo info)
         {
 #if DEBUG
-            var request = new CrazyFSRequest(CrazyFSRequestName.GetPathInfo, new[]
+            var request = new CrazyFsRequest(CrazyFsRequestName.GetPathInfo, new[]
             {
                 new KeyValuePair<string, string>("path", path)
             }).Log();
@@ -318,13 +98,13 @@ namespace CrazyFS.FileSystem
             info = null;
             try
             {
-                if (_fileSystem.File.Exists(path))
+                if (FileSystem.File.Exists(path))
                 {
-                    info = _fileSystem.FileInfo.FromFileName(path);
+                    info = FileSystem.FileInfo.FromFileName(path);
                 }
-                else if (_fileSystem.Directory.Exists((path)))
+                else if (FileSystem.Directory.Exists((path)))
                 {
-                    info = _fileSystem.DirectoryInfo.FromDirectoryName(path);
+                    info = FileSystem.DirectoryInfo.FromDirectoryName(path);
                 }
 
                 var result = new Result(info == null ? ResultStatus.PathNotFound : ResultStatus.Success);
@@ -342,76 +122,13 @@ namespace CrazyFS.FileSystem
                 return result;
             }
         }
-
-        public Result GetSymbolicLinkTarget(string path, out string target)
-        {
-#if DEBUG
-            var request = new CrazyFSRequest(CrazyFSRequestName.GetSymbolicLinkTarget, new[]
-            {
-                new KeyValuePair<string, string>("path", path)
-            }).Log();
-#endif            
-            target = path;
-            try
-            {
-                if (_fileSystem.File.Exists(path))
-                {
-                    target = (_fileSystem.FileInfo.FromFileName(path) as LinuxFileInfo)?.GetRealPath();
-                }
-                else if (_fileSystem.Directory.Exists((path)))
-                {
-                    target = (_fileSystem.DirectoryInfo.FromDirectoryName(path) as LinuxDirectoryInfo)?.GetRealPath();
-                }
-                var result = new Result(ResultStatus.Success);
-#if DEBUG
-                request.Log(result);                
-#endif                
-                return result;
-            }
-            catch (Exception ex)
-            {
-                var result = ex.GetResult();
-#if DEBUG
-                request.Log(result);                
-#endif
-                return result;
-            }
-        }
+        public abstract Result GetSymbolicLinkTarget(string path, out string target);
+        public abstract Result ListPathExtendedAttributes(string path, out string[] names);
         
-        public Result ListPathExtendedAttributes(string path, out string[] names)
-        {
-#if DEBUG
-            var request = new CrazyFSRequest(CrazyFSRequestName.ListPathExtendedAttributes, new[]
-            {
-                new KeyValuePair<string, string>("path", path)
-            }).Log();
-#endif
-
-            try
-            {
-                names = _fileSystem.Path.ListExtendedAttributes(path);
-                var result = new Result(ResultStatus.Success);
-#if DEBUG
-                request.Log(result);                
-#endif                
-                return result;                
-            }
-            catch (Exception ex)
-            {
-                names = Array.Empty<string>();
-                var result = ex.GetResult();
-#if DEBUG
-                request.Log(result);                
-#endif
-                return result;
-            }
-
-        }
-
         public Result Ls(string path, out IEnumerable<IFileSystemInfo> paths)
         {
 #if DEBUG
-            var request = new CrazyFSRequest(CrazyFSRequestName.Ls, new[]
+            var request = new CrazyFsRequest(CrazyFsRequestName.Ls, new[]
             {
                 new KeyValuePair<string, string>("path", path)
             }).Log();
@@ -419,7 +136,7 @@ namespace CrazyFS.FileSystem
 
             try
             {
-                var dir = _fileSystem.DirectoryInfo.FromDirectoryName(path);
+                var dir = FileSystem.DirectoryInfo.FromDirectoryName(path);
                 paths = dir.EnumerateFileSystemInfos();
                 var result = new Result(ResultStatus.Success);
 #if DEBUG
@@ -441,11 +158,12 @@ namespace CrazyFS.FileSystem
         public Errno Lock(string path, OpenedPathInfo info, FcntlCommand cmd, ref Flock @lock)
         {
 #if DEBUG
-            new CrazyFSRequest(CrazyFSRequestName.Lock, new[]
+            new CrazyFsRequest(CrazyFsRequestName.Lock, new[]
             {
                 new KeyValuePair<string, string>("path", path)
             }).Log();
 #endif
+            // ReSharper disable once InconsistentNaming
             Flock _lock = @lock;
             Errno e = ProcessFile (path, info.OpenFlags, fd => Syscall.fcntl (fd, cmd, ref _lock));
             @lock = _lock;
@@ -455,14 +173,14 @@ namespace CrazyFS.FileSystem
         public void Mount()
         {
 #if DEBUG
-            new CrazyFSRequest(CrazyFSRequestName.Mount, Array.Empty<KeyValuePair<string, string>>()).Log();
+            new CrazyFsRequest(CrazyFsRequestName.Mount, Array.Empty<KeyValuePair<string, string>>()).Log();
 #endif
         }
 
         public Result Read(string path, long offset, ulong size, out byte[] buffer, out int bytesRead)
         {
 #if DEBUG
-            var request = new CrazyFSRequest(CrazyFSRequestName.Read, new[]
+            var request = new CrazyFsRequest(CrazyFsRequestName.Read, new[]
             {
                 new KeyValuePair<string, string>("path", path),
                 new KeyValuePair<string, string>("offset", offset.ToString()),
@@ -472,17 +190,17 @@ namespace CrazyFS.FileSystem
             try
             {
                 buffer = new byte[size];
-                using (var s = _fileSystem.FileInfo.FromFileName(path).OpenRead())
+                using (var s = FileSystem.FileInfo.FromFileName(path).OpenRead())
                 {
                     //make sure the offset isn't higher than the filesize
                     if (offset > s.Length)
                     {
                         bytesRead = 0;
-                        var result_oob = new Result(ResultStatus.Success);
+                        var resultOverflow = new Result(ResultStatus.Success);
 #if DEBUG
-                        request.Log(result_oob);                
+                        request.Log(resultOverflow);                
 #endif                        
-                        return result_oob;
+                        return resultOverflow;
                     }
 
                     //Set the position to start reading
@@ -519,14 +237,14 @@ namespace CrazyFS.FileSystem
         public Result RemoveFile(string path)
         {
 #if DEBUG
-            var request = new CrazyFSRequest(CrazyFSRequestName.RemoveFile, new[]
+            var request = new CrazyFsRequest(CrazyFsRequestName.RemoveFile, new[]
             {
                 new KeyValuePair<string, string>("path", path)
             }).Log();
 #endif
             try
             {
-                _fileSystem.File.Delete(path);
+                FileSystem.File.Delete(path);
                 var result = new Result(ResultStatus.Success);
 #if DEBUG
                 request.Log(result);                
@@ -546,14 +264,14 @@ namespace CrazyFS.FileSystem
         public Result RemoveDirectory(string path)
         {
 #if DEBUG
-            var request = new CrazyFSRequest(CrazyFSRequestName.RemoveDirectory, new[]
+            var request = new CrazyFsRequest(CrazyFsRequestName.RemoveDirectory, new[]
             {
                 new KeyValuePair<string, string>("path", path)
             }).Log();
 #endif
             try
             {
-                _fileSystem.Directory.Delete(path);
+                FileSystem.Directory.Delete(path);
                 var result = new Result(ResultStatus.Success);
 #if DEBUG
                 request.Log(result);                
@@ -570,6 +288,9 @@ namespace CrazyFS.FileSystem
             }
         }
 
+        public abstract Result RemovePathExtendedAttribute(string path, string name);
+        public abstract Result SetPathExtendedAttribute(string path, string name, byte[] value, XattrFlags flags);
+
         /// <summary>
         /// ToDo: Cache open file handles, currently not implemented
         /// </summary>
@@ -579,7 +300,7 @@ namespace CrazyFS.FileSystem
         public Result Open(string path, OpenedPathInfo info)
         {
 #if DEBUG
-            var request = new CrazyFSRequest(CrazyFSRequestName.Open, new[]
+            var request = new CrazyFsRequest(CrazyFsRequestName.Open, new[]
             {
                 new KeyValuePair<string, string>("path", path)
             }).Log();
@@ -595,7 +316,7 @@ namespace CrazyFS.FileSystem
         public Result Move(string from, string to)
         {
 #if DEBUG
-            var request = new CrazyFSRequest(CrazyFSRequestName.Move, new[]
+            var request = new CrazyFsRequest(CrazyFsRequestName.Move, new[]
             {
                 new KeyValuePair<string, string>("from", from),
                 new KeyValuePair<string, string>("to", to)
@@ -603,22 +324,22 @@ namespace CrazyFS.FileSystem
 #endif
             try
             {
-                if (_fileSystem.File.Exists(to) || _fileSystem.Directory.Exists(to))
+                if (FileSystem.File.Exists(to) || FileSystem.Directory.Exists(to))
                 {
-                    var result_exists = new Result(ResultStatus.AlreadyExists);
+                    var resultExists = new Result(ResultStatus.AlreadyExists);
 #if DEBUG
-                    request.Log(result_exists);                
+                    request.Log(resultExists);                
 #endif                    
-                    return result_exists;
+                    return resultExists;
                 }
 
-                if (_fileSystem.File.Exists(to))
+                if (FileSystem.File.Exists(to))
                 {
-                    _fileSystem.File.Move(from, to);
+                    FileSystem.File.Move(from, to);
                 }
                 else
                 {
-                    _fileSystem.Directory.Move(from, to);
+                    FileSystem.Directory.Move(from, to);
                 }
                 var result = new Result(ResultStatus.Success);
 #if DEBUG
@@ -632,63 +353,6 @@ namespace CrazyFS.FileSystem
 #if DEBUG
                 request.Log(result);                
 #endif
-                return result;
-            }
-        }
-        
-        public Result RemovePathExtendedAttribute(string path, string name)
-        {
-#if DEBUG
-            var request = new CrazyFSRequest(CrazyFSRequestName.RemovePathExtendedAttribute, new[]
-            {
-                new KeyValuePair<string, string>("path", path),
-                new KeyValuePair<string, string>("name", name)
-            }).Log();
-#endif
-            try
-            {
-                _fileSystem.Path.RemoveExtendedAttributes(path, name);
-                var result = new Result(ResultStatus.Success);
-#if DEBUG
-                request.Log(result);                
-#endif                
-                return result;
-            }
-            catch (Exception ex)
-            {
-                var result = ex.GetResult();
-#if DEBUG
-                request.Log(result);                
-#endif                
-                return result;
-            }
-        }
-        
-        public Result SetPathExtendedAttribute (string path, string name, byte[] value, XattrFlags flags)
-        {
-#if DEBUG
-            var request = new CrazyFSRequest(CrazyFSRequestName.SetPathExtendedAttribute, new[]
-            {
-                new KeyValuePair<string, string>("path", path),
-                new KeyValuePair<string, string>("name", name),
-                new KeyValuePair<string, string>("flags", flags.ToString())
-            }).Log();
-#endif
-            try
-            {
-                _fileSystem.Path.SetExtendedAttributes(path, name, value, flags);
-                var result = new Result(ResultStatus.Success);
-#if DEBUG
-                request.Log(result);                
-#endif                
-                return result;
-            }
-            catch (Exception ex)
-            {
-                var result = ex.GetResult();
-#if DEBUG
-                request.Log(result);                
-#endif                
                 return result;
             }
         }
@@ -696,7 +360,7 @@ namespace CrazyFS.FileSystem
         public Result Truncate(string path, long size)
         {
 #if DEBUG
-            var request = new CrazyFSRequest(CrazyFSRequestName.Truncate, new[]
+            var request = new CrazyFsRequest(CrazyFsRequestName.Truncate, new[]
             {
                 new KeyValuePair<string, string>("path", path),
                 new KeyValuePair<string, string>("size", size.ToString())
@@ -704,7 +368,7 @@ namespace CrazyFS.FileSystem
 #endif
             try
             {
-                var f = _fileSystem.FileInfo.FromFileName(path);
+                var f = FileSystem.FileInfo.FromFileName(path);
                 using (var s = f.Open(FileMode.Open))
                 {
                     s.SetLength(size);
@@ -728,14 +392,14 @@ namespace CrazyFS.FileSystem
         public void UnMount()
         {
 #if DEBUG
-            new CrazyFSRequest(CrazyFSRequestName.UnMount, Array.Empty<KeyValuePair<string, string>>()).Log();
+            new CrazyFsRequest(CrazyFsRequestName.UnMount, Array.Empty<KeyValuePair<string, string>>()).Log();
 #endif
         }
 
         public Result Write(string path, byte[] buffer, out int bytesWritten, long offset)
         {
 #if DEBUG
-            var request = new CrazyFSRequest(CrazyFSRequestName.Write, new[]
+            var request = new CrazyFsRequest(CrazyFsRequestName.Write, new[]
             {
                 new KeyValuePair<string, string>("path", path),
                 new KeyValuePair<string, string>("offset", offset.ToString())
@@ -743,7 +407,7 @@ namespace CrazyFS.FileSystem
 #endif
             try
             {
-                using (var s = _fileSystem.FileStream.Create(path, FileMode.Open, FileAccess.Write))
+                using (var s = FileSystem.FileStream.Create(path, FileMode.Open, FileAccess.Write))
                 {
                     s.Position = offset;
                     s.Write(buffer, 0, buffer.Length);

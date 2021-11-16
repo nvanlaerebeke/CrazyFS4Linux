@@ -1,6 +1,7 @@
 using System;
+// ReSharper disable InconsistentNaming
 
-namespace CrazyFS.Linux
+namespace CrazyFS.FileSystem
 {
     [Flags]
     public enum PathAccessModes

@@ -1,4 +1,5 @@
-namespace CrazyFS.Linux
+// ReSharper disable InconsistentNaming
+namespace CrazyFS.Passthrough.Linux
 {
     public enum ErrorNumber
     {

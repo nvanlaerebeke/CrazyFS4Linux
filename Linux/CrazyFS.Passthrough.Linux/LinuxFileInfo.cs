@@ -2,11 +2,10 @@ using System;
 using System.IO;
 using System.IO.Abstractions;
 using System.Security.AccessControl;
-using CrazyFS.FileSystem;
 using Mono.Unix;
 using Mono.Unix.Native;
 
-namespace CrazyFS.Linux
+namespace CrazyFS.Passthrough.Linux
 {
     public class LinuxFileInfo : IFileInfo, ILinuxFileSystemInfo
     {
@@ -135,7 +134,7 @@ namespace CrazyFS.Linux
         public long Length => _info.Length;
         public string GetRealPath()
         {
-            var passThroughPath = this.FullName.GetRealPath(_source, _destination);
+            var passThroughPath = FullName.GetRealPath(_source, _destination);
             return UnixPath.GetRealPath(passThroughPath).GetMountedPath(_source, _destination);
         }
     }

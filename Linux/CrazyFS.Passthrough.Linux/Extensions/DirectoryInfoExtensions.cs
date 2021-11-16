@@ -1,12 +1,11 @@
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
-using CrazyFS.Linux;
 
 // ReSharper disable once CheckNamespace
-namespace CrazyFS.FileSystem
+namespace CrazyFS.Passthrough.Linux
 {
-    public static class IDirectoryInfoExtensions
+    public static class DirectoryInfoExtensions
     {
         public static IEnumerable<IDirectoryInfo> GetPassthroughDirectoryInfos(this IEnumerable<IDirectoryInfo> fileSystemInfos, string source, string destination)
         {

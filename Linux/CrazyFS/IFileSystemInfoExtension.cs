@@ -1,12 +1,15 @@
 using System;
 using System.IO;
 using System.IO.Abstractions;
-using CrazyFS.Linux;
+using CrazyFS.Passthrough.Linux;
 using Mono.Unix.Native;
 
 namespace CrazyFS
 {
-    public static class IFileSystemInfoExtension
+    /// <summary>
+    /// ToDo: Move to Linux implementation
+    /// </summary>
+    public static class FileSystemInfoExtension
     {
         public static Stat ToStat(this IFileSystemInfo fileSystemInfo)
         {

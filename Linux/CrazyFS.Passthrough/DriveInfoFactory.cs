@@ -5,13 +5,13 @@ using System.IO.Abstractions;
 namespace CrazyFS.Passthrough {
     
     [Serializable]
-    internal class DriveInfoFactory : IDriveInfoFactory
+    public class DriveInfoFactory : IDriveInfoFactory
     {
-        private readonly IFileSystem fileSystem;
+        private readonly IFileSystem _fileSystem;
 
         public DriveInfoFactory(IFileSystem fileSystem)
         {
-            this.fileSystem = fileSystem;
+            _fileSystem = fileSystem;
         }
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace CrazyFS.Passthrough {
             for (int index = 0; index < driveInfos.Length; index++)
             {
                 var driveInfo = driveInfos[index];
-                driveInfoWrappers[index] = new DriveInfoWrapper(fileSystem, driveInfo);
+                driveInfoWrappers[index] = new DriveInfoWrapper(_fileSystem, driveInfo);
             }
 
             return driveInfoWrappers;
@@ -38,7 +38,7 @@ namespace CrazyFS.Passthrough {
         public IDriveInfo FromDriveName(string driveName)
         {
             var realDriveInfo = new DriveInfo(driveName);
-            return new DriveInfoWrapper(fileSystem, realDriveInfo);
+            return new DriveInfoWrapper(_fileSystem, realDriveInfo);
         }
     }
 }

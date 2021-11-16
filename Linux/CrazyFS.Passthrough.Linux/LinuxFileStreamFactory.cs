@@ -1,16 +1,15 @@
 using System;
 using System.IO;
 using System.IO.Abstractions;
-using CrazyFS.FileSystem;
 using Microsoft.Win32.SafeHandles;
 
-namespace CrazyFS.Linux
+namespace CrazyFS.Passthrough.Linux
 {
     [Serializable]
     public sealed class LinuxFileStreamFactory : IFileStreamFactory
     {
         private readonly string _source;
-        public LinuxFileStreamFactory(string source, string destination)
+        public LinuxFileStreamFactory(string source)
         {
             _source = source;
         }

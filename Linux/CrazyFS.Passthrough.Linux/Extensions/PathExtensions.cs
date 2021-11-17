@@ -97,13 +97,6 @@ namespace CrazyFS.Passthrough.Linux
                 throw new Exception("IPath is not the linux version");
             }
             obj.CreateSymlink(from, to);
-            return;
-            var fromFull = pathWrapper.GetFullPath(from);
-            var toFull = pathWrapper.GetFullPath(to);
-            var f = new UnixFileInfo(fromFull);
-            f.CreateSymbolicLink(toFull);
-            //var f = new UnixFileInfo(pathWrapper.GetFullPath(from));
-            //f.CreateSymbolicLink(pathWrapper.GetFullPath(to));
         }
 
         public static string GetSymlinkTarget(this IPath pathWrapper, string path)

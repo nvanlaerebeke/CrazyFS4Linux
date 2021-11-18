@@ -1,6 +1,6 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using CrazyFS.FileSystem;
 using CrazyFS.Passthrough.Linux;
@@ -8,10 +8,9 @@ using Fuse.NET;
 using Mono.Unix.Native;
 using OpenFlags = CrazyFS.FileSystem.OpenFlags;
 
-namespace CrazyFS {
-	internal class CrazyFsFileSystem : Fuse.NET.FileSystem {
-        public string MountPoint { get; }
-
+namespace CrazyFS.Linux {
+	internal class CrazyFsFileSystem : Fuse.NET.FileSystem 
+	{
         private readonly LinuxPassthroughFileSystem _fileSystem;
 		public CrazyFsFileSystem (string source, string destination)
 		{

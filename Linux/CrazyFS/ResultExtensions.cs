@@ -2,7 +2,7 @@ using System;
 using CrazyFS.FileSystem;
 using Mono.Unix.Native;
 
-namespace CrazyFS
+namespace CrazyFS.Linux
 {
     public static class ResultExtensions
     {

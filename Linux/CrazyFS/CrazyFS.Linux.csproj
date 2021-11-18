@@ -14,12 +14,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Fuse.NET" Version="0.0.2" />
+      <PackageReference Include="FileSystem.Fuse.NET" Version="0.0.3" />
       <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\Fuse.NET\src\Fuse.NET\Fuse.NET.csproj" />
       <ProjectReference Include="..\CrazyFS.Passthrough.Linux\CrazyFS.Passthrough.Linux.csproj" />
     </ItemGroup>
 

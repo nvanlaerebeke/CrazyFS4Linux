@@ -4,7 +4,7 @@ using System.IO.Abstractions;
 using CrazyFS.Passthrough.Linux;
 using Mono.Unix.Native;
 
-namespace CrazyFS
+namespace CrazyFS.Linux
 {
     /// <summary>
     /// ToDo: Move to Linux implementation

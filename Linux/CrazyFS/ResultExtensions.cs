@@ -4,7 +4,7 @@ using Mono.Unix.Native;
 
 namespace CrazyFS
 {
-    public static class ErrNoExtension
+    public static class ResultExtensions
     {
         public static Errno ToErrno(this Result result)
         {

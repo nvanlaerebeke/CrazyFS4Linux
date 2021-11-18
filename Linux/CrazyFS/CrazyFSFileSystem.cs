@@ -10,8 +10,9 @@ using OpenFlags = CrazyFS.FileSystem.OpenFlags;
 
 namespace CrazyFS {
 	internal class CrazyFsFileSystem : Fuse.NET.FileSystem {
+        public string MountPoint { get; }
 
-		private readonly LinuxPassthroughFileSystem _fileSystem;
+        private readonly LinuxPassthroughFileSystem _fileSystem;
 		public CrazyFsFileSystem (string source, string destination)
 		{
 			MountPoint = destination;

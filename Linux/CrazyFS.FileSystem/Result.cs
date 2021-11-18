@@ -1,10 +1,8 @@
-using Mono.Unix.Native;
-
 namespace CrazyFS.FileSystem {
 
     public class Result
     {
-        public Errno? NativeCode { get; }
+        public int? NativeCode { get; }
         
         public ResultStatus Status { get; }
 
@@ -13,7 +11,7 @@ namespace CrazyFS.FileSystem {
             Status = status;
         }
 
-        public Result(Errno nativeCode)
+        public Result(int nativeCode)
         {
             NativeCode = nativeCode;
         }

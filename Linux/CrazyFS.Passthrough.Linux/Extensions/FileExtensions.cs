@@ -7,14 +7,10 @@ namespace CrazyFS.Passthrough.Linux
 {
     public static class FileExtensions
     {
-        public static IFileInfo CreateSpecialFile(this IFile file, string path, FilePermissions mode, ulong rdev)
+        public static void CreateSpecialFile(this IFile file, string path, FilePermissions mode, ulong rdev)
         {
-            if (file is LinuxFileWrapper fileWrapper)
-            {
-                return fileWrapper.CreateSpecialFile(path, mode, rdev);
-            }
-
-            throw new Exception("IFile is not the linux version");
+            if (file is not LinuxFileWrapper fileWrapper) throw new Exception("IFile is not the linux version");
+            fileWrapper.CreateSpecialFile(path, mode, rdev);
         }
     }
 }

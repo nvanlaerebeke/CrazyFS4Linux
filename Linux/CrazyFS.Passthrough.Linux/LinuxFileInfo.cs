@@ -4,6 +4,7 @@ using System.IO.Abstractions;
 using System.Security.AccessControl;
 using Mono.Unix;
 using Mono.Unix.Native;
+// ReSharper disable IdentifierTypo
 
 namespace CrazyFS.Passthrough.Linux
 {
@@ -17,7 +18,7 @@ namespace CrazyFS.Passthrough.Linux
             this(fileSystem, source, destination, new FileInfo(Path.Combine(source, filePath.Trim(Path.DirectorySeparatorChar))))
         { }
 
-        public LinuxFileInfo(IFileSystem fileSystem, string source, string destination, FileInfo info):
+        private LinuxFileInfo(IFileSystem fileSystem, string source, string destination, FileInfo info):
             this(fileSystem, source, destination, new FileInfoWrapper(fileSystem, info))
         { }
         

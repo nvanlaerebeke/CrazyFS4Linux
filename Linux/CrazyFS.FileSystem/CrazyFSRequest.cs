@@ -30,7 +30,7 @@ namespace CrazyFS.FileSystem
             return this;
         }
 
-        public CrazyFsRequest Log(Result result)
+        public void Log(Result result)
         {
             Logger.Information(
                 "Result for {@Name}\n is {@Result} with native code {@NativeCode}",
@@ -38,7 +38,6 @@ namespace CrazyFS.FileSystem
                 result.Status,
                 result.NativeCode
             );
-            return this;
         }
     }
 }

@@ -21,8 +21,8 @@ namespace CrazyFS.Passthrough {
         public IDriveInfo[] GetDrives()
         {
             var driveInfos = DriveInfo.GetDrives();
-            var driveInfoWrappers = new DriveInfoBase[driveInfos.Length];
-            for (int index = 0; index < driveInfos.Length; index++)
+            var driveInfoWrappers = new IDriveInfo[driveInfos.Length];
+            for (var index = 0; index < driveInfos.Length; index++)
             {
                 var driveInfo = driveInfos[index];
                 driveInfoWrappers[index] = new DriveInfoWrapper(_fileSystem, driveInfo);

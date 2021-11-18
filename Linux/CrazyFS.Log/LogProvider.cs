@@ -4,11 +4,6 @@ using Serilog.Events;
 
 namespace CrazyFS.Log
 {
-    public interface ILogProvider
-    {
-        ILogger Get();
-    }
-
     public class LogProvider : ILogProvider
     {
         private static ILogger _logger;
@@ -31,7 +26,7 @@ namespace CrazyFS.Log
             
             lock (Lock)
             {
-                if (_logger != null) return _logger;
+                //if (_logger != null) return _logger;
 
                 var conf = new LoggerConfiguration().WriteTo.Console();
                 switch (LogLevel)

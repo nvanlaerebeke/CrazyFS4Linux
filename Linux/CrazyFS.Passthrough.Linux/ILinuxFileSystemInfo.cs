@@ -1,6 +1,7 @@
 using System.IO.Abstractions;
 using Mono.Unix.Native;
 // ReSharper disable InconsistentNaming
+// ReSharper disable IdentifierTypo
 
 namespace CrazyFS.Passthrough.Linux
 {

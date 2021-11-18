@@ -12,92 +12,91 @@ namespace CrazyFS.Passthrough.Linux
 {
     public class LinuxFileWrapper : IFile
     {
-        private readonly IFileSystem _fileSystem;
         private readonly string _source;
         private readonly IFile _file;
         public LinuxFileWrapper(IFileSystem fileSystem, string source)
         {
-            _fileSystem = fileSystem;
+            FileSystem = fileSystem;
             _source = source;
             _file = new FileWrapper(fileSystem);
         }
 
-        public Task AppendAllLinesAsync(string path, IEnumerable<string> contents, CancellationToken cancellationToken = new CancellationToken())
+        public Task AppendAllLinesAsync(string path, IEnumerable<string> contents, CancellationToken cancellationToken = new())
         {
             return _file.AppendAllLinesAsync(path.GetPath(_source), contents, cancellationToken);
         }
 
-        public Task AppendAllLinesAsync(string path, IEnumerable<string> contents, Encoding encoding, CancellationToken cancellationToken = new CancellationToken())
+        public Task AppendAllLinesAsync(string path, IEnumerable<string> contents, Encoding encoding, CancellationToken cancellationToken = new())
         {
             return _file.AppendAllLinesAsync(path.GetPath(_source), contents, encoding, cancellationToken);
         }
 
-        public Task AppendAllTextAsync(string path, string contents, CancellationToken cancellationToken = new CancellationToken())
+        public Task AppendAllTextAsync(string path, string contents, CancellationToken cancellationToken = new())
         {
             return _file.AppendAllTextAsync(path.GetPath(_source), contents, cancellationToken);
         }
 
-        public Task AppendAllTextAsync(string path, string contents, Encoding encoding, CancellationToken cancellationToken = new CancellationToken())
+        public Task AppendAllTextAsync(string path, string contents, Encoding encoding, CancellationToken cancellationToken = new())
         {
             return _file.AppendAllTextAsync(path.GetPath(_source), contents, encoding, cancellationToken);
         }
 
-        public Task<byte[]> ReadAllBytesAsync(string path, CancellationToken cancellationToken = new CancellationToken())
+        public Task<byte[]> ReadAllBytesAsync(string path, CancellationToken cancellationToken = new())
         {
             return _file.ReadAllBytesAsync(path.GetPath(_source), cancellationToken);
         }
 
-        public Task<string[]> ReadAllLinesAsync(string path, CancellationToken cancellationToken = new CancellationToken())
+        public Task<string[]> ReadAllLinesAsync(string path, CancellationToken cancellationToken = new())
         {
             return _file.ReadAllLinesAsync(path.GetPath(_source), cancellationToken);
         }
 
-        public Task<string[]> ReadAllLinesAsync(string path, Encoding encoding, CancellationToken cancellationToken = new CancellationToken())
+        public Task<string[]> ReadAllLinesAsync(string path, Encoding encoding, CancellationToken cancellationToken = new())
         {
             return _file.ReadAllLinesAsync(path.GetPath(_source), encoding, cancellationToken);
         }
 
-        public Task<string> ReadAllTextAsync(string path, CancellationToken cancellationToken = new CancellationToken())
+        public Task<string> ReadAllTextAsync(string path, CancellationToken cancellationToken = new())
         {
             return _file.ReadAllTextAsync(path.GetPath(_source), cancellationToken);
         }
 
-        public Task<string> ReadAllTextAsync(string path, Encoding encoding, CancellationToken cancellationToken = new CancellationToken())
+        public Task<string> ReadAllTextAsync(string path, Encoding encoding, CancellationToken cancellationToken = new())
         {
             return _file.ReadAllTextAsync(path.GetPath(_source), encoding, cancellationToken);
         }
 
-        public Task WriteAllLinesAsync(string path, IEnumerable<string> contents, CancellationToken cancellationToken = new CancellationToken())
+        public Task WriteAllLinesAsync(string path, IEnumerable<string> contents, CancellationToken cancellationToken = new())
         {
             return _file.WriteAllLinesAsync(path.GetPath(_source), contents, cancellationToken);
         }
 
-        public Task WriteAllLinesAsync(string path, IEnumerable<string> contents, Encoding encoding, CancellationToken cancellationToken = new CancellationToken())
+        public Task WriteAllLinesAsync(string path, IEnumerable<string> contents, Encoding encoding, CancellationToken cancellationToken = new())
         {
             return _file.WriteAllLinesAsync(path.GetPath(_source), contents, encoding, cancellationToken);
         }
 
-        public Task WriteAllLinesAsync(string path, string[] contents, CancellationToken cancellationToken = new CancellationToken())
+        public Task WriteAllLinesAsync(string path, string[] contents, CancellationToken cancellationToken = new())
         {
             return _file.WriteAllLinesAsync(path.GetPath(_source), contents, cancellationToken);
         }
 
-        public Task WriteAllLinesAsync(string path, string[] contents, Encoding encoding, CancellationToken cancellationToken = new CancellationToken())
+        public Task WriteAllLinesAsync(string path, string[] contents, Encoding encoding, CancellationToken cancellationToken = new())
         {
             return _file.WriteAllLinesAsync(path.GetPath(_source), contents, encoding, cancellationToken);
         }
 
-        public Task WriteAllTextAsync(string path, string contents, CancellationToken cancellationToken = new CancellationToken())
+        public Task WriteAllTextAsync(string path, string contents, CancellationToken cancellationToken = new())
         {
             return _file.WriteAllTextAsync(path.GetPath(_source), contents, cancellationToken);
         }
 
-        public Task WriteAllTextAsync(string path, string contents, Encoding encoding, CancellationToken cancellationToken = new CancellationToken())
+        public Task WriteAllTextAsync(string path, string contents, Encoding encoding, CancellationToken cancellationToken = new())
         {
             return _file.WriteAllTextAsync(path.GetPath(_source), contents, encoding, cancellationToken);
         }
 
-        public Task WriteAllBytesAsync(string path, byte[] bytes, CancellationToken cancellationToken = new CancellationToken())
+        public Task WriteAllBytesAsync(string path, byte[] bytes, CancellationToken cancellationToken = new())
         {
             return _file.WriteAllBytesAsync(path.GetPath(_source), bytes, cancellationToken);
         }
@@ -156,7 +155,7 @@ namespace CrazyFS.Passthrough.Linux
         {
             if (Syscall.mknod(path.GetPath(_source), mode, rdev) != -1)
             {
-                return _fileSystem.FileInfo.FromFileName(path.GetPath(_source));
+                return FileSystem.FileInfo.FromFileName(path.GetPath(_source));
             }
             throw new Exception();
         }
@@ -390,6 +389,6 @@ namespace CrazyFS.Passthrough.Linux
             _file.WriteAllText(path.GetPath(_source), contents, encoding);
         }
 
-        public IFileSystem FileSystem => _fileSystem;
+        public IFileSystem FileSystem { get; }
     }
 }

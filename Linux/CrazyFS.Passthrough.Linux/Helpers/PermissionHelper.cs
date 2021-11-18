@@ -1,13 +1,13 @@
-using CrazyFS.FileSystem;
 using Mono.Unix;
+using Mono.Unix.Native;
 
 namespace CrazyFS.Passthrough.Linux.Helpers
 {
-    internal class PermissionHelper
+    internal static class PermissionHelper
     {
-        public static bool CheckPathAccessModes(FileAccessPermissions permissions, PathAccessModes request)
+        public static bool CheckPathAccessModes(FileAccessPermissions permissions, AccessModes request)
         {
-            if (request.HasFlag(PathAccessModes.R_OK))
+            if (request.HasFlag(AccessModes.R_OK))
             {
                 if (!(permissions.HasFlag(FileAccessPermissions.UserRead) || permissions.HasFlag(FileAccessPermissions.GroupRead) || permissions.HasFlag(FileAccessPermissions.OtherRead)))
                 {
@@ -15,7 +15,7 @@ namespace CrazyFS.Passthrough.Linux.Helpers
                 }
             }
 
-            if (request.HasFlag(PathAccessModes.W_OK))
+            if (request.HasFlag(AccessModes.W_OK))
             {
                 if (!(permissions.HasFlag(FileAccessPermissions.UserWrite) || permissions.HasFlag(FileAccessPermissions.GroupWrite) || permissions.HasFlag(FileAccessPermissions.OtherWrite)))
                 {
@@ -23,7 +23,8 @@ namespace CrazyFS.Passthrough.Linux.Helpers
                 }
             }
 
-            if (request.HasFlag(PathAccessModes.X_OK))
+            // ReSharper disable once InvertIf
+            if (request.HasFlag(AccessModes.X_OK))
             {
                 if (!(permissions.HasFlag(FileAccessPermissions.UserExecute) || permissions.HasFlag(FileAccessPermissions.GroupExecute) || permissions.HasFlag(FileAccessPermissions.OtherExecute)))
                 {

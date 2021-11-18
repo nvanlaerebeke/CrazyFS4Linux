@@ -33,7 +33,7 @@ namespace CrazyFS.Passthrough.Linux
         
         public void Chown(string path, uint uid, uint gid)
         {
-            Syscall.lchown(path.GetPath(_source), uid, gid);
+            _ = Syscall.lchown(path.GetPath(_source), uid, gid);
         }
         
         public string Combine(params string[] paths)
@@ -58,12 +58,8 @@ namespace CrazyFS.Passthrough.Linux
 
         public void CreateSymlink(string from, string to)
         {
-            var r = Syscall.symlink (from, to.GetPath(_source));
-            if (r == -1)
-            {
-                var err = Stdlib.GetLastError();
-                throw new LinuxException(err);
-            }
+            if(Syscall.symlink (from, to.GetPath(_source)) != 1) return;
+            throw new NativeException((int)Stdlib.GetLastError());
         }
         
         public string GetDirectoryName(string path)
@@ -77,7 +73,7 @@ namespace CrazyFS.Passthrough.Linux
             if (bytesWritten != -1) return;
             
             var err = Stdlib.GetLastError();
-            if (err != Errno.ENODATA) throw new LinuxException(err);    
+            if (err != Errno.ENODATA) throw new NativeException((int)err);    
         }
         
         public string GetExtension(string path)
@@ -134,19 +130,21 @@ namespace CrazyFS.Passthrough.Linux
         {
             return _path.GetTempPath();
         }
-        public bool HasAccess(string path, PathAccessModes modes)
+        public bool HasAccess(string path, AccessModes modes)
         {
             if (FileSystem.File.Exists(path))
             {
                 return PermissionHelper.CheckPathAccessModes(new UnixFileInfo(FileSystem.FileInfo.FromFileName(path).FullName).FileAccessPermissions, modes);
             }
-            else if (FileSystem.Directory.Exists(path))
-            {
-                var fullPath = FileSystem.DirectoryInfo.FromDirectoryName(path).FullName;
-                var dir = new UnixDirectoryInfo(fullPath);
-                return PermissionHelper.CheckPathAccessModes(dir.FileAccessPermissions, modes);
-            }
-            throw new FileNotFoundException();
+
+            if (!FileSystem.Directory.Exists(path)) throw new FileNotFoundException();
+            
+            return PermissionHelper.CheckPathAccessModes(
+                new UnixDirectoryInfo(
+                    FileSystem.DirectoryInfo.FromDirectoryName(path).FullName
+                ).FileAccessPermissions, 
+                modes
+            );
         }
         public bool HasExtension(string path)
         {
@@ -184,21 +182,21 @@ namespace CrazyFS.Passthrough.Linux
             {
                 return names;    
             }
-            throw new LinuxException(Stdlib.GetLastError());
+            throw new NativeException((int)Stdlib.GetLastError());
         }
 
         public void RemoveExtendedAttributes(string path, string name)
         {
             if (Syscall.lremovexattr(path.GetPath(_source), name) == -1)
             {
-                throw new LinuxException(Stdlib.GetLastError());
+                throw new NativeException((int)Stdlib.GetLastError());
             }
         }
         public void SetExtendedAttributes(string path, string name, byte[] value, XattrFlags flags)
         {
             if(Syscall.lsetxattr (path.GetPath(_source), name, value, (ulong) value.Length, flags) == -1) 
             {
-                throw new LinuxException(Stdlib.GetLastError());
+                throw new NativeException((int)Stdlib.GetLastError());
             }
         }
             

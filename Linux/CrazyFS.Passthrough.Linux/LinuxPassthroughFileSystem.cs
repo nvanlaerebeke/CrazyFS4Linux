@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using System.IO.Abstractions;
 using CrazyFS.FileSystem;
 using Mono.Unix.Native;
+using OpenFlags = CrazyFS.FileSystem.OpenFlags;
 
 namespace CrazyFS.Passthrough.Linux
 {
-    public class LinuxPassthroughFileSystem : Fuse
+    public class LinuxPassthroughFileSystem : CrazyFsFileSystem
     {
         public LinuxPassthroughFileSystem(IFileSystem fileSystem) : base(fileSystem)
         {
         }
-
-        public override Result Chown(string path, long uid, long gid)
+        
+        public Result Chown(string path, long uid, long gid)
         {
 #if DEBUG
             var request = new CrazyFsRequest(CrazyFsRequestName.Chown, new[]
@@ -42,7 +43,7 @@ namespace CrazyFS.Passthrough.Linux
             }
         }
 
-        public override Result Chmod(string path, FilePermissions permissions)
+        public Result Chmod(string path, FilePermissions permissions)
         {
 #if DEBUG
             var request = new CrazyFsRequest(CrazyFsRequestName.Chmod, new[]
@@ -80,7 +81,7 @@ namespace CrazyFS.Passthrough.Linux
         /// <param name="path"></param>
         /// <param name="access"></param>
         /// <returns></returns>
-        public override Result CheckAccess(string path, PathAccessModes access)
+        public Result CheckAccess(string path, AccessModes access)
         {
 #if DEBUG
             var request = new CrazyFsRequest(CrazyFsRequestName.CheckAccess, new[]
@@ -138,7 +139,7 @@ namespace CrazyFS.Passthrough.Linux
             }
         }
 
-        public override Result CreateSpecialFile(string path, FilePermissions mode, ulong rdev)
+        public Result CreateSpecialFile(string path, FilePermissions mode, ulong rdev)
         {
 #if DEBUG
             var request = new CrazyFsRequest(CrazyFsRequestName.CreateSpecialFile, new[]
@@ -193,7 +194,17 @@ namespace CrazyFS.Passthrough.Linux
                 return result;
             }
         }
-
+        public Errno GetFileSystemStatus(string path, out Statvfs stbuf)
+        {
+#if DEBUG
+            new CrazyFsRequest(CrazyFsRequestName.GetFileSystemStatus, new[]
+            {
+                new KeyValuePair<string, string>("path", path)
+            }).Log();
+#endif            
+    
+            return Syscall.statvfs (path, out stbuf) == -1 ? Stdlib.GetLastError() :  0;
+        }
         public override Result GetPathExtendedAttribute(string path, string name, byte[] value, out int bytesWritten)
         {
 #if DEBUG
@@ -208,7 +219,7 @@ namespace CrazyFS.Passthrough.Linux
             try
             {
                 FileSystem.Path.GetExtendedAttribute(path, name, value, out bytesWritten);
-                var result = (bytesWritten == -1) ? new Result(ResultStatus.NotSet) : new Result(ResultStatus.Success);
+                var result = new Result(bytesWritten == -1 ? ResultStatus.NotSet : ResultStatus.Success);
 #if DEBUG
                 request.Log(result);
 #endif
@@ -289,7 +300,25 @@ namespace CrazyFS.Passthrough.Linux
             }
 
         }
-        
+
+        public Errno Lock(string path, OpenFlags openFlags, FcntlCommand cmd, ref Flock @lock)
+        {
+            {
+#if DEBUG
+                new CrazyFsRequest(CrazyFsRequestName.Lock, new[]
+                {
+                    new KeyValuePair<string, string>("path", path)
+                }).Log();
+#endif
+                // ReSharper disable once InconsistentNaming
+                var _lock = @lock;
+                var e = ProcessFile (path, openFlags, fd => Syscall.fcntl (fd, cmd, ref _lock));
+                @lock = _lock;
+                return e;
+            }            
+        }
+
+
         public override Result RemovePathExtendedAttribute(string path, string name)
         {
 #if DEBUG
@@ -318,7 +347,7 @@ namespace CrazyFS.Passthrough.Linux
             }
         }
         
-        public override Result SetPathExtendedAttribute (string path, string name, byte[] value, XattrFlags flags)
+        public Result SetPathExtendedAttribute (string path, string name, byte[] value, XattrFlags flags)
         {
 #if DEBUG
             var request = new CrazyFsRequest(CrazyFsRequestName.SetPathExtendedAttribute, new[]
@@ -347,7 +376,7 @@ namespace CrazyFS.Passthrough.Linux
             }
         }
         
-        public override Result CreateDirectory(string path, FilePermissions mode)
+        public Result CreateDirectory(string path, FilePermissions mode)
         {
 #if DEBUG
             var request = new CrazyFsRequest(CrazyFsRequestName.CreateDirectory, new[]
@@ -373,6 +402,28 @@ namespace CrazyFS.Passthrough.Linux
 #endif                
                 return result;
             }
+        }
+        
+        /**
+         * Private - to be replaced
+         */
+        private delegate int FdCb (int fd);
+        private static Errno ProcessFile (string path, OpenFlags flags, FdCb cb)
+        {
+            var fd = Syscall.open (path, (Mono.Unix.Native.OpenFlags)flags);
+            if (fd == -1)
+            {
+                return Stdlib.GetLastError();
+            }
+
+            var r = cb (fd);
+            Errno res = 0;
+            if (r == -1)
+            {
+                res = Stdlib.GetLastError();
+            }
+            _ = Syscall.close (fd);
+            return res;
         }
     }
 }

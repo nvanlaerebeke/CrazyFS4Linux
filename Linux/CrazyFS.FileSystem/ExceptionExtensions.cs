@@ -11,7 +11,7 @@ namespace CrazyFS.FileSystem
             {
                 UnauthorizedAccessException => new Result(ResultStatus.AccessDenied),
                 FileNotFoundException => new Result(ResultStatus.PathNotFound),
-                //LinuxException ex => new Result(ex.Code),
+                NativeException ex => new Result(ex.Code),
                 _ => new Result(ResultStatus.Error)
             };
         }

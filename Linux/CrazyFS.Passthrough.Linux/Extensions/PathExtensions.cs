@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.IO.Abstractions;
-using CrazyFS.FileSystem;
 using Mono.Unix;
 using Mono.Unix.Native;
 
@@ -12,12 +11,8 @@ namespace CrazyFS.Passthrough.Linux
     {
         public static void GetExtendedAttribute(this IPath pathInterface, string path, string name, byte[] value, out int bytesWritten)
         {
-            if (pathInterface is LinuxPathWrapper pathWrapper)
-            {
-                pathWrapper.GetExtendedAttribute(path, name, value, out bytesWritten);
-                return;
-            }
-            throw new Exception("IPath is not the linux version");
+            if (pathInterface is not LinuxPathWrapper pathWrapper) throw new Exception("IPath is not the linux version");
+            pathWrapper.GetExtendedAttribute(path, name, value, out bytesWritten);
         }
 
         public static string[] ListExtendedAttributes(this IPath pathInterface, string path)
@@ -56,7 +51,7 @@ namespace CrazyFS.Passthrough.Linux
         /// <param name="modes"></param>
         /// <returns></returns>
         /// <exception cref="FileNotFoundException"></exception>
-        public static bool HasAccess(this IPath pathWrapper, string path, PathAccessModes modes)
+        public static bool HasAccess(this IPath pathWrapper, string path, AccessModes modes)
         {
             if (pathWrapper is not LinuxPathWrapper obj)
             {
@@ -79,7 +74,7 @@ namespace CrazyFS.Passthrough.Linux
 
         public static void CreateHardLink(this IPath pathWrapper, string from, string to)
         {
-            if (!HasAccess(pathWrapper, from, PathAccessModes.R_OK) || !HasAccess(pathWrapper, Path.GetDirectoryName(to), PathAccessModes.W_OK))
+            if (!HasAccess(pathWrapper, from, AccessModes.R_OK) || !HasAccess(pathWrapper, Path.GetDirectoryName(to), AccessModes.W_OK))
             {
                 throw new UnauthorizedAccessException();
             }
@@ -101,7 +96,7 @@ namespace CrazyFS.Passthrough.Linux
 
         public static string GetSymlinkTarget(this IPath pathWrapper, string path)
         {
-            return (new UnixFileInfo(pathWrapper.GetFullPath(path)).IsSymbolicLink) ? pathWrapper.GetRelativePath(pathWrapper.GetFullPath("/"), UnixPath.GetRealPath(path)) : pathWrapper.GetRelativePath(pathWrapper.GetFullPath("/"), path);
+            return new UnixFileInfo(pathWrapper.GetFullPath(path)).IsSymbolicLink ? pathWrapper.GetRelativePath(pathWrapper.GetFullPath("/"), UnixPath.GetRealPath(path)) : pathWrapper.GetRelativePath(pathWrapper.GetFullPath("/"), path);
         }
     }
 }

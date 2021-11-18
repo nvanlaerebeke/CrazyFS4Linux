@@ -20,17 +20,10 @@ namespace CrazyFS.Passthrough.Linux
        
         public static IEnumerable<IFileSystemInfo> GetPassthroughFileSystemInfo(this IEnumerable<IFileSystemInfo> fileSystemInfos, string source, string destination)
         {
-            return fileSystemInfos.ToList().ConvertAll<IFileSystemInfo>(x =>
-            {
-                if (x.Attributes.HasFlag(FileAttributes.Directory))
-                {
-                    return new LinuxDirectoryInfo(x.FileSystem, source, destination, x);
-                }
-                else
-                {
-                    return new LinuxFileInfo(x.FileSystem, source, destination, x);
-                }
-            });
+            return fileSystemInfos.ToList().ConvertAll<IFileSystemInfo>(x => 
+                x.Attributes.HasFlag(FileAttributes.Directory) ?
+                    new LinuxDirectoryInfo(x.FileSystem, source, destination, x):
+                    new LinuxFileInfo(x.FileSystem, source, destination, x));
         }
     }
 }

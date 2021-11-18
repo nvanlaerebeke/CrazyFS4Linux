@@ -1,17 +1,17 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.IO.Abstractions;
 using System.Runtime.InteropServices;
 using CrazyFS.FileSystem;
 using CrazyFS.Passthrough.Linux;
 using Fuse.NET;
 using Mono.Unix.Native;
+using OpenFlags = CrazyFS.FileSystem.OpenFlags;
 
 namespace CrazyFS {
 	internal class CrazyFsFileSystem : Fuse.NET.FileSystem {
 
-		private readonly IFuse _fileSystem;
+		private readonly LinuxPassthroughFileSystem _fileSystem;
 		public CrazyFsFileSystem (string source, string destination)
 		{
 			MountPoint = destination;
@@ -21,7 +21,7 @@ namespace CrazyFS {
 		protected override Errno OnGetPathStatus (string path, out Stat buf)
 		{
 			buf = new Stat();
-			var result = _fileSystem.GetPathInfo(path, out IFileSystemInfo info);
+			var result = _fileSystem.GetPathInfo(path, out var info);
 			if (result.Status == ResultStatus.Success)
 			{
 				buf = info.ToStat();
@@ -31,7 +31,7 @@ namespace CrazyFS {
 
 		protected override Errno OnAccessPath (string path, AccessModes mask)
 		{
-			return _fileSystem.CheckAccess(path, (PathAccessModes) mask).ToErrno();
+			return _fileSystem.CheckAccess(path, mask).ToErrno();
 		}
 
 		protected override Errno OnReadSymbolicLink (string path, out string target)
@@ -104,7 +104,7 @@ namespace CrazyFS {
 
 		protected override Errno OnOpenHandle (string path, OpenedPathInfo info)
 		{
-			return _fileSystem.Open(path, info).ToErrno();
+			return _fileSystem.Open(path, (OpenFlags) info.OpenFlags).ToErrno();
 		}
 
 		protected override Errno OnReadHandleUnsafe (string file, OpenedPathInfo info, IntPtr buf, ulong size, long offset, out int bytesWritten)
@@ -156,7 +156,7 @@ namespace CrazyFS {
 
 		protected override Errno OnLockHandle (string file, OpenedPathInfo info, FcntlCommand cmd, ref Flock @lock)
 		{
-			return _fileSystem.Lock(file, info, cmd, ref @lock);
+			return _fileSystem.Lock(file, (OpenFlags)info.OpenFlags, cmd, ref @lock);
 		}
 	}
 }

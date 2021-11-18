@@ -6,12 +6,12 @@ using System.Linq;
 using System.Security.AccessControl;
 using Mono.Unix;
 using Mono.Unix.Native;
+// ReSharper disable IdentifierTypo
 
 namespace CrazyFS.Passthrough.Linux
 {
     public class LinuxDirectoryInfo : IDirectoryInfo, ILinuxFileSystemInfo
     {
-        private readonly IFileSystem _fileSystem;
         private readonly string _source;
         private readonly string _destination;
         private readonly IDirectoryInfo _info;
@@ -20,7 +20,7 @@ namespace CrazyFS.Passthrough.Linux
             this(fileSystem, source, destination, new DirectoryInfo(Path.Combine(source, dirName.Trim(Path.DirectorySeparatorChar))))
         { }
         
-        public LinuxDirectoryInfo(IFileSystem fileSystem, string source,  string destination, DirectoryInfo info) : 
+        private LinuxDirectoryInfo(IFileSystem fileSystem, string source,  string destination, DirectoryInfo info) : 
             this(fileSystem, source, destination, new DirectoryInfoWrapper(fileSystem, info))
         { }
         
@@ -30,7 +30,7 @@ namespace CrazyFS.Passthrough.Linux
         
         public LinuxDirectoryInfo(IFileSystem fileSystem, string source, string destination, IDirectoryInfo info)
         {
-            _fileSystem = fileSystem;
+            FileSystem = fileSystem;
             _source = source;
             _destination = destination;
             _info = info;
@@ -61,7 +61,7 @@ namespace CrazyFS.Passthrough.Linux
             _ = Syscall.stat(FullName, out _stat);
         }
 
-        public IFileSystem FileSystem => _fileSystem;
+        public IFileSystem FileSystem { get; }
 
         public FileAttributes Attributes
         {

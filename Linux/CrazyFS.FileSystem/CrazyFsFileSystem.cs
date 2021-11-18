@@ -2,16 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
-using Fuse.NET;
-using Mono.Unix.Native;
 
 namespace CrazyFS.FileSystem
 {
-    public abstract class Fuse : IFuse 
+    public abstract class CrazyFsFileSystem : ICrazyFSFileSystem 
     {
         protected readonly IFileSystem FileSystem;
 
-        protected Fuse(IFileSystem fileSystem)
+        protected CrazyFsFileSystem(IFileSystem fileSystem)
         {
             FileSystem = fileSystem;
         }
@@ -56,33 +54,8 @@ namespace CrazyFS.FileSystem
             }
         }
 
-        public abstract Result Chmod(string path, FilePermissions permissions);
-        public abstract Result Chown(string path, long uid, long gid);
-        public abstract Result CheckAccess(string path, PathAccessModes access);
-        public abstract Result CreateDirectory(string path, FilePermissions mode);
-
-        public abstract Result CreateHardLink(string @from, string to);
-
-        public abstract Result CreateSpecialFile(string path, FilePermissions mode, ulong rdev);
-
-        public abstract Result CreateSymlink(string @from, string to);
-
-        public Errno GetFileSystemStatus(string path, out Statvfs stbuf)
-        {
-#if DEBUG
-            new CrazyFsRequest(CrazyFsRequestName.GetFileSystemStatus, new[]
-            {
-                new KeyValuePair<string, string>("path", path)
-            }).Log();
-#endif            
-     
-            int r = Syscall.statvfs (path, out stbuf);
-            if (r == -1)
-            {
-                return Stdlib.GetLastError();
-            }
-            return 0;
-        }
+        public abstract Result CreateHardLink(string from, string to);
+        public abstract Result CreateSymlink(string from, string to);
 
         public abstract Result GetPathExtendedAttribute(string path, string name, byte[] value, out int bytesWritten);
         
@@ -102,7 +75,7 @@ namespace CrazyFS.FileSystem
                 {
                     info = FileSystem.FileInfo.FromFileName(path);
                 }
-                else if (FileSystem.Directory.Exists((path)))
+                else if (FileSystem.Directory.Exists(path))
                 {
                     info = FileSystem.DirectoryInfo.FromDirectoryName(path);
                 }
@@ -154,22 +127,6 @@ namespace CrazyFS.FileSystem
                 return result;
             }
         }
-        
-        public Errno Lock(string path, OpenedPathInfo info, FcntlCommand cmd, ref Flock @lock)
-        {
-#if DEBUG
-            new CrazyFsRequest(CrazyFsRequestName.Lock, new[]
-            {
-                new KeyValuePair<string, string>("path", path)
-            }).Log();
-#endif
-            // ReSharper disable once InconsistentNaming
-            Flock _lock = @lock;
-            Errno e = ProcessFile (path, info.OpenFlags, fd => Syscall.fcntl (fd, cmd, ref _lock));
-            @lock = _lock;
-            return e;
-        }
-
         public void Mount()
         {
 #if DEBUG
@@ -208,14 +165,7 @@ namespace CrazyFS.FileSystem
                     //read until this byte
                     var end = (long) size + offset;
                     //make sure we don't read passed the filesize
-                    if (end <= s.Length)
-                    {
-                        bytesRead = s.Read(buffer, 0, (int) size);
-                    }
-                    else
-                    {
-                        bytesRead = s.Read(buffer, 0, (int) (s.Length - offset));
-                    }
+                    bytesRead = end <= s.Length ? s.Read(buffer, 0, (int) size) : s.Read(buffer, 0, (int) (s.Length - offset));
                 }
                 var result = new Result(ResultStatus.Success);
 #if DEBUG
@@ -289,15 +239,14 @@ namespace CrazyFS.FileSystem
         }
 
         public abstract Result RemovePathExtendedAttribute(string path, string name);
-        public abstract Result SetPathExtendedAttribute(string path, string name, byte[] value, XattrFlags flags);
 
         /// <summary>
         /// ToDo: Cache open file handles, currently not implemented
         /// </summary>
         /// <param name="path"></param>
-        /// <param name="info"></param>
+        /// <param name="openFlags"></param>
         /// <returns></returns>
-        public Result Open(string path, OpenedPathInfo info)
+        public Result Open(string path, OpenFlags openFlags)
         {
 #if DEBUG
             var request = new CrazyFsRequest(CrazyFsRequestName.Open, new[]
@@ -305,7 +254,7 @@ namespace CrazyFS.FileSystem
                 new KeyValuePair<string, string>("path", path)
             }).Log();
 #endif
-            //Not implmemented
+            //Not implemented
             var result =  new Result(ResultStatus.Success);
 #if DEBUG
             request.Log(result);                
@@ -428,28 +377,6 @@ namespace CrazyFS.FileSystem
 #endif                
                 return result;
             }
-        }
-        
-        /**
-         * Private - to be replaced
-         */
-        private delegate int FdCb (int fd);
-        private static Errno ProcessFile (string path, OpenFlags flags, FdCb cb)
-        {
-            int fd = Syscall.open (path, flags);
-            if (fd == -1)
-            {
-                return Stdlib.GetLastError();
-            }
-
-            int r = cb (fd);
-            Errno res = 0;
-            if (r == -1)
-            {
-                res = Stdlib.GetLastError();
-            }
-            Syscall.close (fd);
-            return res;
         }
     }
 }

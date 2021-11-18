@@ -7,14 +7,10 @@ namespace CrazyFS.Passthrough.Linux
 {
     public static class DirectoryExtensions
     {
-        public static IDirectoryInfo CreateDirectory(this IDirectory directory, string path, FilePermissions mode)
+        public static void CreateDirectory(this IDirectory directory, string path, FilePermissions mode)
         {
-            if (directory is LinuxDirectoryWrapper dir)
-            {
-                return dir.CreateDirectory(path, mode);
-            }
-
-            throw new Exception("IDirectory is not the linux version");
+            if (directory is not LinuxDirectoryWrapper dir) throw new Exception("IDirectory is not the linux version");
+            dir.CreateDirectory(path, mode);
         }
     }
 }

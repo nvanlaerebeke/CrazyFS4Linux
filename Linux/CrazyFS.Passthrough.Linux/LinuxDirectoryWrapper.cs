@@ -9,12 +9,11 @@ namespace CrazyFS.Passthrough.Linux
 {
     public class LinuxDirectoryWrapper : IDirectory
     {
-        private readonly IFileSystem _fileSystem;
         private readonly string _source;
         private readonly IDirectory _directory;
         public LinuxDirectoryWrapper(IFileSystem fileSystem, string source)
         {
-            _fileSystem = fileSystem;
+            FileSystem = fileSystem;
             _source = source;
             _directory = new DirectoryWrapper(fileSystem);
         }
@@ -32,7 +31,7 @@ namespace CrazyFS.Passthrough.Linux
         {
             if (Syscall.mkdir(path.GetPath(_source), permissions) != -1)
             {
-                return _fileSystem.DirectoryInfo.FromDirectoryName(path.GetPath(_source));
+                return FileSystem.DirectoryInfo.FromDirectoryName(path.GetPath(_source));
             }
             throw new Exception();
         }
@@ -44,7 +43,7 @@ namespace CrazyFS.Passthrough.Linux
                 throw new Exception();
             }
         }
-            
+    
         public void Delete(string path)
         {
             _directory.Delete(path.GetPath(_source));
@@ -275,6 +274,6 @@ namespace CrazyFS.Passthrough.Linux
             return _directory.EnumerateFileSystemEntries(path.GetPath(_source), searchPattern, enumerationOptions);
         }
 
-        public IFileSystem FileSystem => _fileSystem;
+        public IFileSystem FileSystem { get; }
     }
 }

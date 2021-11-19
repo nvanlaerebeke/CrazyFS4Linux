@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CrazyFS.Encryption
 {
-    public class ByteCrypto : IDisposable
+    public class ByteCrypto : IEncryption
     {
         private readonly string _password;
 
@@ -35,13 +35,13 @@ namespace CrazyFS.Encryption
 
         public void Dispose()
         {
-            _encryptor.Dispose();
-            _decryptor.Dispose();
+            _encryptor?.Dispose();
+            _decryptor?.Dispose();
         }
 
         public byte[] Encrypt(byte[] data)
         {
-            return PerformCryptography(data, GetEncrypter());
+            return PerformCryptography(data, GetEncryptor());
         }
 
         public byte[] Decrypt(byte[] data)
@@ -49,13 +49,23 @@ namespace CrazyFS.Encryption
             return PerformCryptography(data, GetDecryptor());
         }
 
-        public byte[] GetIv()
+        public byte[] Encrypt(string data)
+        {
+            return PerformCryptography(Encoding.UTF8.GetBytes(data), GetEncryptor());
+        }
+
+        public string DecryptString(byte[] data)
+        {
+            return Encoding.UTF8.GetString(PerformCryptography(data, GetDecryptor()));
+        }
+        
+        public byte[] GetInitializationVector()
         {
             GetAes();
             return _iv;
         }
 
-        private ICryptoTransform GetEncrypter()
+        private ICryptoTransform GetEncryptor()
         {
             if (_encryptor != null) return _encryptor;
             var aes = GetAes();

@@ -13,7 +13,7 @@ using Mono.Unix.Native;
 // ReSharper disable IdentifierTypo
 namespace CrazyFS.Storage.Passthrough.Linux
 {
-    public class LinuxDirectoryInfo : IDirectoryInfo, ILinuxFileSystemInfo
+    public class LinuxDirectoryInfo : ILinuxDirectoryInfo
     {
         private readonly string _source;
         private readonly string _destination;

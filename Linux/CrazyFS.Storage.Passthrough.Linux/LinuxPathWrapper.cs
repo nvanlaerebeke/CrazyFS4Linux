@@ -48,10 +48,10 @@ namespace CrazyFS.Storage.Passthrough.Linux
 
         public void CreateSymLink(string from, string to)
         {
-            if (from.StartsWith(_destination)) @from = @from.GetPath(_source);
-
-            var s = new UnixSymbolicLinkInfo(to.GetPath(_source));
-            s.CreateSymbolicLinkTo(from);
+            if (Syscall.symlink(from, to.GetPath(_source)) == -1)
+            {
+                throw new NativeException((int) Stdlib.GetLastError());
+            }
         }
 
         public string Combine(params string[] paths)

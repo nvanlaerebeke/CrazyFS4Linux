@@ -3,7 +3,7 @@ using Mono.Unix.Native;
 
 namespace CrazyFS.Passthrough.Linux.Interfaces
 {
-    public interface ILinuxFileInfo : IFileInfo
+    public interface ILinuxFileInfo : IFileInfo, ILinuxFileSystemInfo
     {
         string GetRealPath();
     }

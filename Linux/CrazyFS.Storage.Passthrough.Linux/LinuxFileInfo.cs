@@ -11,7 +11,7 @@ using Mono.Unix.Native;
 
 namespace CrazyFS.Storage.Passthrough.Linux
 {
-    public class LinuxFileInfo : IFileInfo, ILinuxFileSystemInfo
+    public class LinuxFileInfo : ILinuxFileInfo
     {
         private readonly string _destination;
         private readonly IFileInfo _info;

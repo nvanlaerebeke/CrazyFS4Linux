@@ -3,9 +3,9 @@ using CrazyFS.Passthrough;
 
 namespace CrazyFS.Storage.Passthrough.Linux
 {
-    public class PassthroughFileSystem : IFileSystem
+    public class PassthroughStorage : IFileSystem
     {
-        public PassthroughFileSystem(string source, string destination)
+        public PassthroughStorage(string source, string destination)
         {
             DriveInfo = new DriveInfoFactory(this);
             DirectoryInfo = new LinuxDirectoryInfoFactory(this, source, destination);

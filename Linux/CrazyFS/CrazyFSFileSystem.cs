@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using CrazyFS.FileSystem;
+using CrazyFS.FileSystem.Encrypted.Linux;
 using CrazyFS.Passthrough.Linux;
 using CrazyFS.Storage.Passthrough;
 using CrazyFS.Storage.Passthrough.Linux;
@@ -11,13 +13,26 @@ using Mono.Unix.Native;
 using OpenFlags = CrazyFS.FileSystem.OpenFlags;
 
 namespace CrazyFS.Linux {
-	internal class CrazyFsFileSystem : Fuse.NET.FileSystem 
+	internal class CrazyFsFileSystem : Fuse.NET.FileSystem
 	{
         private readonly LinuxPassthroughFileSystem _fileSystem;
+        private readonly PassthroughEncStorage _storage;
+        private readonly string _password = "myPassword";
+        private readonly string _salt = "mySalt";
+        private string _iv = "";
+        
 		public CrazyFsFileSystem (string source, string destination)
 		{
 			MountPoint = destination;
-			_fileSystem = new LinuxPassthroughFileSystem(new PassthroughFileSystem(source, destination));
+			//_fileSystem = new LinuxPassthroughFileSystem(new PassthroughStorage(source, destination));
+			_storage = new PassthroughEncStorage(
+				source,
+				destination,
+				_password,
+				_salt,
+				(!string.IsNullOrEmpty(_iv)) ? Convert.FromBase64String(_iv) : new byte[0]
+			);
+			_fileSystem = new LinuxPassthroughFileSystem(_storage);
 		}
 
 		protected override Errno OnGetPathStatus (string path, out Stat buf)
@@ -159,6 +174,12 @@ namespace CrazyFS.Linux {
 		protected override Errno OnLockHandle (string file, OpenedPathInfo info, FcntlCommand cmd, ref Flock @lock)
 		{
 			return _fileSystem.Lock(file, (OpenFlags)info.OpenFlags, cmd, ref @lock);
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			_storage.Dispose();
+			base.Dispose(disposing);
 		}
 	}
 }

@@ -7,7 +7,7 @@ using Microsoft.Win32.SafeHandles;
 namespace CrazyFS.Storage.Passthrough.Linux
 {
     [Serializable]
-    public sealed class LinuxFileStreamFactory : IFileStreamFactory
+    public class LinuxFileStreamFactory : IFileStreamFactory
     {
         private readonly string _source;
         public LinuxFileStreamFactory(string source)

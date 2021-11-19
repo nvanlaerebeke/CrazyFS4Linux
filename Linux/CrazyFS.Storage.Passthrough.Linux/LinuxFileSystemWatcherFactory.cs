@@ -1,6 +1,7 @@
 using System.IO.Abstractions;
+using CrazyFS.Passthrough.Linux.Extensions;
 
-namespace CrazyFS.Passthrough.Linux
+namespace CrazyFS.Storage.Passthrough.Linux
 {
     public class LinuxFileSystemWatcherFactory : IFileSystemWatcherFactory
     {

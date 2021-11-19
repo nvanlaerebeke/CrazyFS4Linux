@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.IO.Abstractions;
 using CrazyFS.Passthrough.Linux;
+using CrazyFS.Passthrough.Linux.Interfaces;
 using Mono.Unix.Native;
 
 namespace CrazyFS.Linux

@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using CrazyFS.FileSystem;
+using CrazyFS.Passthrough.Linux.Extensions;
+using CrazyFS.Passthrough.Linux.Interfaces;
 using Mono.Unix.Native;
 using OpenFlags = CrazyFS.FileSystem.OpenFlags;
 
@@ -178,7 +180,7 @@ namespace CrazyFS.Passthrough.Linux
 #endif
             try
             {
-                FileSystem.Path.CreateSymlink(from, to);
+                FileSystem.Path.CreateSymLink(from, to);
                 var result = new Result(ResultStatus.Success);
 #if DEBUG
                 request.Log(result);
@@ -248,11 +250,11 @@ namespace CrazyFS.Passthrough.Linux
             {
                 if (FileSystem.File.Exists(path))
                 {
-                    target = (FileSystem.FileInfo.FromFileName(path) as LinuxFileInfo)?.GetRealPath();
+                    target = (FileSystem.FileInfo.FromFileName(path) as ILinuxFileInfo)?.GetRealPath();
                 }
                 else if (FileSystem.Directory.Exists(path))
                 {
-                    target = (FileSystem.DirectoryInfo.FromDirectoryName(path) as LinuxDirectoryInfo)?.GetRealPath();
+                    target = (FileSystem.DirectoryInfo.FromDirectoryName(path) as ILinuxDirectoryInfo)?.GetRealPath();
                 }
 
                 var result = new Result(ResultStatus.Success);

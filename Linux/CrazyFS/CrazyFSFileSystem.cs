@@ -4,6 +4,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using CrazyFS.FileSystem;
 using CrazyFS.Passthrough.Linux;
+using CrazyFS.Storage.Passthrough;
+using CrazyFS.Storage.Passthrough.Linux;
 using Fuse.NET;
 using Mono.Unix.Native;
 using OpenFlags = CrazyFS.FileSystem.OpenFlags;

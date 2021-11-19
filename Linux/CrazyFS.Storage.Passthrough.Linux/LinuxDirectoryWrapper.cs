@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Security.AccessControl;
+using CrazyFS.Passthrough.Linux.Extensions;
 using Mono.Unix.Native;
 
-namespace CrazyFS.Passthrough.Linux
+namespace CrazyFS.Storage.Passthrough.Linux
 {
     public class LinuxDirectoryWrapper : IDirectory
     {

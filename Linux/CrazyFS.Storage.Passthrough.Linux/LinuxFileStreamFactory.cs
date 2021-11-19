@@ -1,9 +1,10 @@
 using System;
 using System.IO;
 using System.IO.Abstractions;
+using CrazyFS.Passthrough.Linux.Extensions;
 using Microsoft.Win32.SafeHandles;
 
-namespace CrazyFS.Passthrough.Linux
+namespace CrazyFS.Storage.Passthrough.Linux
 {
     [Serializable]
     public sealed class LinuxFileStreamFactory : IFileStreamFactory

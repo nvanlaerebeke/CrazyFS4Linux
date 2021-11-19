@@ -1,9 +1,10 @@
 using System.IO.Abstractions;
 using Mono.Unix.Native;
+
 // ReSharper disable InconsistentNaming
 // ReSharper disable IdentifierTypo
 
-namespace CrazyFS.Passthrough.Linux
+namespace CrazyFS.Passthrough.Linux.Interfaces
 {
     public interface ILinuxFileSystemInfo : IFileSystemInfo
     {
@@ -23,5 +24,7 @@ namespace CrazyFS.Passthrough.Linux
          Timespec st_atim { get; }
          Timespec st_mtim  { get; }
          Timespec st_ctim  { get; }
+
+         bool IsSymLink();
     }
 }

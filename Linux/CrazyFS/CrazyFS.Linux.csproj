@@ -19,7 +19,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\CrazyFS.Log\CrazyFS.Log.csproj" />
       <ProjectReference Include="..\CrazyFS.Passthrough.Linux\CrazyFS.Passthrough.Linux.csproj" />
+      <ProjectReference Include="..\CrazyFS.Storage.Passthrough.Linux\CrazyFS.Storage.Passthrough.Linux.csproj" />
     </ItemGroup>
 
 </Project>

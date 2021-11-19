@@ -1,8 +1,9 @@
 using System.IO.Abstractions;
+using CrazyFS.Passthrough.Linux.Interfaces;
 
-namespace CrazyFS.Passthrough.Linux
+namespace CrazyFS.Storage.Passthrough.Linux
 {
-    public class LinuxFileInfoFactory: IFileInfoFactory
+    public class LinuxFileInfoFactory: ILinuxFileInfoFactory
     {
         private readonly IFileSystem _fileSystem;
         private readonly string _source;
@@ -18,6 +19,11 @@ namespace CrazyFS.Passthrough.Linux
         public IFileInfo FromFileName(string fileName)
         {
             return new LinuxFileInfo(_fileSystem, _source, _destination, fileName);
+        }
+
+        public IFileInfo FromFileInfo(IFileInfo info)
+        {
+            return new LinuxFileInfo(_fileSystem, _source, _destination, info);
         }
     }
 }

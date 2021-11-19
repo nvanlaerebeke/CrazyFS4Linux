@@ -6,9 +6,10 @@ using System.Security.AccessControl;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CrazyFS.Passthrough.Linux.Extensions;
 using Mono.Unix.Native;
 
-namespace CrazyFS.Passthrough.Linux
+namespace CrazyFS.Storage.Passthrough.Linux
 {
     public class LinuxFileWrapper : IFile
     {

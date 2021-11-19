@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+        <LangVersion>9</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
+      <PackageReference Include="System.IO.Abstractions" Version="13.2.47" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\CrazyFS.Passthrough.Linux\CrazyFS.Passthrough.Linux.csproj" />
+      <ProjectReference Include="..\CrazyFS.Passthrough\CrazyFS.Passthrough.csproj" />
+    </ItemGroup>
+
+</Project>

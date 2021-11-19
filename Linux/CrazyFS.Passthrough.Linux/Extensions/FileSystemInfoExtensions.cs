@@ -1,29 +1,19 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using CrazyFS.Passthrough.Linux.Interfaces;
 using Mono.Unix;
 
-// ReSharper disable once CheckNamespace
-namespace CrazyFS.Passthrough.Linux
+namespace CrazyFS.Passthrough.Linux.Extensions
 {
     public static class FileSystemInfoExtensions
     {
-        public static bool IsSymlink (this IFileSystemInfo fileSystemInfo)
+        public static bool IsSymLink (this IFileSystemInfo fileSystemInfo)
         {
-            return new UnixSymbolicLinkInfo(fileSystemInfo.FullName).FileType switch
-            {
-                FileTypes.SymbolicLink => true,
-                _ => false
-            };
-        }
-       
-        public static IEnumerable<IFileSystemInfo> GetPassthroughFileSystemInfo(this IEnumerable<IFileSystemInfo> fileSystemInfos, string source, string destination)
-        {
-            return fileSystemInfos.ToList().ConvertAll<IFileSystemInfo>(x => 
-                x.Attributes.HasFlag(FileAttributes.Directory) ?
-                    new LinuxDirectoryInfo(x.FileSystem, source, destination, x):
-                    new LinuxFileInfo(x.FileSystem, source, destination, x));
+            if (fileSystemInfo is not ILinuxFileSystemInfo info) throw new Exception("IFileSystemInfo is not the linux version");
+            return info.IsSymLink();
         }
     }
 }

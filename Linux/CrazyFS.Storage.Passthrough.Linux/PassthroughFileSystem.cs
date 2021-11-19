@@ -1,6 +1,7 @@
 ﻿using System.IO.Abstractions;
+using CrazyFS.Passthrough;
 
-namespace CrazyFS.Passthrough.Linux
+namespace CrazyFS.Storage.Passthrough.Linux
 {
     public class PassthroughFileSystem : IFileSystem
     {

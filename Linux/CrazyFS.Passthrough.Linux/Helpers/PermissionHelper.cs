@@ -3,7 +3,7 @@ using Mono.Unix.Native;
 
 namespace CrazyFS.Passthrough.Linux.Helpers
 {
-    internal static class PermissionHelper
+    public static class PermissionHelper
     {
         public static bool CheckPathAccessModes(FileAccessPermissions permissions, AccessModes request)
         {

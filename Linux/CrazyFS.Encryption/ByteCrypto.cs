@@ -11,23 +11,34 @@ namespace CrazyFS.Encryption
 
         private readonly byte[] _salt;
 
-        private readonly byte[] _iv;
-
-        private ICryptoTransform _encryptor;
+        private byte[] _iv;
 
         private ICryptoTransform _decryptor;
+
+        private ICryptoTransform _encryptor;
         
-        /*private static string _password = "myPassword";
-        private static readonly byte[] _salt = Encoding.ASCII.GetBytes("42kb$2fs$@#GE$^%gdhf;!M807c5o666");
-        private static byte[] _IV;*/
-        
+        /// <summary>
+        /// Setup the class that will handle all the cryptographic stuff
+        ///
+        /// Note that when passing an empty byte array to initialization vector a new one will be generated
+        /// If not stored data encrypted with this initialization vector will not be able to decrypted anymore
+        /// </summary>
+        /// <param name="password"></param>
+        /// <param name="salt"></param>
+        /// <param name="iv">The initialization vecor used by the AES crypto class</param>
         public ByteCrypto(string password, string salt, byte[] iv)
         {
             _password = password;
             _salt = Encoding.UTF8.GetBytes(salt);
             _iv = iv;
         }
-        
+
+        public void Dispose()
+        {
+            _encryptor.Dispose();
+            _decryptor.Dispose();
+        }
+
         public byte[] Encrypt(byte[] data)
         {
             return PerformCryptography(data, GetEncrypter());
@@ -38,35 +49,43 @@ namespace CrazyFS.Encryption
             return PerformCryptography(data, GetDecryptor());
         }
 
+        public byte[] GetIv()
+        {
+            GetAes();
+            return _iv;
+        }
+
         private ICryptoTransform GetEncrypter()
         {
             if (_encryptor != null) return _encryptor;
-            
-            using var key = new Rfc2898DeriveBytes(_password, _salt);
-            using var aes = Aes.Create();
-
-            aes.IV = _iv;
-            aes.Padding = PaddingMode.ISO10126;
-            aes.Key = key.GetBytes(aes.KeySize / 8);
-            
+            var aes = GetAes();
             _encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+            aes.Dispose();
             return _encryptor;
         }
 
         private ICryptoTransform GetDecryptor()
         {
             if (_decryptor != null) return _decryptor;
-            
-            using var aes = Aes.Create();
-            using var key = new Rfc2898DeriveBytes(_password, _salt);
-
-            aes.IV = _iv;
-            aes.Padding = PaddingMode.ISO10126;
-            aes.Key = key.GetBytes(aes.KeySize / 8);
+            var aes = GetAes();
             _decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+            aes.Dispose();
             return _decryptor;
         }
-        
+
+        private Aes GetAes()
+        {
+            var aes = Aes.Create();
+            using var key = new Rfc2898DeriveBytes(_password, _salt);
+
+            if (_iv.Length != 0) aes.IV = _iv;
+            aes.Padding = PaddingMode.ISO10126;
+            aes.Key = key.GetBytes(aes.KeySize / 8);
+            if (_iv.Length != 0) _iv = aes.IV;
+
+            return aes;
+        }
+
         private static byte[] PerformCryptography(byte[] data, ICryptoTransform cryptoTransform)
         {
             using var ms = new MemoryStream();
@@ -76,12 +95,6 @@ namespace CrazyFS.Encryption
             cryptoStream.FlushFinalBlock();
 
             return ms.ToArray();
-        }
-
-        public void Dispose()
-        {
-            _encryptor.Dispose();
-            _decryptor.Dispose();
         }
     }
 }

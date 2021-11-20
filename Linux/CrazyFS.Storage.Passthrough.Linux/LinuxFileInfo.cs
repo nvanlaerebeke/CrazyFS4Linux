@@ -40,7 +40,7 @@ namespace CrazyFS.Storage.Passthrough.Linux
             _destination = destination;
             FileSystem = fileSystem;
             _info = info;
-            _ = Syscall.lstat(_info.FullName, out _stat);
+            _ = Syscall.lstat(_info.FullName.GetRealPath(_source, _destination), out _stat);
         }
 
         public void Delete()
@@ -74,7 +74,7 @@ namespace CrazyFS.Storage.Passthrough.Linux
             set => _info.CreationTimeUtc = value;
         }
 
-        public bool Exists => _info.Exists;
+        public virtual bool Exists => _info.Exists;
         public string Extension => _info.Extension;
 
         public string FullName => _info.FullName.GetMountedPath(_source, _destination);

@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Security.AccessControl;
+using CrazyFS.FileSystem;
 using CrazyFS.Passthrough.Linux.Extensions;
+using CrazyFS.Passthrough.Linux.Interfaces;
 using Mono.Unix.Native;
 
 namespace CrazyFS.Storage.Passthrough.Linux
 {
-    public class LinuxDirectoryWrapper : IDirectory
+    public class LinuxDirectoryWrapper : ILinuxDirectory
     {
         private readonly string _source;
         private readonly IDirectory _directory;
@@ -28,20 +30,20 @@ namespace CrazyFS.Storage.Passthrough.Linux
         {
             return _directory.CreateDirectory(path.GetPath(_source), directorySecurity);
         }
-        public IDirectoryInfo CreateDirectory(string path, FilePermissions permissions)
+        public virtual void CreateDirectory(string path, FilePermissions permissions)
         {
             if (Syscall.mkdir(path.GetPath(_source), permissions) != -1)
             {
-                return FileSystem.DirectoryInfo.FromDirectoryName(path.GetPath(_source));
+                FileSystem.DirectoryInfo.FromDirectoryName(path.GetPath(_source));
             }
-            throw new Exception();
+            throw new NativeException((int)Stdlib.GetLastError());
         }
 
         public void CreateSpecialFile(string path, FilePermissions mode, ulong rdev)
         {
             if (Syscall.mknod(path.GetPath(_source), mode, rdev) != -1)
             {
-                throw new Exception();
+                throw new NativeException((int)Stdlib.GetLastError());
             }
         }
     
@@ -55,7 +57,7 @@ namespace CrazyFS.Storage.Passthrough.Linux
             _directory.Delete(path.GetPath(_source), recursive);
         }
 
-        public bool Exists(string path)
+        public virtual bool Exists(string path)
         {
             return _directory.Exists(path.GetPath(_source));
         }

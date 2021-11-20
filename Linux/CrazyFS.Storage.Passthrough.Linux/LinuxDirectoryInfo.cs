@@ -15,10 +15,10 @@ namespace CrazyFS.Storage.Passthrough.Linux
 {
     public class LinuxDirectoryInfo : ILinuxDirectoryInfo
     {
-        private readonly string _source;
-        private readonly string _destination;
-        private readonly IDirectoryInfo _info;
-        private Stat _stat;
+        protected readonly string _source;
+        protected readonly string _destination;
+        protected readonly IDirectoryInfo _info;
+        protected Stat _stat;
         public LinuxDirectoryInfo(IFileSystem fileSystem, string source, string destination, string dirName) : 
             this(fileSystem, source, destination, new DirectoryInfo(Path.Combine(source, dirName.Trim(Path.DirectorySeparatorChar))))
         { }
@@ -37,7 +37,7 @@ namespace CrazyFS.Storage.Passthrough.Linux
             _source = source;
             _destination = destination;
             _info = info;
-            _ = Syscall.stat(_info.FullName, out _stat);
+            _ = Syscall.stat(_info.FullName.GetRealPath(_source, _destination), out _stat);
         }
         
         public ulong st_dev => _stat.st_dev;
@@ -87,7 +87,7 @@ namespace CrazyFS.Storage.Passthrough.Linux
         public bool Exists => _info.Exists;
 
         public string Extension => _info.Extension;
-        public string FullName => _info.FullName.GetMountedPath(_source, _destination);
+        public virtual string FullName => _info.FullName.GetMountedPath(_source, _destination);
         public DateTime LastAccessTime
         {
             get => _info.LastAccessTime;
@@ -111,16 +111,22 @@ namespace CrazyFS.Storage.Passthrough.Linux
             set => _info.LastWriteTimeUtc = value;
         }
 
-        public string Name => _info.Name;
+        public virtual string Name => _info.Name;
         public void Create() => _info.Create();
         public void Create(DirectorySecurity directorySecurity) => 
             _info.Create(directorySecurity);
-        public IDirectoryInfo CreateSubdirectory(string path) => 
+        public virtual IDirectoryInfo CreateSubdirectory(string path) => 
             FileSystem.DirectoryInfo.GetFromDirectoryInfo(_info.CreateSubdirectory(Path.Combine(_destination, path.Trim('/'))));
         public void Delete(bool recursive) => 
             _info.Delete(recursive);
-        public IEnumerable<IDirectoryInfo> EnumerateDirectories() => 
-            FileSystem.DirectoryInfo.GetFromDirectoryInfos(_info.EnumerateDirectories());
+
+        public IEnumerable<IDirectoryInfo> EnumerateDirectories()
+        {
+            var name = this.Name;
+            var path = this.FullName;
+            return FileSystem.DirectoryInfo.GetFromDirectoryInfos(_info.EnumerateDirectories());
+        }
+
         public IEnumerable<IDirectoryInfo> EnumerateDirectories(string searchPattern) => 
             FileSystem.DirectoryInfo.GetFromDirectoryInfos(_info.EnumerateDirectories(searchPattern));
         public IEnumerable<IDirectoryInfo> EnumerateDirectories(string searchPattern, SearchOption searchOption) => 
@@ -138,7 +144,7 @@ namespace CrazyFS.Storage.Passthrough.Linux
         public IEnumerable<IFileInfo> EnumerateFiles(string searchPattern, EnumerationOptions enumerationOptions) =>
             FileSystem.FileInfo.GetFromFileInfos(_info.EnumerateFiles(searchPattern, enumerationOptions));
 
-        public IEnumerable<IFileSystemInfo> EnumerateFileSystemInfos() => 
+        public virtual IEnumerable<IFileSystemInfo> EnumerateFileSystemInfos() => 
             FileSystem.Path.GetFromFileSystemInfos(_info.GetFileSystemInfos());
         public IEnumerable<IFileSystemInfo> EnumerateFileSystemInfos(string searchPattern) => 
             FileSystem.Path.GetFromFileSystemInfos(_info.EnumerateFileSystemInfos(searchPattern));
@@ -172,16 +178,16 @@ namespace CrazyFS.Storage.Passthrough.Linux
             FileSystem.Path.GetFromFileSystemInfos(_info.GetFileSystemInfos(searchPattern, searchOption)).ToArray();
         public IFileSystemInfo[] GetFileSystemInfos(string searchPattern, EnumerationOptions enumerationOptions) => 
             FileSystem.Path.GetFromFileSystemInfos(_info.GetFileSystemInfos(searchPattern, enumerationOptions)).ToArray();
-        public void MoveTo(string destDirName) => 
+        public virtual void MoveTo(string destDirName) => 
             _info.MoveTo(Path.Combine(_destination, destDirName.Trim('/')));
         public void SetAccessControl(DirectorySecurity directorySecurity) => 
             _info.SetAccessControl(directorySecurity);
-        public IDirectoryInfo Parent => 
+        public virtual IDirectoryInfo Parent => 
             FileSystem.DirectoryInfo.GetFromDirectoryInfo(_info.Parent);
-        public IDirectoryInfo Root => 
+        public virtual IDirectoryInfo Root => 
             FileSystem.DirectoryInfo.GetFromDirectoryInfo(_info.Root);
         
-        public string GetRealPath()
+        public virtual string GetRealPath()
         {
             var passThroughPath = FullName.GetRealPath(_source, _destination);
             return UnixPath.GetRealPath(passThroughPath).GetMountedPath(_source, _destination);

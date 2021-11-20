@@ -5,9 +5,9 @@ namespace CrazyFS.Storage.Passthrough.Linux
 {
     public class LinuxDirectoryInfoFactory: ILinuxDirectoryInfoFactory
     {
-        private readonly IFileSystem _fileSystem;
-        private readonly string _source;
-        private readonly string _destination;
+        protected readonly IFileSystem _fileSystem;
+        protected readonly string _source;
+        protected readonly string _destination;
 
         public LinuxDirectoryInfoFactory(IFileSystem fileSystem, string source, string destination)
         {
@@ -16,13 +16,14 @@ namespace CrazyFS.Storage.Passthrough.Linux
             _destination = destination;
         }
 
-        public IDirectoryInfo FromDirectoryName(string directoryName)
+        public virtual IDirectoryInfo FromDirectoryName(string directoryName)
         {
             return new LinuxDirectoryInfo(_fileSystem, _source, _destination, directoryName);
         }
 
-        public IDirectoryInfo FromDirectoryInfo(IDirectoryInfo info)
+        public virtual IDirectoryInfo FromDirectoryInfo(IDirectoryInfo info)
         {
+            if (info is ILinuxDirectoryInfo) return info;
             return new LinuxDirectoryInfo(_fileSystem, _source, _destination, info);
         }
     }

@@ -6,12 +6,14 @@ using System.Security.AccessControl;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CrazyFS.FileSystem;
 using CrazyFS.Passthrough.Linux.Extensions;
+using CrazyFS.Passthrough.Linux.Interfaces;
 using Mono.Unix.Native;
 
 namespace CrazyFS.Storage.Passthrough.Linux
 {
-    public class LinuxFileWrapper : IFile
+    public class LinuxFileWrapper : ILinuxFile
     {
         private readonly string _source;
         private readonly IFile _file;
@@ -152,13 +154,13 @@ namespace CrazyFS.Storage.Passthrough.Linux
             return _file.Create(path.GetPath(_source), bufferSize, options);
         }
         
-        public IFileInfo CreateSpecialFile(string path, FilePermissions mode, ulong rdev)
+        public void CreateSpecialFile(string path, FilePermissions mode, ulong rdev)
         {
             if (Syscall.mknod(path.GetPath(_source), mode, rdev) != -1)
             {
-                return FileSystem.FileInfo.FromFileName(path.GetPath(_source));
+                FileSystem.FileInfo.FromFileName(path.GetPath(_source));
             }
-            throw new Exception();
+            throw new NativeException((int)Stdlib.GetLastError());
         }
         public StreamWriter CreateText(string path)
         {
@@ -180,7 +182,7 @@ namespace CrazyFS.Storage.Passthrough.Linux
             _file.Encrypt(path.GetPath(_source));
         }
 
-        public bool Exists(string path)
+        public virtual bool Exists(string path)
         {
             return _file.Exists(path.GetPath(_source));
         }

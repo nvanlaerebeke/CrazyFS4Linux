@@ -2,12 +2,12 @@ using System;
 
 namespace CrazyFS.Encryption
 {
-    public interface IEncryption: IDisposable
+    public interface IEncryption
     {
         byte[] Encrypt(byte[] data);
-        byte[] Encrypt(string data);
         byte[] Decrypt(byte[] data);
-        string DecryptString(byte[] data);
-        byte[] GetInitializationVector();
+
+        string DecryptString(string value);
+        string EncryptString(string value);
     }
 }

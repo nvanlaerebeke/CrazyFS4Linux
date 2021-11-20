@@ -12,9 +12,9 @@ namespace CrazyFS.Storage.Passthrough.Linux
 {
     public class LinuxPathWrapper : ILinuxPath
     {
-        private readonly string _destination;
-        private readonly IPath _path;
-        private readonly string _source;
+        protected readonly string _destination;
+        protected readonly IPath _path;
+        protected readonly string _source;
 
         public LinuxPathWrapper(IFileSystem fileSystem, string source, string destination)
         {
@@ -143,7 +143,7 @@ namespace CrazyFS.Storage.Passthrough.Linux
             return _path.GetTempPath();
         }
 
-        public bool HasAccess(string path, AccessModes modes)
+        public virtual bool HasAccess(string path, AccessModes modes)
         {
             if (FileSystem.File.Exists(path))
                 return PermissionHelper.CheckPathAccessModes(

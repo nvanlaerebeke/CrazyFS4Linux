@@ -17,8 +17,7 @@ namespace CrazyFS.Linux
         private readonly string _password = "myPassword";
         private readonly string _salt =
             "2JSn0nhJPVrjKGgZeRQkqYHGXUWPzHRnU9blxhe7qdWJkELHB+vCxgGTUbG/GJ4vp4hg6muGlzVQL5xCI1CFSq1rPJSxWKqdoz7KFFKNsW0xFOVwQTOxVMAVeN3gLQd0HQm93CoEVLtPpFIqGIaioKyZY/Y8uFVYaod5pe7yWsDPcfOPVawyo8MFDzG1zBYJEoPsbglz7sDs1KpKWEWJRomBlghRc1/x6oaraCaMoGE97jLvT8c+ZfRLQLqaBglOj5K0ELRWlKXgbOqPXdAbUBwlDT7WJ+yiAKuC6gUK4JIk/o4l54QbcsKihsy5JszHMtpb78epesB+57e0AMOqUw==";
-
-
+        
         public CrazyFsFileSystem(string source, string destination)
         {
             MountPoint = destination;

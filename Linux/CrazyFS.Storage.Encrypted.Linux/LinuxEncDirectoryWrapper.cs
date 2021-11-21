@@ -7,76 +7,87 @@ using System.Security.AccessControl;
 using CrazyFS.Encryption;
 using CrazyFS.FileSystem.Encrypted.Linux.Extensions;
 using CrazyFS.FileSystem.Encrypted.Linux.Interfaces;
+using CrazyFS.Passthrough.Linux.Extensions;
 using CrazyFS.Storage.Passthrough.Linux;
 using Mono.Unix.Native;
 
 namespace CrazyFS.FileSystem.Encrypted.Linux
 {
-    public class LinuxEncDirectoryWrapper : LinuxDirectoryWrapper, ILinuxEncDirectoryWrapper
+    public class LinuxEncDirectoryWrapper : ILinuxEncDirectoryWrapper
     {
+        private readonly string _source;
         private readonly IEncryption _encryption;
 
-        public LinuxEncDirectoryWrapper(IFileSystem fileSystem, string source, IEncryption encryption) : base(fileSystem, source)
+        public LinuxEncDirectoryWrapper(IFileSystem fileSystem, string source, IEncryption encryption)
         {
+            FileSystem = fileSystem;
+            _source = source;
             _encryption = encryption;
         }
-        public new IDirectoryInfo CreateDirectory(string path)
+        public IDirectoryInfo CreateDirectory(string path)
         {
-            return base.CreateDirectory(FileSystem.Path.GetEncryptedPath(path));
+            return FileSystem.DirectoryInfo.FromDirectoryName(
+                Directory.CreateDirectory(
+                    FileSystem.Path.GetEncryptedPath(path, false).GetPath(_source)
+                ).FullName
+            );
         }
 
-        public new IDirectoryInfo CreateDirectory(string path, DirectorySecurity directorySecurity)
+        public IDirectoryInfo CreateDirectory(string path, DirectorySecurity directorySecurity)
         {
-            return base.CreateDirectory(FileSystem.Path.GetEncryptedPath(path), directorySecurity);
+            throw new NotImplementedException();
         }
 
-        public override void CreateDirectory(string path, FilePermissions permissions)
+        public void CreateDirectory(string path, FilePermissions permissions)
         {
-            base.CreateDirectory(FileSystem.Path.GetEncryptedPath(path), permissions);
+            throw new NotImplementedException();
         }
+
         public void Delete(string path)
         {
-            base.Delete(FileSystem.Path.GetEncryptedPath(path));
+            var pathEnc = FileSystem.Path.GetEncryptedPath(path, true);
+            if(!string.IsNullOrEmpty(pathEnc)) Directory.Delete(pathEnc.GetPath(_source));
         }
 
         public void Delete(string path, bool recursive)
         {
-            base.Delete(FileSystem.Path.GetEncryptedPath(path), recursive);
+            var pathEnc = FileSystem.Path.GetEncryptedPath(path, true);
+            if(!string.IsNullOrEmpty(pathEnc)) Directory.Delete(pathEnc.GetPath(_source), true);
         }
 
-        public override bool Exists(string path)
+        public bool Exists(string path)
         {
-            return !string.IsNullOrEmpty(FileSystem.Path.GetEncryptedPath(path));
+            return !string.IsNullOrEmpty(FileSystem.Path.GetEncryptedPath(path, true));
         }
 
         public DirectorySecurity GetAccessControl(string path)
         {
-            return base.GetAccessControl(FileSystem.Path.GetEncryptedPath(path));
+            throw new NotImplementedException();
         }
 
         public DirectorySecurity GetAccessControl(string path, AccessControlSections includeSections)
         {
-            return base.GetAccessControl(FileSystem.Path.GetEncryptedPath(path), includeSections);
+            throw new NotImplementedException();
         }
 
         public DateTime GetCreationTime(string path)
         {
-            return base.GetCreationTime(FileSystem.Path.GetEncryptedPath(path));
+            throw new NotImplementedException();
         }
 
         public DateTime GetCreationTimeUtc(string path)
         {
-            return base.GetCreationTimeUtc(FileSystem.Path.GetEncryptedPath(path));
+            throw new NotImplementedException();
         }
 
         public string GetCurrentDirectory()
         {
-            return FileSystem.Path.GetDecryptedPath(base.GetCurrentDirectory());
+            return Directory.GetCurrentDirectory();
         }
 
         public string[] GetDirectories(string path)
         {
-            var paths = base.GetDirectories(FileSystem.Path.GetEncryptedPath(path));
+            var paths = Directory.GetDirectories(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source));
             for (var i = 0; i < paths.Length; i++) paths[i] = FileSystem.Path.GetDecryptedPath(paths[i]);
             return paths;
         }
@@ -98,12 +109,12 @@ namespace CrazyFS.FileSystem.Encrypted.Linux
 
         public new string GetDirectoryRoot(string path)
         {
-            return FileSystem.Path.GetDecryptedPath(base.GetDirectoryRoot(FileSystem.Path.GetEncryptedPath(path)));
+            return FileSystem.Path.GetDecryptedPath(Directory.GetDirectoryRoot(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source)).GetRelative(_source));
         }
 
         public new string[] GetFiles(string path)
         {
-            var paths = base.GetFiles(FileSystem.Path.GetEncryptedPath(path));
+            var paths = Directory.GetFiles(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source));
             for (var i = 0; i < paths.Length; i++) paths[i] = FileSystem.Path.GetDecryptedPath(paths[i]);
             return paths;
         }
@@ -125,7 +136,7 @@ namespace CrazyFS.FileSystem.Encrypted.Linux
 
         public new string[] GetFileSystemEntries(string path)
         {
-            var paths = base.GetFileSystemEntries(FileSystem.Path.GetEncryptedPath(path));
+            var paths = Directory.GetFileSystemEntries(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source));
             for (var i = 0; i < paths.Length; i++) paths[i] = FileSystem.Path.GetDecryptedPath(paths[i]);
             return paths;
         }
@@ -137,77 +148,85 @@ namespace CrazyFS.FileSystem.Encrypted.Linux
 
         public new DateTime GetLastAccessTime(string path)
         {
-            return base.GetLastAccessTime(FileSystem.Path.GetEncryptedPath(path));
+            return Directory.GetLastAccessTime(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source));
         }
 
         public new DateTime GetLastAccessTimeUtc(string path)
         {
-            return base.GetLastAccessTimeUtc(FileSystem.Path.GetEncryptedPath(path));
+            return Directory.GetLastAccessTimeUtc(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source));
         }
 
         public new DateTime GetLastWriteTime(string path)
         {
-            return base.GetLastWriteTime(FileSystem.Path.GetEncryptedPath(path));
+            return Directory.GetLastWriteTime(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source));
         }
 
         public new DateTime GetLastWriteTimeUtc(string path)
         {
-            return base.GetLastWriteTimeUtc(FileSystem.Path.GetEncryptedPath(path));
+            return Directory.GetLastWriteTimeUtc(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source));
         }
 
-        public new IDirectoryInfo GetParent(string path)
+        public string[] GetLogicalDrives()
         {
-            return base.GetParent(FileSystem.Path.GetEncryptedPath(path));
+            throw new NotImplementedException();
         }
 
-        public new void Move(string sourceDirName, string destDirName)
+        public IDirectoryInfo GetParent(string path)
         {
-            base.Move(FileSystem.Path.GetEncryptedPath(sourceDirName), FileSystem.Path.GetEncryptedPath(destDirName));
+            var pathEnc = FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source);
+            return FileSystem.DirectoryInfo.FromDirectoryName(Directory.GetParent(pathEnc)?.FullName);
         }
 
-        public new void SetAccessControl(string path, DirectorySecurity directorySecurity)
+        public void Move(string sourceDirName, string destDirName)
         {
-            base.SetAccessControl(FileSystem.Path.GetEncryptedPath(path), directorySecurity);
+            var from = FileSystem.Path.GetEncryptedPath(sourceDirName, true);
+            var to = FileSystem.Path.GetEncryptedPath(destDirName, false);
+            Directory.Move(from, to);
         }
 
-        public new void SetCreationTime(string path, DateTime creationTime)
+        public void SetAccessControl(string path, DirectorySecurity directorySecurity)
         {
-            base.SetCreationTime(FileSystem.Path.GetEncryptedPath(path), creationTime);
+            throw new NotImplementedException();
         }
 
-        public new void SetCreationTimeUtc(string path, DateTime creationTimeUtc)
+        public void SetCreationTime(string path, DateTime creationTime)
         {
-            base.SetCreationTimeUtc(FileSystem.Path.GetEncryptedPath(path), creationTimeUtc);
+            Directory.SetCreationTime(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source), creationTime);
         }
 
-        public new void SetCurrentDirectory(string path)
+        public void SetCreationTimeUtc(string path, DateTime creationTimeUtc)
         {
-            base.SetCurrentDirectory(FileSystem.Path.GetEncryptedPath(path));
+            Directory.SetCreationTimeUtc(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source), creationTimeUtc);
         }
 
-        public new void SetLastAccessTime(string path, DateTime lastAccessTime)
+        public void SetCurrentDirectory(string path)
         {
-            base.SetLastAccessTime(FileSystem.Path.GetEncryptedPath(path), lastAccessTime);
+            throw new NotImplementedException();
         }
 
-        public new void SetLastAccessTimeUtc(string path, DateTime lastAccessTimeUtc)
+        public void SetLastAccessTime(string path, DateTime lastAccessTime)
         {
-            base.SetLastAccessTimeUtc(FileSystem.Path.GetEncryptedPath(path), lastAccessTimeUtc);
+            Directory.SetLastAccessTime(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source), lastAccessTime);
         }
 
-        public new void SetLastWriteTime(string path, DateTime lastWriteTime)
+        public void SetLastAccessTimeUtc(string path, DateTime lastAccessTimeUtc)
         {
-            base.SetLastWriteTime(FileSystem.Path.GetEncryptedPath(path), lastWriteTime);
+            Directory.SetLastAccessTimeUtc(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source), lastAccessTimeUtc);
         }
 
-        public new void SetLastWriteTimeUtc(string path, DateTime lastWriteTimeUtc)
+        public void SetLastWriteTime(string path, DateTime lastWriteTime)
         {
-            base.SetLastWriteTimeUtc(FileSystem.Path.GetEncryptedPath(path), lastWriteTimeUtc);
+            throw new NotImplementedException();
         }
 
-        public new IEnumerable<string> EnumerateDirectories(string path)
+        public void SetLastWriteTimeUtc(string path, DateTime lastWriteTimeUtc)
         {
-            return  base.EnumerateDirectories(FileSystem.Path.GetEncryptedPath(path)).ToList().ConvertAll(x => FileSystem.Path.GetDecryptedPath(x));
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<string> EnumerateDirectories(string path)
+        {
+            throw new NotImplementedException();
         }
 
         public IEnumerable<string> EnumerateDirectories(string path, string searchPattern)
@@ -227,7 +246,7 @@ namespace CrazyFS.FileSystem.Encrypted.Linux
 
         public new IEnumerable<string> EnumerateFiles(string path)
         {
-            return  base.EnumerateFiles(FileSystem.Path.GetEncryptedPath(path)).ToList().ConvertAll(x => FileSystem.Path.GetDecryptedPath(x));
+            throw new NotImplementedException();
         }
 
         public IEnumerable<string> EnumerateFiles(string path, string searchPattern)
@@ -247,7 +266,7 @@ namespace CrazyFS.FileSystem.Encrypted.Linux
 
         public new IEnumerable<string> EnumerateFileSystemEntries(string path)
         {
-            return  base.EnumerateFileSystemEntries(FileSystem.Path.GetEncryptedPath(path)).ToList().ConvertAll(x => FileSystem.Path.GetDecryptedPath(x));
+            throw new NotImplementedException();
         }
 
         public IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern)
@@ -265,5 +284,6 @@ namespace CrazyFS.FileSystem.Encrypted.Linux
             throw new NotImplementedException();
         }
 
+        public IFileSystem FileSystem { get; }
     }
 }

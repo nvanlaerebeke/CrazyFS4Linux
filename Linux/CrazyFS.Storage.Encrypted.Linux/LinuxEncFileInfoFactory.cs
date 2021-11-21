@@ -18,7 +18,7 @@ namespace CrazyFS.FileSystem.Encrypted.Linux
 
         public override IFileInfo FromFileName(string fileName)
         {
-            return new LinuxEncFileInfo(_fileSystem, _source, _destination, _fileSystem.Path.GetEncryptedPath(fileName), _encryption);
+            return new LinuxEncFileInfo(_fileSystem, _source, _destination, _fileSystem.Path.GetEncryptedPath(fileName, true), _encryption);
         }
 
         public override IFileInfo FromFileInfo(IFileInfo info)

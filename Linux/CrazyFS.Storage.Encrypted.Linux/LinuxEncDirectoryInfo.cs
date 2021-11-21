@@ -26,7 +26,7 @@ namespace CrazyFS.FileSystem.Encrypted.Linux
                 fileSystem,
                 source,
                 destination,
-                new DirectoryInfoWrapper(fileSystem, new DirectoryInfo(Path.Combine(source, fileSystem.Path.GetEncryptedPath(dirName)))),
+                new DirectoryInfoWrapper(fileSystem, new DirectoryInfo(Path.Combine(source, fileSystem.Path.GetEncryptedPath(dirName.Trim(Path.DirectorySeparatorChar), true)))),
                 encryption
             )
         {

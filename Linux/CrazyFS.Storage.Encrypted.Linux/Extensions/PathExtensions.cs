@@ -13,10 +13,10 @@ namespace CrazyFS.FileSystem.Encrypted.Linux.Extensions
             return pathWrapper.GetDecryptedPath(path);
         }
         
-        public static string GetEncryptedPath(this IPath pathInterface, string path)
+        public static string GetEncryptedPath(this IPath pathInterface, string path, bool existing)
         {
             if (pathInterface is not ILinuxEncPathWrapper pathWrapper) throw new Exception("IPath is not the encrypted linux version");
-            return pathWrapper.GetEncryptedPath(path);
+            return pathWrapper.GetEncryptedPath(path, existing);
         }
     }
 }

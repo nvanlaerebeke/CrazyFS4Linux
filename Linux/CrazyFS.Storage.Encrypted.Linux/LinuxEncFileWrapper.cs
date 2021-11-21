@@ -16,7 +16,7 @@ namespace CrazyFS.FileSystem.Encrypted.Linux
 
         public override bool Exists(string path)
         {
-            return !string.IsNullOrEmpty(FileSystem.Path.GetEncryptedPath(path));
+            return !string.IsNullOrEmpty(FileSystem.Path.GetEncryptedPath(path, true));
         }
     }
 }

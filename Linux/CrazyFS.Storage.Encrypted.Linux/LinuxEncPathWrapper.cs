@@ -29,19 +29,36 @@ namespace CrazyFS.FileSystem.Encrypted.Linux
         /// </summary>
         /// <param name="path"></param>
         /// <returns>Fully encrypted path or empty string if the path cannot be found</returns>
-        public string GetEncryptedPath(string path)
+        public string GetEncryptedPath(string path, bool existing)
         {
             var parts = path.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length.Equals(0)) return path;
-            
+
+            var found = true;
             var tmpPath = "";
             for (byte i = 0; i < parts.Length; i++)
             {
-                var currentList = FileSystem.DirectoryInfo.FromDirectoryName(tmpPath).GetFileSystemInfos();
-                var entry = currentList.FirstOrDefault(x => x.Name.Equals(parts[i]));
-                if (entry == null) return "";
-                tmpPath = Path.Combine(tmpPath, entry.Name);
-                parts[i] = entry.GetEncryptedName();
+                if (found)
+                {
+                    var currentListEncrypted = Directory.GetFileSystemEntries(tmpPath.GetPath(_source)); // FileSystem.DirectoryInfo.FromDirectoryName(tmpPath).GetFileSystemInfos();
+                    var currentListDecrypted = currentListEncrypted.ToList().ConvertAll(x => GetDecryptedPath(x)).ToArray();
+                    var entry = currentListDecrypted.FirstOrDefault(x => x.Equals(parts[i]));
+                    if (entry == null && existing) return "";
+
+                    if (entry != null)
+                    {
+                        tmpPath = Path.Combine(tmpPath, entry);
+                        parts[i] = currentListEncrypted[currentListDecrypted.ToList().IndexOf(entry)];
+                    }
+                    else
+                    {
+                        parts[i] = _encryption.EncryptString(parts[i]);
+                    }
+                }
+                else
+                {
+                    parts[i] = _encryption.EncryptString(parts[i]);
+                }
             }
             return string.Join(Path.DirectorySeparatorChar, parts);
         }
@@ -58,7 +75,7 @@ namespace CrazyFS.FileSystem.Encrypted.Linux
 
         public override bool HasAccess(string path, AccessModes modes)
         {
-            var path_enc = GetEncryptedPath(path);
+            var path_enc = GetEncryptedPath(path, true);
             if (string.IsNullOrEmpty(path_enc)) return false;
 
             if (FileSystem.File.Exists(path))

@@ -42,17 +42,54 @@ namespace CrazyFS.FileSystem.Encrypted.Linux
             _ = Syscall.lstat(_info.FullName.GetRealPath(_source, _destination), out _stat);
         }
         
-        public FileAttributes Attributes { get; set; }
-        public DateTime CreationTime { get; set; }
-        public DateTime CreationTimeUtc { get; set; }
-        public bool Exists { get; }
-        public string Extension { get; }
-        public string FullName { get; }
-        public DateTime LastAccessTime { get; set; }
-        public DateTime LastAccessTimeUtc { get; set; }
-        public DateTime LastWriteTime { get; set; }
-        public DateTime LastWriteTimeUtc { get; set; }
-        public string Name { get; }
+        public FileAttributes Attributes
+        {
+            get => _info.Attributes;
+            set => _info.Attributes = value;
+        }
+
+        public DateTime CreationTime
+        {
+            get => _info.CreationTime;
+            set => _info.CreationTime = value;
+        }
+
+        public DateTime CreationTimeUtc
+        {
+            get => _info.CreationTimeUtc;
+            set => _info.CreationTimeUtc = value;
+        }
+
+        public bool Exists => _info.Exists;
+
+        public string Extension => Path.GetExtension(FileSystem.Path.GetDecryptedPath(_info.Name));
+        public string FullName => FileSystem.Path.GetDecryptedPath(_info.Name);
+
+        public DateTime LastAccessTime
+        {
+            get => _info.LastAccessTime;
+            set => _info.LastAccessTime = value;
+        }
+
+        public DateTime LastAccessTimeUtc
+        {
+            get => _info.LastAccessTimeUtc;
+            set => _info.LastAccessTimeUtc = value;
+        }
+
+        public DateTime LastWriteTime
+        {
+            get => _info.LastWriteTime;
+            set => _info.LastWriteTime = value;
+        }
+
+        public DateTime LastWriteTimeUtc
+        {
+            get => _info.LastWriteTimeUtc;
+            set => _info.LastWriteTimeUtc = value;
+        }
+
+        public string Name => FileSystem.Path.GetDecryptedPath(_info.Name);
         
         public StreamWriter AppendText()
         {
@@ -71,32 +108,32 @@ namespace CrazyFS.FileSystem.Encrypted.Linux
 
         public Stream Create()
         {
-            throw new NotImplementedException();
+            return _info.Create();
         }
 
         public StreamWriter CreateText()
         {
-            throw new NotImplementedException();
+            return _info.CreateText();
         }
 
         public void Decrypt()
         {
-            throw new NotImplementedException();
+            _info.Decrypt();
         }
 
         public void Encrypt()
         {
-            throw new NotImplementedException();
+            _info.Encrypt();
         }
 
         public FileSecurity GetAccessControl()
         {
-            throw new NotImplementedException();
+            return _info.GetAccessControl();
         }
 
         public FileSecurity GetAccessControl(AccessControlSections includeSections)
         {
-            throw new NotImplementedException();
+            return _info.GetAccessControl(includeSections);
         }
 
         public void MoveTo(string destFileName)

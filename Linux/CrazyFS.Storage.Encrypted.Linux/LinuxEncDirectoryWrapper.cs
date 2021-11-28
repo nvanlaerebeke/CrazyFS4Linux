@@ -17,12 +17,13 @@ namespace CrazyFS.FileSystem.Encrypted.Linux
     {
         private readonly string _source;
         private readonly IEncryption _encryption;
-
+        private readonly IDirectory _directory;
         public LinuxEncDirectoryWrapper(IFileSystem fileSystem, string source, IEncryption encryption)
         {
             FileSystem = fileSystem;
             _source = source;
             _encryption = encryption;
+            _directory = new DirectoryWrapper(fileSystem);
         }
         public IDirectoryInfo CreateDirectory(string path)
         {
@@ -35,12 +36,14 @@ namespace CrazyFS.FileSystem.Encrypted.Linux
 
         public IDirectoryInfo CreateDirectory(string path, DirectorySecurity directorySecurity)
         {
-            throw new NotImplementedException();
+            var encPath = FileSystem.Path.GetEncryptedPath(path, false);
+            return _directory.CreateDirectory(encPath.GetPath(_source), directorySecurity);
         }
-
-        public void CreateDirectory(string path, FilePermissions permissions)
+        public virtual void CreateDirectory(string path, FilePermissions permissions)
         {
-            throw new NotImplementedException();
+            var encPath = FileSystem.Path.GetEncryptedPath(path, false);
+            if (Syscall.mkdir(encPath.GetPath(_source), permissions) != -1) return;
+            throw new NativeException((int)Stdlib.GetLastError());
         }
 
         public void Delete(string path)
@@ -57,7 +60,12 @@ namespace CrazyFS.FileSystem.Encrypted.Linux
 
         public bool Exists(string path)
         {
-            return !string.IsNullOrEmpty(FileSystem.Path.GetEncryptedPath(path, true));
+            var encPath = FileSystem.Path.GetEncryptedPath(path, true);
+            if (!string.IsNullOrEmpty(encPath))
+            {
+                return Directory.Exists(encPath.GetPath(_source));
+            }
+            return false;        
         }
 
         public DirectorySecurity GetAccessControl(string path)

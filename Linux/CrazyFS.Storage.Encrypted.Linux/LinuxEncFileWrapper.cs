@@ -1,7 +1,9 @@
 using System.IO.Abstractions;
 using CrazyFS.Encryption;
 using CrazyFS.FileSystem.Encrypted.Linux.Extensions;
+using CrazyFS.Passthrough.Linux.Extensions;
 using CrazyFS.Storage.Passthrough.Linux;
+using Mono.Unix.Native;
 
 namespace CrazyFS.FileSystem.Encrypted.Linux
 {
@@ -16,7 +18,18 @@ namespace CrazyFS.FileSystem.Encrypted.Linux
 
         public override bool Exists(string path)
         {
-            return !string.IsNullOrEmpty(FileSystem.Path.GetEncryptedPath(path, true));
+            var encPath = FileSystem.Path.GetEncryptedPath(path, true);
+            if (!string.IsNullOrEmpty(encPath))
+            {
+                return System.IO.File.Exists(encPath.GetPath(_source));
+            }
+            return false;
+        }
+
+        public override void CreateSpecialFile(string path, FilePermissions mode, ulong rdev)
+        {
+            var encPath = FileSystem.Path.GetEncryptedPath(path, false);
+            base.CreateSpecialFile(encPath, mode, rdev);
         }
     }
 }

@@ -2,6 +2,7 @@ using System.IO.Abstractions;
 using CrazyFS.Encryption;
 using CrazyFS.FileSystem.Encrypted.Linux.Extensions;
 using CrazyFS.FileSystem.Encrypted.Linux.Interfaces;
+using CrazyFS.Passthrough.Linux.Extensions;
 using CrazyFS.Passthrough.Linux.Interfaces;
 using CrazyFS.Storage.Passthrough.Linux;
 
@@ -18,7 +19,9 @@ namespace CrazyFS.FileSystem.Encrypted.Linux
 
         public override IFileInfo FromFileName(string fileName)
         {
-            return new LinuxEncFileInfo(_fileSystem, _source, _destination, _fileSystem.Path.GetEncryptedPath(fileName, true), _encryption);
+            var pathEnc = _fileSystem.Path.GetEncryptedPath(fileName, true);
+            var x = new FileInfoWrapper(_fileSystem, new System.IO.FileInfo(pathEnc.GetPath(_source)));
+            return new LinuxEncFileInfo(_fileSystem, _source, _destination, x, _encryption);
         }
 
         public override IFileInfo FromFileInfo(IFileInfo info)

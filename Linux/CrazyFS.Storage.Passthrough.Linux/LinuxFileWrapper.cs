@@ -15,7 +15,7 @@ namespace CrazyFS.Storage.Passthrough.Linux
 {
     public class LinuxFileWrapper : ILinuxFile
     {
-        private readonly string _source;
+        protected readonly string _source;
         private readonly IFile _file;
         public LinuxFileWrapper(IFileSystem fileSystem, string source)
         {
@@ -154,14 +154,12 @@ namespace CrazyFS.Storage.Passthrough.Linux
             return _file.Create(path.GetPath(_source), bufferSize, options);
         }
         
-        public void CreateSpecialFile(string path, FilePermissions mode, ulong rdev)
+        public virtual void CreateSpecialFile(string path, FilePermissions mode, ulong rdev)
         {
-            if (Syscall.mknod(path.GetPath(_source), mode, rdev) != -1)
-            {
-                FileSystem.FileInfo.FromFileName(path.GetPath(_source));
-            }
+            if (Syscall.mknod(path.GetPath(_source), mode, rdev) != -1) return;
             throw new NativeException((int)Stdlib.GetLastError());
         }
+        
         public StreamWriter CreateText(string path)
         {
             return _file.CreateText(path.GetPath(_source));

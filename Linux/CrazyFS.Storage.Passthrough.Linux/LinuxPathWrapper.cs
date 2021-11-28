@@ -79,7 +79,7 @@ namespace CrazyFS.Storage.Passthrough.Linux
             return _path.GetDirectoryName(path);
         }
 
-        public void GetExtendedAttribute(string path, string name, byte[] value, out int bytesWritten)
+        public virtual void GetExtendedAttribute(string path, string name, byte[] value, out int bytesWritten)
         {
             bytesWritten = (int) Syscall.lgetxattr(path.GetPath(_source), name, value, (ulong) (value?.Length ?? 0));
             if (bytesWritten != -1) return;

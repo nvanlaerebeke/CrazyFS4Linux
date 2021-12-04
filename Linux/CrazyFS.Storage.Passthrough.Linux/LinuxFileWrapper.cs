@@ -24,132 +24,132 @@ namespace CrazyFS.Storage.Passthrough.Linux
             _file = new FileWrapper(fileSystem);
         }
 
-        public Task AppendAllLinesAsync(string path, IEnumerable<string> contents, CancellationToken cancellationToken = new())
+        public virtual Task AppendAllLinesAsync(string path, IEnumerable<string> contents, CancellationToken cancellationToken = new())
         {
             return _file.AppendAllLinesAsync(path.GetPath(_source), contents, cancellationToken);
         }
 
-        public Task AppendAllLinesAsync(string path, IEnumerable<string> contents, Encoding encoding, CancellationToken cancellationToken = new())
+        public virtual Task AppendAllLinesAsync(string path, IEnumerable<string> contents, Encoding encoding, CancellationToken cancellationToken = new())
         {
             return _file.AppendAllLinesAsync(path.GetPath(_source), contents, encoding, cancellationToken);
         }
 
-        public Task AppendAllTextAsync(string path, string contents, CancellationToken cancellationToken = new())
+        public virtual Task AppendAllTextAsync(string path, string contents, CancellationToken cancellationToken = new())
         {
             return _file.AppendAllTextAsync(path.GetPath(_source), contents, cancellationToken);
         }
 
-        public Task AppendAllTextAsync(string path, string contents, Encoding encoding, CancellationToken cancellationToken = new())
+        public virtual Task AppendAllTextAsync(string path, string contents, Encoding encoding, CancellationToken cancellationToken = new())
         {
             return _file.AppendAllTextAsync(path.GetPath(_source), contents, encoding, cancellationToken);
         }
 
-        public Task<byte[]> ReadAllBytesAsync(string path, CancellationToken cancellationToken = new())
+        public virtual Task<byte[]> ReadAllBytesAsync(string path, CancellationToken cancellationToken = new())
         {
             return _file.ReadAllBytesAsync(path.GetPath(_source), cancellationToken);
         }
 
-        public Task<string[]> ReadAllLinesAsync(string path, CancellationToken cancellationToken = new())
+        public virtual Task<string[]> ReadAllLinesAsync(string path, CancellationToken cancellationToken = new())
         {
             return _file.ReadAllLinesAsync(path.GetPath(_source), cancellationToken);
         }
 
-        public Task<string[]> ReadAllLinesAsync(string path, Encoding encoding, CancellationToken cancellationToken = new())
+        public virtual Task<string[]> ReadAllLinesAsync(string path, Encoding encoding, CancellationToken cancellationToken = new())
         {
             return _file.ReadAllLinesAsync(path.GetPath(_source), encoding, cancellationToken);
         }
 
-        public Task<string> ReadAllTextAsync(string path, CancellationToken cancellationToken = new())
+        public virtual Task<string> ReadAllTextAsync(string path, CancellationToken cancellationToken = new())
         {
             return _file.ReadAllTextAsync(path.GetPath(_source), cancellationToken);
         }
 
-        public Task<string> ReadAllTextAsync(string path, Encoding encoding, CancellationToken cancellationToken = new())
+        public virtual Task<string> ReadAllTextAsync(string path, Encoding encoding, CancellationToken cancellationToken = new())
         {
             return _file.ReadAllTextAsync(path.GetPath(_source), encoding, cancellationToken);
         }
 
-        public Task WriteAllLinesAsync(string path, IEnumerable<string> contents, CancellationToken cancellationToken = new())
+        public virtual Task WriteAllLinesAsync(string path, IEnumerable<string> contents, CancellationToken cancellationToken = new())
         {
             return _file.WriteAllLinesAsync(path.GetPath(_source), contents, cancellationToken);
         }
 
-        public Task WriteAllLinesAsync(string path, IEnumerable<string> contents, Encoding encoding, CancellationToken cancellationToken = new())
+        public virtual Task WriteAllLinesAsync(string path, IEnumerable<string> contents, Encoding encoding, CancellationToken cancellationToken = new())
         {
             return _file.WriteAllLinesAsync(path.GetPath(_source), contents, encoding, cancellationToken);
         }
 
-        public Task WriteAllLinesAsync(string path, string[] contents, CancellationToken cancellationToken = new())
+        public virtual Task WriteAllLinesAsync(string path, string[] contents, CancellationToken cancellationToken = new())
         {
             return _file.WriteAllLinesAsync(path.GetPath(_source), contents, cancellationToken);
         }
 
-        public Task WriteAllLinesAsync(string path, string[] contents, Encoding encoding, CancellationToken cancellationToken = new())
+        public virtual Task WriteAllLinesAsync(string path, string[] contents, Encoding encoding, CancellationToken cancellationToken = new())
         {
             return _file.WriteAllLinesAsync(path.GetPath(_source), contents, encoding, cancellationToken);
         }
 
-        public Task WriteAllTextAsync(string path, string contents, CancellationToken cancellationToken = new())
+        public virtual Task WriteAllTextAsync(string path, string contents, CancellationToken cancellationToken = new())
         {
             return _file.WriteAllTextAsync(path.GetPath(_source), contents, cancellationToken);
         }
 
-        public Task WriteAllTextAsync(string path, string contents, Encoding encoding, CancellationToken cancellationToken = new())
+        public virtual Task WriteAllTextAsync(string path, string contents, Encoding encoding, CancellationToken cancellationToken = new())
         {
             return _file.WriteAllTextAsync(path.GetPath(_source), contents, encoding, cancellationToken);
         }
 
-        public Task WriteAllBytesAsync(string path, byte[] bytes, CancellationToken cancellationToken = new())
+        public virtual Task WriteAllBytesAsync(string path, byte[] bytes, CancellationToken cancellationToken = new())
         {
             return _file.WriteAllBytesAsync(path.GetPath(_source), bytes, cancellationToken);
         }
 
-        public void AppendAllLines(string path, IEnumerable<string> contents)
+        public virtual void AppendAllLines(string path, IEnumerable<string> contents)
         {
             _file.AppendAllLines(path.GetPath(_source), contents);
         }
 
-        public void AppendAllLines(string path, IEnumerable<string> contents, Encoding encoding)
+        public virtual void AppendAllLines(string path, IEnumerable<string> contents, Encoding encoding)
         {
             _file.AppendAllLines(path.GetPath(_source), contents, encoding);
         }
 
-        public void AppendAllText(string path, string contents)
+        public virtual void AppendAllText(string path, string contents)
         {
             _file.AppendAllText(path.GetPath(_source), contents);
         }
 
-        public void AppendAllText(string path, string contents, Encoding encoding)
+        public virtual void AppendAllText(string path, string contents, Encoding encoding)
         {
             _file.AppendAllText(path.GetPath(_source), contents, encoding);
         }
 
-        public StreamWriter AppendText(string path)
+        public virtual StreamWriter AppendText(string path)
         {
             return _file.AppendText(path.GetPath(_source));
         }
 
-        public void Copy(string sourceFileName, string destFileName)
+        public virtual void Copy(string sourceFileName, string destFileName)
         {
             _file.Copy(sourceFileName.GetPath(_source), destFileName.GetPath(_source));
         }
 
-        public void Copy(string sourceFileName, string destFileName, bool overwrite)
+        public virtual void Copy(string sourceFileName, string destFileName, bool overwrite)
         {
             _file.Copy(sourceFileName.GetPath(_source), destFileName.GetPath(_source), overwrite);
         }
 
-        public Stream Create(string path)
+        public virtual Stream Create(string path)
         {
             return _file.Create(path.GetPath(_source));
         }
 
-        public Stream Create(string path, int bufferSize)
+        public virtual Stream Create(string path, int bufferSize)
         {
             return _file.Create(path.GetPath(_source), bufferSize);
         }
 
-        public Stream Create(string path, int bufferSize, FileOptions options)
+        public virtual Stream Create(string path, int bufferSize, FileOptions options)
         {
             return _file.Create(path.GetPath(_source), bufferSize, options);
         }
@@ -160,22 +160,22 @@ namespace CrazyFS.Storage.Passthrough.Linux
             throw new NativeException((int)Stdlib.GetLastError());
         }
         
-        public StreamWriter CreateText(string path)
+        public virtual StreamWriter CreateText(string path)
         {
             return _file.CreateText(path.GetPath(_source));
         }
 
-        public void Decrypt(string path)
+        public virtual void Decrypt(string path)
         {
             _file.Decrypt(path.GetPath(_source));
         }
 
-        public void Delete(string path)
+        public virtual void Delete(string path)
         {
             _file.Delete(path.GetPath(_source));
         }
 
-        public void Encrypt(string path)
+        public virtual void Encrypt(string path)
         {
             _file.Encrypt(path.GetPath(_source));
         }
@@ -185,207 +185,207 @@ namespace CrazyFS.Storage.Passthrough.Linux
             return _file.Exists(path.GetPath(_source));
         }
 
-        public FileSecurity GetAccessControl(string path)
+        public virtual FileSecurity GetAccessControl(string path)
         {
             throw new PlatformNotSupportedException();
         }
 
-        public FileSecurity GetAccessControl(string path, AccessControlSections includeSections)
+        public virtual FileSecurity GetAccessControl(string path, AccessControlSections includeSections)
         {
             throw new PlatformNotSupportedException();
         }
 
-        public FileAttributes GetAttributes(string path)
+        public virtual FileAttributes GetAttributes(string path)
         {
             return _file.GetAttributes(path.GetPath(_source));
         }
 
-        public DateTime GetCreationTime(string path)
+        public virtual DateTime GetCreationTime(string path)
         {
             return _file.GetCreationTime(path.GetPath(_source));
         }
 
-        public DateTime GetCreationTimeUtc(string path)
+        public virtual DateTime GetCreationTimeUtc(string path)
         {
             return _file.GetCreationTimeUtc(path.GetPath(_source));
         }
 
-        public DateTime GetLastAccessTime(string path)
+        public virtual DateTime GetLastAccessTime(string path)
         {
             return _file.GetLastAccessTime(path.GetPath(_source));
         }
 
-        public DateTime GetLastAccessTimeUtc(string path)
+        public virtual DateTime GetLastAccessTimeUtc(string path)
         {
             return _file.GetLastAccessTimeUtc(path.GetPath(_source));
         }
 
-        public DateTime GetLastWriteTime(string path)
+        public virtual DateTime GetLastWriteTime(string path)
         {
             return _file.GetLastWriteTime(path.GetPath(_source));
         }
 
-        public DateTime GetLastWriteTimeUtc(string path)
+        public virtual DateTime GetLastWriteTimeUtc(string path)
         {
             return _file.GetLastWriteTimeUtc(path.GetPath(_source));
         }
 
-        public void Move(string sourceFileName, string destFileName)
+        public virtual void Move(string sourceFileName, string destFileName)
         {
             _file.Move(sourceFileName.GetPath(_source), destFileName.GetPath(_source));
         }
 
-        public void Move(string sourceFileName, string destFileName, bool overwrite)
+        public virtual void Move(string sourceFileName, string destFileName, bool overwrite)
         {
              _file.Move(sourceFileName.GetPath(_source), destFileName.GetPath(_source), overwrite);
         }
 
-        public Stream Open(string path, FileMode mode)
+        public virtual Stream Open(string path, FileMode mode)
         {
             return _file.Open(path.GetPath(_source), mode);
         }
 
-        public Stream Open(string path, FileMode mode, FileAccess access)
+        public virtual Stream Open(string path, FileMode mode, FileAccess access)
         {
             return _file.Open(path.GetPath(_source), mode, access);
         }
 
-        public Stream Open(string path, FileMode mode, FileAccess access, FileShare share)
+        public virtual Stream Open(string path, FileMode mode, FileAccess access, FileShare share)
         {
             return _file.Open(path.GetPath(_source), mode, access, share);
         }
 
-        public Stream OpenRead(string path)
+        public virtual Stream OpenRead(string path)
         {
             return _file.OpenRead(path.GetPath(_source));
         }
 
-        public StreamReader OpenText(string path)
+        public virtual StreamReader OpenText(string path)
         {
             return _file.OpenText(path.GetPath(_source));
         }
 
-        public Stream OpenWrite(string path)
+        public virtual Stream OpenWrite(string path)
         {
             return _file.OpenWrite(path.GetPath(_source));
         }
 
-        public byte[] ReadAllBytes(string path)
+        public virtual byte[] ReadAllBytes(string path)
         {
             return _file.ReadAllBytes(path.GetPath(_source));
         }
 
-        public string[] ReadAllLines(string path)
+        public virtual string[] ReadAllLines(string path)
         {
             return _file.ReadAllLines(path.GetPath(_source));
         }
 
-        public string[] ReadAllLines(string path, Encoding encoding)
+        public virtual string[] ReadAllLines(string path, Encoding encoding)
         {
             return _file.ReadAllLines(path.GetPath(_source), encoding);
         }
 
-        public string ReadAllText(string path)
+        public virtual string ReadAllText(string path)
         {
             return _file.ReadAllText(path.GetPath(_source));
         }
 
-        public string ReadAllText(string path, Encoding encoding)
+        public virtual string ReadAllText(string path, Encoding encoding)
         {
             return _file.ReadAllText(path.GetPath(_source), encoding);
         }
 
-        public IEnumerable<string> ReadLines(string path)
+        public virtual IEnumerable<string> ReadLines(string path)
         {
             return _file.ReadLines(path.GetPath(_source));
         }
 
-        public IEnumerable<string> ReadLines(string path, Encoding encoding)
+        public virtual IEnumerable<string> ReadLines(string path, Encoding encoding)
         {
             return _file.ReadLines(path.GetPath(_source), encoding);
         }
 
-        public void Replace(string sourceFileName, string destinationFileName, string destinationBackupFileName)
+        public virtual void Replace(string sourceFileName, string destinationFileName, string destinationBackupFileName)
         {
             _file.Replace(sourceFileName.GetPath(_source), destinationFileName.GetPath(_source), destinationBackupFileName);
         }
 
-        public void Replace(string sourceFileName, string destinationFileName, string destinationBackupFileName, bool ignoreMetadataErrors)
+        public virtual void Replace(string sourceFileName, string destinationFileName, string destinationBackupFileName, bool ignoreMetadataErrors)
         {
             _file.Replace(sourceFileName.GetPath(_source), destinationFileName.GetPath(_source), destinationBackupFileName.GetPath(_source), ignoreMetadataErrors);
         }
 
-        public void SetAccessControl(string path, FileSecurity fileSecurity)
+        public virtual void SetAccessControl(string path, FileSecurity fileSecurity)
         {
             throw new PlatformNotSupportedException();
         }
 
-        public void SetAttributes(string path, FileAttributes fileAttributes)
+        public virtual void SetAttributes(string path, FileAttributes fileAttributes)
         {
             _file.SetAttributes(path.GetPath(_source), fileAttributes);
         }
 
-        public void SetCreationTime(string path, DateTime creationTime)
+        public virtual void SetCreationTime(string path, DateTime creationTime)
         {
             _file.SetCreationTime(path.GetPath(_source), creationTime);
         }
 
-        public void SetCreationTimeUtc(string path, DateTime creationTimeUtc)
+        public virtual void SetCreationTimeUtc(string path, DateTime creationTimeUtc)
         {
             _file.SetCreationTimeUtc(path.GetPath(_source), creationTimeUtc);
         }
 
-        public void SetLastAccessTime(string path, DateTime lastAccessTime)
+        public virtual void SetLastAccessTime(string path, DateTime lastAccessTime)
         {
             _file.SetLastAccessTime(path.GetPath(_source), lastAccessTime);
         }
 
-        public void SetLastAccessTimeUtc(string path, DateTime lastAccessTimeUtc)
+        public virtual void SetLastAccessTimeUtc(string path, DateTime lastAccessTimeUtc)
         {
             _file.SetLastAccessTimeUtc(path.GetPath(_source), lastAccessTimeUtc);
         }
 
-        public void SetLastWriteTime(string path, DateTime lastWriteTime)
+        public virtual void SetLastWriteTime(string path, DateTime lastWriteTime)
         {
             _file.SetLastWriteTime(path.GetPath(_source), lastWriteTime);
         }
 
-        public void SetLastWriteTimeUtc(string path, DateTime lastWriteTimeUtc)
+        public virtual void SetLastWriteTimeUtc(string path, DateTime lastWriteTimeUtc)
         {
             _file.SetLastWriteTimeUtc(path.GetPath(_source), lastWriteTimeUtc);
         }
 
-        public void WriteAllBytes(string path, byte[] bytes)
+        public virtual void WriteAllBytes(string path, byte[] bytes)
         {
             _file.WriteAllBytes(path.GetPath(_source), bytes);
         }
 
-        public void WriteAllLines(string path, IEnumerable<string> contents)
+        public virtual void WriteAllLines(string path, IEnumerable<string> contents)
         {
             _file.WriteAllLines(path.GetPath(_source), contents);
         }
 
-        public void WriteAllLines(string path, IEnumerable<string> contents, Encoding encoding)
+        public virtual void WriteAllLines(string path, IEnumerable<string> contents, Encoding encoding)
         {
             _file.WriteAllLines(path.GetPath(_source), contents, encoding);
         }
 
-        public void WriteAllLines(string path, string[] contents)
+        public virtual void WriteAllLines(string path, string[] contents)
         {
             _file.WriteAllLines(path.GetPath(_source), contents);
         }
 
-        public void WriteAllLines(string path, string[] contents, Encoding encoding)
+        public virtual void WriteAllLines(string path, string[] contents, Encoding encoding)
         {
             _file.WriteAllLines(path.GetPath(_source), contents, encoding);
         }
 
-        public void WriteAllText(string path, string contents)
+        public virtual void WriteAllText(string path, string contents)
         {
             _file.WriteAllText(path.GetPath(_source), contents);
         }
 
-        public void WriteAllText(string path, string contents, Encoding encoding)
+        public virtual void WriteAllText(string path, string contents, Encoding encoding)
         {
             _file.WriteAllText(path.GetPath(_source), contents, encoding);
         }

@@ -82,7 +82,7 @@ namespace CrazyFS.FileSystem.Encrypted.Linux
                 );
             }
             return PermissionHelper.CheckPathAccessModes(
-                new UnixDirectoryInfo(path_enc).FileAccessPermissions, 
+                new UnixDirectoryInfo(path_enc.GetPath(_source)).FileAccessPermissions, 
                 modes
             );
         }

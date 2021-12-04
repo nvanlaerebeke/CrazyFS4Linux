@@ -13,32 +13,25 @@ using Mono.Unix.Native;
 
 namespace CrazyFS.FileSystem.Encrypted.Linux
 {
-    public class LinuxEncDirectoryWrapper : ILinuxEncDirectoryWrapper
+    public class LinuxEncDirectoryWrapper : LinuxDirectoryWrapper
     {
-        private readonly string _source;
         private readonly IEncryption _encryption;
         private readonly IDirectory _directory;
-        public LinuxEncDirectoryWrapper(IFileSystem fileSystem, string source, IEncryption encryption)
+        public LinuxEncDirectoryWrapper(IFileSystem fileSystem, string source, IEncryption encryption) : base(fileSystem, source)
         {
-            FileSystem = fileSystem;
-            _source = source;
             _encryption = encryption;
             _directory = new DirectoryWrapper(fileSystem);
         }
-        public IDirectoryInfo CreateDirectory(string path)
+        public override IDirectoryInfo CreateDirectory(string path)
         {
-            return FileSystem.DirectoryInfo.FromDirectoryName(
-                Directory.CreateDirectory(
-                    FileSystem.Path.GetEncryptedPath(path, false).GetPath(_source)
-                ).FullName
-            );
+            return FileSystem.DirectoryInfo.GetFromDirectoryInfo(base.CreateDirectory(FileSystem.Path.GetEncryptedPath(path, false)));
         }
 
-        public IDirectoryInfo CreateDirectory(string path, DirectorySecurity directorySecurity)
+        public virtual IDirectoryInfo CreateDirectory(string path, DirectorySecurity directorySecurity)
         {
-            var encPath = FileSystem.Path.GetEncryptedPath(path, false);
-            return _directory.CreateDirectory(encPath.GetPath(_source), directorySecurity);
+            return FileSystem.DirectoryInfo.GetFromDirectoryInfo(base.CreateDirectory(FileSystem.Path.GetEncryptedPath(path, false), directorySecurity);
         }
+        Continue to implement below
         public virtual void CreateDirectory(string path, FilePermissions permissions)
         {
             var encPath = FileSystem.Path.GetEncryptedPath(path, false);
@@ -291,7 +284,5 @@ namespace CrazyFS.FileSystem.Encrypted.Linux
         {
             throw new NotImplementedException();
         }
-
-        public IFileSystem FileSystem { get; }
     }
 }

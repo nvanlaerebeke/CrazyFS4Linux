@@ -345,7 +345,7 @@ namespace CrazyFS.FileSystem
 #endif
         }
 
-        public Result Write(string path, byte[] buffer, out int bytesWritten, long offset)
+        public virtual Result Write(string path, byte[] buffer, out int bytesWritten, long offset)
         {
 #if DEBUG
             var request = new CrazyFsRequest(CrazyFsRequestName.Write, new[]

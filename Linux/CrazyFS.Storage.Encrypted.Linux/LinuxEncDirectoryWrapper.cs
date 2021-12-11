@@ -15,10 +15,12 @@ namespace CrazyFS.FileSystem.Encrypted.Linux
 {
     public class LinuxEncDirectoryWrapper : LinuxDirectoryWrapper
     {
+        private readonly string _destination;
         private readonly IEncryption _encryption;
         private readonly IDirectory _directory;
-        public LinuxEncDirectoryWrapper(IFileSystem fileSystem, string source, IEncryption encryption) : base(fileSystem, source)
+        public LinuxEncDirectoryWrapper(IFileSystem fileSystem, string source, string destination, IEncryption encryption) : base(fileSystem, source)
         {
+            _destination = destination;
             _encryption = encryption;
             _directory = new DirectoryWrapper(fileSystem);
         }
@@ -27,262 +29,339 @@ namespace CrazyFS.FileSystem.Encrypted.Linux
             return FileSystem.DirectoryInfo.GetFromDirectoryInfo(base.CreateDirectory(FileSystem.Path.GetEncryptedPath(path, false)));
         }
 
-        public virtual IDirectoryInfo CreateDirectory(string path, DirectorySecurity directorySecurity)
+        public override IDirectoryInfo CreateDirectory(string path, DirectorySecurity directorySecurity)
         {
-            return FileSystem.DirectoryInfo.GetFromDirectoryInfo(base.CreateDirectory(FileSystem.Path.GetEncryptedPath(path, false), directorySecurity);
+            return FileSystem.DirectoryInfo.GetFromDirectoryInfo(base.CreateDirectory(FileSystem.Path.GetEncryptedPath(path, false), directorySecurity));
         }
-        Continue to implement below
-        public virtual void CreateDirectory(string path, FilePermissions permissions)
+
+        public override void CreateDirectory(string path, FilePermissions permissions)
         {
-            var encPath = FileSystem.Path.GetEncryptedPath(path, false);
-            if (Syscall.mkdir(encPath.GetPath(_source), permissions) != -1) return;
+            if (Syscall.mkdir(FileSystem.Path.GetEncryptedPath(path, false).GetPath(_source), permissions) != -1) return;
             throw new NativeException((int)Stdlib.GetLastError());
         }
 
-        public void Delete(string path)
+        public override void Delete(string path)
         {
-            var pathEnc = FileSystem.Path.GetEncryptedPath(path, true);
-            if(!string.IsNullOrEmpty(pathEnc)) Directory.Delete(pathEnc.GetPath(_source));
-        }
-
-        public void Delete(string path, bool recursive)
-        {
-            var pathEnc = FileSystem.Path.GetEncryptedPath(path, true);
-            if(!string.IsNullOrEmpty(pathEnc)) Directory.Delete(pathEnc.GetPath(_source), true);
-        }
-
-        public bool Exists(string path)
-        {
-            var encPath = FileSystem.Path.GetEncryptedPath(path, true);
-            if (!string.IsNullOrEmpty(encPath))
+            try
             {
-                return Directory.Exists(encPath.GetPath(_source));
+                base.Delete(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source));
             }
-            return false;        
+            catch (FileNotFoundException)
+            {
+                throw new DirectoryNotFoundException(path);
+            }
         }
 
-        public DirectorySecurity GetAccessControl(string path)
+        public override void Delete(string path, bool recursive)
+        {
+            try
+            {
+                base.Delete(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source), recursive);
+            }
+            catch (FileNotFoundException)
+            {
+                throw new DirectoryNotFoundException(path);
+            }
+        }
+
+        public override bool Exists(string path)
+        {
+            try
+            {
+                return base.Exists(FileSystem.Path.GetEncryptedPath(path, true));
+            }
+            catch (FileNotFoundException)
+            {
+                throw new DirectoryNotFoundException(path);
+            }
+        }
+
+        public override DirectorySecurity GetAccessControl(string path)
+        {
+            return base.GetAccessControl(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source));
+        }
+
+        public override DirectorySecurity GetAccessControl(string path, AccessControlSections includeSections)
+        {
+            return base.GetAccessControl(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source),
+                includeSections);
+        }
+
+        public override DateTime GetCreationTime(string path)
+        {
+            return base.GetCreationTime(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source));
+        }
+
+        public override DateTime GetCreationTimeUtc(string path)
+        {
+            return base.GetCreationTimeUtc(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source));
+        }
+
+        public override string GetCurrentDirectory()
+        {
+            return FileSystem.Path.GetDecryptedPath(base.GetCurrentDirectory()).GetRelative(_source).GetPath(_destination);
+        }
+
+        public override string[] GetDirectories(string path)
+        {
+            return base.GetDirectories(
+                FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source)
+            ).Select(x => 
+                FileSystem.Path.GetDecryptedPath(x).GetRelative(_source).GetPath(_destination)
+            ).ToArray();
+        }
+
+        public override string[] GetDirectories(string path, string searchPattern)
+        {
+            return base.GetDirectories(
+                FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source), 
+                searchPattern
+            ).Select(x => 
+                FileSystem.Path.GetDecryptedPath(path).GetRelative(_source).GetPath(_destination)
+            ).ToArray();
+        }
+
+        public override string[] GetDirectories(string path, string searchPattern, SearchOption searchOption)
+        {
+            return base.GetDirectories(
+                FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source), 
+                searchPattern,
+                searchOption
+            ).Select(x => 
+                FileSystem.Path.GetDecryptedPath(path).GetRelative(_source).GetPath(_destination)
+            ).ToArray();
+        }
+
+        public override string[] GetDirectories(string path, string searchPattern, EnumerationOptions enumerationOptions)
+        {
+            return base.GetDirectories(
+                FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source), 
+                searchPattern,
+                enumerationOptions
+            ).Select(x => 
+                FileSystem.Path.GetDecryptedPath(path).GetRelative(_source).GetPath(_destination)
+            ).ToArray();
+        }
+
+        public override string GetDirectoryRoot(string path)
+        {
+            return FileSystem.Path.GetDecryptedPath(
+                base.GetDirectoryRoot(
+                    FileSystem.Path.GetEncryptedPath(path, true).GetRelative(_source).GetPath(_destination)
+                )
+            );
+        }
+
+        public override string[] GetFiles(string path)
+        {
+            return base.GetFiles(
+                FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source)
+            ).Select(x => 
+                FileSystem.Path.GetDecryptedPath(x).GetRelative(_source).GetPath(_destination)
+            ).ToArray();
+        }
+
+        public override string[] GetFiles(string path, string searchPattern)
+        {
+            return base.GetFiles(
+                FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source), 
+                searchPattern
+            ).Select(x => 
+                FileSystem.Path.GetDecryptedPath(x).GetRelative(_source).GetPath(_destination)
+            ).ToArray();
+        }
+
+        public override string[] GetFiles(string path, string searchPattern, SearchOption searchOption)
+        {
+            return base.GetFiles(
+                FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source), 
+                searchPattern,
+                searchOption
+            ).Select(x => 
+                FileSystem.Path.GetDecryptedPath(x).GetRelative(_source).GetPath(_destination)
+            ).ToArray();
+        }
+
+        public override string[] GetFiles(string path, string searchPattern, EnumerationOptions enumerationOptions)
+        {
+            return base.GetFiles(
+                FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source), 
+                searchPattern,
+                enumerationOptions
+            ).Select(x => 
+                FileSystem.Path.GetDecryptedPath(x).GetRelative(_source).GetPath(_destination)
+            ).ToArray();
+        }
+
+        public override string[] GetFileSystemEntries(string path)
+        {
+            return base.GetFileSystemEntries(
+                FileSystem.Path.GetEncryptedPath(path, true).GetRelative(_source).GetPath(_destination)
+            ).ToArray();
+        }
+
+        public override string[] GetFileSystemEntries(string path, string searchPattern)
+        {
+            return base.GetFileSystemEntries(
+                FileSystem.Path.GetEncryptedPath(path, true).GetRelative(_source).GetPath(_destination),
+                searchPattern
+            ).ToArray();        
+        }
+
+        public override DateTime GetLastAccessTime(string path)
+        {
+            return base.GetLastAccessTime(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source));
+        }
+
+        public override DateTime GetLastAccessTimeUtc(string path)
+        {
+            return base.GetLastAccessTimeUtc(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source));
+        }
+
+        public override DateTime GetLastWriteTime(string path)
+        {
+            return base.GetLastWriteTime(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source));
+        }
+
+        public override DateTime GetLastWriteTimeUtc(string path)
+        {
+            return base.GetLastWriteTimeUtc(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source));
+        }
+
+        public override string[] GetLogicalDrives()
         {
             throw new NotImplementedException();
         }
 
-        public DirectorySecurity GetAccessControl(string path, AccessControlSections includeSections)
+        public override IDirectoryInfo GetParent(string path)
+        {
+            try
+            {
+                return FileSystem.DirectoryInfo.FromDirectoryName(
+                    base.GetParent(
+                        FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source)
+                    ).FullName
+                );
+            }
+            catch (FileNotFoundException)
+            {
+                throw new DirectoryNotFoundException(path);
+            }
+        }
+
+        public override void Move(string sourceDirName, string destDirName)
+        {
+            try
+            {
+                base.Move(
+                    FileSystem.Path.GetEncryptedPath(sourceDirName, true), 
+                    FileSystem.Path.GetEncryptedPath(destDirName, false)
+                );
+            }
+            catch (FileNotFoundException)
+            {
+                throw new DirectoryNotFoundException(sourceDirName);
+            }
+        }
+
+        public override void SetAccessControl(string path, DirectorySecurity directorySecurity)
+        {
+            base.SetAccessControl(FileSystem.Path.GetEncryptedPath(path, true), directorySecurity);
+        }
+
+        public override void SetCreationTime(string path, DateTime creationTime)
+        {
+            base.SetCreationTime(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source), creationTime);
+        }
+
+        public override void SetCreationTimeUtc(string path, DateTime creationTimeUtc)
+        {
+            base.SetCreationTimeUtc(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source), creationTimeUtc);
+        }
+
+        public override void SetLastAccessTime(string path, DateTime lastAccessTime)
+        {
+            base.SetLastAccessTime(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source), lastAccessTime);
+        }
+
+        public override void SetLastAccessTimeUtc(string path, DateTime lastAccessTimeUtc)
+        {
+            base.SetLastAccessTimeUtc(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source), lastAccessTimeUtc);
+        }
+
+        public override void SetLastWriteTime(string path, DateTime lastWriteTime)
+        {
+            base.SetLastWriteTime(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source), lastWriteTime);
+        }
+
+        public override void SetLastWriteTimeUtc(string path, DateTime lastWriteTimeUtc)
+        {
+            base.SetLastWriteTimeUtc(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source), lastWriteTimeUtc);
+        }
+
+        public override IEnumerable<string> EnumerateDirectories(string path)
         {
             throw new NotImplementedException();
         }
 
-        public DateTime GetCreationTime(string path)
+        public override IEnumerable<string> EnumerateDirectories(string path, string searchPattern)
         {
             throw new NotImplementedException();
         }
 
-        public DateTime GetCreationTimeUtc(string path)
+        public override IEnumerable<string> EnumerateDirectories(string path, string searchPattern, SearchOption searchOption)
         {
             throw new NotImplementedException();
         }
 
-        public string GetCurrentDirectory()
-        {
-            return Directory.GetCurrentDirectory();
-        }
-
-        public string[] GetDirectories(string path)
-        {
-            var paths = Directory.GetDirectories(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source));
-            for (var i = 0; i < paths.Length; i++) paths[i] = FileSystem.Path.GetDecryptedPath(paths[i]);
-            return paths;
-        }
-
-        public string[] GetDirectories(string path, string searchPattern)
+        public override IEnumerable<string> EnumerateDirectories(string path, string searchPattern, EnumerationOptions enumerationOptions)
         {
             throw new NotImplementedException();
         }
 
-        public string[] GetDirectories(string path, string searchPattern, SearchOption searchOption)
+        public override IEnumerable<string> EnumerateFiles(string path)
         {
             throw new NotImplementedException();
         }
 
-        public string[] GetDirectories(string path, string searchPattern, EnumerationOptions enumerationOptions)
+        public override IEnumerable<string> EnumerateFiles(string path, string searchPattern)
         {
             throw new NotImplementedException();
         }
 
-        public new string GetDirectoryRoot(string path)
-        {
-            return FileSystem.Path.GetDecryptedPath(Directory.GetDirectoryRoot(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source)).GetRelative(_source));
-        }
-
-        public new string[] GetFiles(string path)
-        {
-            var paths = Directory.GetFiles(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source));
-            for (var i = 0; i < paths.Length; i++) paths[i] = FileSystem.Path.GetDecryptedPath(paths[i]);
-            return paths;
-        }
-
-        public string[] GetFiles(string path, string searchPattern)
+        public override IEnumerable<string> EnumerateFiles(string path, string searchPattern, SearchOption searchOption)
         {
             throw new NotImplementedException();
         }
 
-        public string[] GetFiles(string path, string searchPattern, SearchOption searchOption)
+        public override IEnumerable<string> EnumerateFiles(string path, string searchPattern, EnumerationOptions enumerationOptions)
         {
             throw new NotImplementedException();
         }
 
-        public string[] GetFiles(string path, string searchPattern, EnumerationOptions enumerationOptions)
+        public override IEnumerable<string> EnumerateFileSystemEntries(string path)
         {
             throw new NotImplementedException();
         }
 
-        public new string[] GetFileSystemEntries(string path)
-        {
-            var paths = Directory.GetFileSystemEntries(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source));
-            for (var i = 0; i < paths.Length; i++) paths[i] = FileSystem.Path.GetDecryptedPath(paths[i]);
-            return paths;
-        }
-
-        public string[] GetFileSystemEntries(string path, string searchPattern)
+        public override IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern)
         {
             throw new NotImplementedException();
         }
 
-        public new DateTime GetLastAccessTime(string path)
-        {
-            return Directory.GetLastAccessTime(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source));
-        }
-
-        public new DateTime GetLastAccessTimeUtc(string path)
-        {
-            return Directory.GetLastAccessTimeUtc(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source));
-        }
-
-        public new DateTime GetLastWriteTime(string path)
-        {
-            return Directory.GetLastWriteTime(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source));
-        }
-
-        public new DateTime GetLastWriteTimeUtc(string path)
-        {
-            return Directory.GetLastWriteTimeUtc(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source));
-        }
-
-        public string[] GetLogicalDrives()
+        public override IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern, SearchOption searchOption)
         {
             throw new NotImplementedException();
         }
 
-        public IDirectoryInfo GetParent(string path)
-        {
-            var pathEnc = FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source);
-            return FileSystem.DirectoryInfo.FromDirectoryName(Directory.GetParent(pathEnc)?.FullName);
-        }
-
-        public void Move(string sourceDirName, string destDirName)
-        {
-            var from = FileSystem.Path.GetEncryptedPath(sourceDirName, true);
-            var to = FileSystem.Path.GetEncryptedPath(destDirName, false);
-            Directory.Move(from, to);
-        }
-
-        public void SetAccessControl(string path, DirectorySecurity directorySecurity)
+        public override IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern, EnumerationOptions enumerationOptions)
         {
             throw new NotImplementedException();
         }
 
-        public void SetCreationTime(string path, DateTime creationTime)
+        public override void CreateSpecialFile(string path, FilePermissions mode, ulong rdev)
         {
-            Directory.SetCreationTime(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source), creationTime);
-        }
-
-        public void SetCreationTimeUtc(string path, DateTime creationTimeUtc)
-        {
-            Directory.SetCreationTimeUtc(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source), creationTimeUtc);
-        }
-
-        public void SetCurrentDirectory(string path)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetLastAccessTime(string path, DateTime lastAccessTime)
-        {
-            Directory.SetLastAccessTime(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source), lastAccessTime);
-        }
-
-        public void SetLastAccessTimeUtc(string path, DateTime lastAccessTimeUtc)
-        {
-            Directory.SetLastAccessTimeUtc(FileSystem.Path.GetEncryptedPath(path, true).GetPath(_source), lastAccessTimeUtc);
-        }
-
-        public void SetLastWriteTime(string path, DateTime lastWriteTime)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetLastWriteTimeUtc(string path, DateTime lastWriteTimeUtc)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<string> EnumerateDirectories(string path)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<string> EnumerateDirectories(string path, string searchPattern)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<string> EnumerateDirectories(string path, string searchPattern, SearchOption searchOption)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<string> EnumerateDirectories(string path, string searchPattern, EnumerationOptions enumerationOptions)
-        {
-            throw new NotImplementedException();
-        }
-
-        public new IEnumerable<string> EnumerateFiles(string path)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<string> EnumerateFiles(string path, string searchPattern)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<string> EnumerateFiles(string path, string searchPattern, SearchOption searchOption)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<string> EnumerateFiles(string path, string searchPattern, EnumerationOptions enumerationOptions)
-        {
-            throw new NotImplementedException();
-        }
-
-        public new IEnumerable<string> EnumerateFileSystemEntries(string path)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern, SearchOption searchOption)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern, EnumerationOptions enumerationOptions)
-        {
-            throw new NotImplementedException();
+            base.CreateSpecialFile(FileSystem.Path.GetEncryptedPath(path, false).GetPath(_source), mode, rdev);
         }
     }
 }

@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\..\EncryptedDataContainer\EncFIleStorage\EncFIleStorage.csproj" />
       <ProjectReference Include="..\CrazyFS.Encryption\CrazyFS.Encryption.csproj" />
       <ProjectReference Include="..\CrazyFS.Storage.Passthrough.Linux\CrazyFS.Storage.Passthrough.Linux.csproj" />
     </ItemGroup>

@@ -44,7 +44,7 @@ namespace CrazyFS.FileSystem.Encrypted.Linux
                     var currentListEncrypted = Directory.GetFileSystemEntries(tmpPath).Select(x => x.GetRelative(tmpPath).Trim('/')).ToArray(); // FileSystem.DirectoryInfo.FromDirectoryName(tmpPath).GetFileSystemInfos();
                     var currentListDecrypted = currentListEncrypted.ToList().ConvertAll(x => GetDecryptedPath(x)).ToArray();
                     var entry = currentListDecrypted.FirstOrDefault(x => x.Equals(parts[i]));
-                    if (entry == null && existing) return "";
+                    if (entry == null && existing) throw new FileNotFoundException();
 
                     if (entry != null)
                     {

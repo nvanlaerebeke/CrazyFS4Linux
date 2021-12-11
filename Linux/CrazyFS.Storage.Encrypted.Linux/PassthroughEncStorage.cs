@@ -15,7 +15,7 @@ namespace CrazyFS.FileSystem.Encrypted.Linux
             FileInfo = new LinuxEncFileInfoFactory(this, source, destination, encryption);
             Path = new LinuxEncPathWrapper(this, source, destination, encryption);
             File = new LinuxEncFileWrapper(this, source, encryption);
-            Directory = new LinuxEncDirectoryWrapper(this, source, encryption);
+            Directory = new LinuxEncDirectoryWrapper(this, source, destination, encryption);
             FileStream = new LinuxEncFileStreamFactory(this, source, encryption);
             FileSystemWatcher = new LinuxEncFileSystemWatcherFactory(source, encryption);
         }

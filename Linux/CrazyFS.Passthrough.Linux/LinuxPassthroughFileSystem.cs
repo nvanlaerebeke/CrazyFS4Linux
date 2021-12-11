@@ -405,7 +405,7 @@ namespace CrazyFS.Passthrough.Linux
                 return result;
             }
         }
-        
+
         /**
          * Private - to be replaced
          */

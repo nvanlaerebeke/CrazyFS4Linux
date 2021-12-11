@@ -12,8 +12,9 @@ namespace CrazyFS.Storage.Passthrough.Linux
 {
     public class LinuxDirectoryWrapper : ILinuxDirectory
     {
-        private readonly string _source;
-        private readonly IDirectory _directory;
+        protected readonly IDirectory _directory;
+        protected readonly string _source;
+
         public LinuxDirectoryWrapper(IFileSystem fileSystem, string source)
         {
             FileSystem = fileSystem;
@@ -26,33 +27,24 @@ namespace CrazyFS.Storage.Passthrough.Linux
             return _directory.CreateDirectory(path.GetPath(_source));
         }
 
-        public virtual  IDirectoryInfo CreateDirectory(string path, DirectorySecurity directorySecurity)
+        public virtual IDirectoryInfo CreateDirectory(string path, DirectorySecurity directorySecurity)
         {
             return _directory.CreateDirectory(path.GetPath(_source), directorySecurity);
         }
+
         public virtual void CreateDirectory(string path, FilePermissions permissions)
         {
             if (Syscall.mkdir(path.GetPath(_source), permissions) != -1)
-            {
                 FileSystem.DirectoryInfo.FromDirectoryName(path.GetPath(_source));
-            }
-            throw new NativeException((int)Stdlib.GetLastError());
+            throw new NativeException((int) Stdlib.GetLastError());
         }
 
-        public virtual  void CreateSpecialFile(string path, FilePermissions mode, ulong rdev)
-        {
-            if (Syscall.mknod(path.GetPath(_source), mode, rdev) != -1)
-            {
-                throw new NativeException((int)Stdlib.GetLastError());
-            }
-        }
-    
-        public virtual  void Delete(string path)
+        public virtual void Delete(string path)
         {
             _directory.Delete(path.GetPath(_source));
         }
 
-        public virtual  void Delete(string path, bool recursive)
+        public virtual void Delete(string path, bool recursive)
         {
             _directory.Delete(path.GetPath(_source), recursive);
         }
@@ -62,12 +54,12 @@ namespace CrazyFS.Storage.Passthrough.Linux
             return _directory.Exists(path.GetPath(_source));
         }
 
-        public virtual  DirectorySecurity GetAccessControl(string path)
+        public virtual DirectorySecurity GetAccessControl(string path)
         {
             return _directory.GetAccessControl(path.GetPath(_source));
         }
 
-        public virtual  DirectorySecurity GetAccessControl(string path, AccessControlSections includeSections)
+        public virtual DirectorySecurity GetAccessControl(string path, AccessControlSections includeSections)
         {
             return _directory.GetAccessControl(path.GetPath(_source), includeSections);
         }
@@ -227,12 +219,14 @@ namespace CrazyFS.Storage.Passthrough.Linux
             return _directory.EnumerateDirectories(path.GetPath(_source), searchPattern);
         }
 
-        public virtual IEnumerable<string> EnumerateDirectories(string path, string searchPattern, SearchOption searchOption)
+        public virtual IEnumerable<string> EnumerateDirectories(string path, string searchPattern,
+            SearchOption searchOption)
         {
             return _directory.EnumerateDirectories(path.GetPath(_source), searchPattern, searchOption);
         }
 
-        public virtual IEnumerable<string> EnumerateDirectories(string path, string searchPattern, EnumerationOptions enumerationOptions)
+        public virtual IEnumerable<string> EnumerateDirectories(string path, string searchPattern,
+            EnumerationOptions enumerationOptions)
         {
             return _directory.EnumerateDirectories(path.GetPath(_source), searchPattern, enumerationOptions);
         }
@@ -252,7 +246,8 @@ namespace CrazyFS.Storage.Passthrough.Linux
             return _directory.EnumerateFiles(path.GetPath(_source), searchPattern, searchOption);
         }
 
-        public virtual IEnumerable<string> EnumerateFiles(string path, string searchPattern, EnumerationOptions enumerationOptions)
+        public virtual IEnumerable<string> EnumerateFiles(string path, string searchPattern,
+            EnumerationOptions enumerationOptions)
         {
             return _directory.EnumerateFiles(path.GetPath(_source), searchPattern, enumerationOptions);
         }
@@ -267,16 +262,24 @@ namespace CrazyFS.Storage.Passthrough.Linux
             return _directory.EnumerateFileSystemEntries(path.GetPath(_source), searchPattern);
         }
 
-        public virtual IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern, SearchOption searchOption)
+        public virtual IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern,
+            SearchOption searchOption)
         {
             return _directory.EnumerateFileSystemEntries(path.GetPath(_source), searchPattern, searchOption);
         }
 
-        public virtual IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern, EnumerationOptions enumerationOptions)
+        public virtual IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern,
+            EnumerationOptions enumerationOptions)
         {
             return _directory.EnumerateFileSystemEntries(path.GetPath(_source), searchPattern, enumerationOptions);
         }
 
         public IFileSystem FileSystem { get; }
+
+        public virtual void CreateSpecialFile(string path, FilePermissions mode, ulong rdev)
+        {
+            if (Syscall.mknod(path.GetPath(_source), mode, rdev) != -1)
+                throw new NativeException((int) Stdlib.GetLastError());
+        }
     }
 }

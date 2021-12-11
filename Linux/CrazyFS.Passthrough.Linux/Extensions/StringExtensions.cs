@@ -11,12 +11,12 @@ namespace CrazyFS.Passthrough.Linux.Extensions
         
         public static string GetMountedPath(this string path, string source, string destination)
         {
-            return path.StartsWith(source) ? Path.Combine(destination, path.Substring(source.Length).Trim('/')) : path;
+            return path.StartsWith(source) ? Path.Combine(destination, path[source.Length..].Trim('/')) : path;
         }
         
         public static string GetRealPath(this string path, string source, string destination)
         {
-            return path.StartsWith(destination) ? Path.Combine(source, path.Substring(destination.Length).Trim('/')) : path;
+            return path.StartsWith(destination) ? Path.Combine(source, path[destination.Length..].Trim('/')) : path;
         }
     }
 }

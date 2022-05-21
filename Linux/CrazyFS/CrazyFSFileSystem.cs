@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using CrazyFS.FileSystem;
 using CrazyFS.FileSystem.Encrypted.Linux;
 using CrazyFS.Passthrough.Linux;
+using CrazyFS.Storage.Passthrough.Linux;
 using Fuse.NET;
 using Mono.Unix.Native;
 using OpenFlags = CrazyFS.FileSystem.OpenFlags;
@@ -21,13 +22,13 @@ namespace CrazyFS.Linux
         public CrazyFsFileSystem(string source, string destination)
         {
             MountPoint = destination;
-            //_fileSystem = new LinuxPassthroughFileSystem(new PassthroughStorage(source, destination));
-            _fileSystem = new LinuxPassthroughFileSystem(new PassthroughEncStorage(
+            _fileSystem = new LinuxPassthroughFileSystem(new PassthroughStorage(source, destination));
+            /*_fileSystem = new LinuxPassthroughFileSystem(new PassthroughEncStorage(
                 source,
                 destination,
                 _password,
                 Convert.FromBase64String(_salt)
-            ));
+            ));*/
         }
 
         protected override Errno OnGetPathStatus(string path, out Stat buf)

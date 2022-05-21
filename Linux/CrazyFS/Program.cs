@@ -12,7 +12,7 @@ var source = "/mnt/test/source";
 var source_enc = "/mnt/test/source_enc";
 var dest = "/mnt/test/dest";
 
-using (CrazyFsFileSystem fs = new(source_enc, dest))
+using (CrazyFsFileSystem fs = new(source, dest))
 {
     fs.Start();
 }
